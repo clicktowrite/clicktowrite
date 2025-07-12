@@ -61,7 +61,9 @@
         body {
             font-family: var(--font-primary);
             margin: 0;
-            padding-bottom: 100px;
+            /* Adjusted padding for both bottom nav and banner */
+            padding-top: 70px; /* Space for sticky header */
+            padding-bottom: 120px; 
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -82,15 +84,19 @@
             align-items: center;
             padding: 15px 20px;
             background-color: var(--surface-color);
-            position: relative;
+            /* --- STICKY HEADER --- */
+            position: fixed;
+            top: 0;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 100;
+            border-bottom: 1px solid #333;
         }
+        .light-mode header { border-bottom: 1px solid #ddd; }
         .logo {
             font-family: var(--font-display);
             font-weight: 900;
             font-size: 2.2rem;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
             color: var(--accent-red);
             text-shadow: 0 0 5px var(--accent-red), 0 0 10px var(--accent-red);
         }
@@ -98,25 +104,8 @@
         .points-display { font-size: 1rem; font-weight: 700; color: var(--points-color); text-shadow: 0 0 5px var(--points-color);}
         .points-display span { font-family: var(--font-display); }
 
-        /* Navigation */
-        nav { display: flex; justify-content: center; flex-wrap: wrap; padding: 15px; gap: 10px; }
-        .nav-link { 
-            padding: 10px 20px; 
-            border: 2px solid var(--accent-red);
-            color: var(--accent-red);
-            background-color: transparent;
-            text-decoration: none; border-radius: var(--border-radius);
-            font-weight: 700; font-size: 1rem;
-            transition: all 0.2s ease;
-        }
-        .nav-link:hover, .nav-link.active {
-            background-color: var(--accent-red);
-            color: white;
-            box-shadow: 0 0 10px var(--accent-red);
-        }
-
         /* Main Content */
-        main { padding: 0 15px; }
+        main { padding: 20px 15px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .section-header { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 20px; gap: 10px; }
@@ -179,7 +168,7 @@
 
         /* Modal Styles */
         .modal {
-            display: none; position: fixed; z-index: 1000;
+            display: none; position: fixed; z-index: 1001;
             left: 0; top: 0; width: 100%; height: 100%;
             overflow: auto; background-color: rgba(0,0,0,0.7);
             align-items: center; justify-content: center;
@@ -218,53 +207,80 @@
         /* Moving Banner */
         .moving-banner {
             position: fixed;
-            bottom: 0; left: 0; width: 100%;
+            /* Positioned above the new bottom nav */
+            bottom: 60px; 
+            left: 0; width: 100%;
             background-color: rgba(0, 0, 0, 0.9);
-            padding: 10px 0;
+            padding: 8px 0;
             overflow: hidden;
             white-space: nowrap;
+            z-index: 99;
         }
         .banner-text {
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
             display: inline-block;
             padding-left: 100%;
             animation: marquee 15s linear infinite;
         }
         .banner-text.rgb-text { animation: marquee 15s linear infinite, text-rgb 5s linear infinite; }
         
+        /* --- BOTTOM NAVIGATION --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: var(--surface-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            border-top: 1px solid #333;
+        }
+        .light-mode .bottom-nav { border-top: 1px solid #ddd; }
+
+        .bottom-nav-link {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+        .bottom-nav-link:hover { opacity: 1; }
+        .bottom-nav-link.active {
+            color: var(--accent-red);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .bottom-nav-link .icon { font-size: 1.5rem; }
+
         /* Helper Classes */
         .hidden { display: none !important; }
 
-        /* --- MOBILE RESPONSIVE STYLES --- */
+        /* --- MEDIA QUERIES --- */
         @media (min-width: 768px) {
-            /* On larger screens, revert some mobile-first styles */
             .section-header {
                 flex-direction: row;
                 justify-content: center;
             }
-            .btn {
-                width: auto; /* Allow buttons to size to their content */
-            }
-            .item-list {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            }
-             main {
-                padding: 0 30px;
-             }
+            .btn { width: auto; }
+            .item-list { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+            main { padding: 20px 30px; }
+            header .logo { position: absolute; left: 50%; transform: translateX(-50%); }
+            header .header-right { position: relative; } /* Ensure it doesnt overlap */
         }
         
         @media (max-width: 480px) {
-             /* Specific tweaks for very small screens */
-            .logo {
-                font-size: 1.8rem;
-            }
-            .header-right {
-                gap: 10px;
-            }
-            .points-display {
-                font-size: 0.9rem;
-            }
+            header .logo { font-size: 1.8rem; position: static; transform: none; }
+            header { justify-content: space-between; }
         }
     </style>
 </head>
@@ -274,16 +290,9 @@
         <div class="logo">Gamefy</div>
         <div class="header-right">
             <div class="points-display">PTS: <span id="points-total">0</span></div>
-            <button id="settings-btn" class="btn btn-secondary">⚙️</button>
         </div>
     </header>
-
-    <nav>
-        <a href="#" class="nav-link active" data-tab="quests">Quests</a>
-        <a href="#" class="nav-link" data-tab="rewards">Rewards</a>
-        <a href="#" class="nav-link" data-tab="inventory">Inventory</a>
-    </nav>
-
+    
     <main>
         <div id="quests-tab" class="tab-content active">
             <div class="section-header">
@@ -310,6 +319,25 @@
         <div id="banner-text" class="banner-text rgb-text">Level up your life, one quest at a time!</div>
     </div>
     
+    <nav class="bottom-nav">
+        <a href="#" class="bottom-nav-link active" data-tab="quests">
+            <span class="icon">🎯</span>
+            <span>Quests</span>
+        </a>
+        <a href="#" class="bottom-nav-link" data-tab="rewards">
+            <span class="icon">🏆</span>
+            <span>Rewards</span>
+        </a>
+        <a href="#" class="bottom-nav-link" data-tab="inventory">
+            <span class="icon">🎒</span>
+            <span>Inventory</span>
+        </a>
+        <button id="bottom-settings-btn" class="bottom-nav-link">
+            <span class="icon">⚙️</span>
+            <span>Settings</span>
+        </button>
+    </nav>
+
     <div id="add-quest-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" data-modal="add-quest-modal">&times;</span>
@@ -386,7 +414,8 @@ document.addEventListener('DOMContentLoaded', () => {
         rewards: [],
         inventory: [],
         settings: {
-            theme: 'dark',
+            // Dark mode is now default
+            theme: 'dark', 
             freeRewardCostLimit: 20,
             bannerText: 'Level up your life, one quest at a time!',
             freeRewardNotification: true
@@ -400,6 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rewardListEl = document.getElementById('reward-list');
     const inventoryListEl = document.getElementById('inventory-list');
     const bannerTextEl = document.getElementById('banner-text');
+    const bottomNavEl = document.querySelector('.bottom-nav');
 
     // --- LOCAL STORAGE ---
     function saveState() {
@@ -410,6 +440,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedState = localStorage.getItem('gamefyState');
         if (savedState) {
             state = JSON.parse(savedState);
+        } else {
+            // If no saved state, ensure default theme is applied
+            state.settings.theme = 'dark';
         }
         const today = new Date().toDateString();
         if (state.lastFreeRewardDate !== today) {
@@ -421,11 +454,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- RENDERING ---
     function renderAll() {
+        applySettings(); // Apply settings first to set theme
         renderQuests();
         renderRewards();
         renderInventory();
         renderPoints();
-        applySettings();
     }
     
     function renderPoints() {
@@ -503,7 +536,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('free-reward-notification-toggle').checked = state.settings.freeRewardNotification;
     }
 
-    document.getElementById('settings-btn').addEventListener('click', () => openModal('settings-modal'));
+    // UPDATED settings button event listener
+    document.getElementById('bottom-settings-btn').addEventListener('click', () => openModal('settings-modal'));
     document.getElementById('save-settings-btn').addEventListener('click', () => {
         state.settings.theme = document.getElementById('theme-select').value;
         state.settings.freeRewardCostLimit = parseInt(document.getElementById('free-reward-cost-limit').value) || 20;
@@ -515,6 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- MODAL CONTROLS ---
+    // (This section remains mostly the same, just the button listeners are updated)
     const modals = document.querySelectorAll('.modal');
     function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
     function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
@@ -535,19 +570,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- EVENT LISTENERS & LOGIC ---
-    // Tab Navigation
-    document.querySelector('nav').addEventListener('click', (e) => {
-        if (e.target.classList.contains('nav-link')) {
+    // UPDATED Tab Navigation to use the bottom nav
+    bottomNavEl.addEventListener('click', (e) => {
+        const navLink = e.target.closest('.bottom-nav-link');
+        if (navLink && navLink.dataset.tab) {
             e.preventDefault();
-            const tabId = e.target.dataset.tab;
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            e.target.classList.add('active');
+            const tabId = navLink.dataset.tab;
+            
+            bottomNavEl.querySelectorAll('.bottom-nav-link').forEach(link => link.classList.remove('active'));
+            navLink.classList.add('active');
+
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(`${tabId}-tab`).classList.add('active');
         }
     });
 
-    // Add Quest Logic
+    // Add Quest Logic (No changes needed here)
     document.getElementById('quest-has-tracker').addEventListener('change', (e) => {
         document.getElementById('quest-tracker-setup').classList.toggle('hidden', !e.target.checked);
     });
@@ -575,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quest-tracker-setup').classList.add('hidden');
     });
 
-    // Add Reward Logic
+    // Add Reward Logic (No changes needed here)
     document.getElementById('reward-has-expiry').addEventListener('change', (e) => {
         document.getElementById('reward-expiry-setup').classList.toggle('hidden', !e.target.checked);
     });
@@ -599,10 +637,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('reward-expiry-setup').classList.add('hidden');
     });
 
-    // Quest Actions (Done, Tracker, Delete)
+    // Quest & Reward Actions (No changes needed here)
     questListEl.addEventListener('click', e => {
         const index = e.target.dataset.index;
-        if (!index) return;
+        if (index === undefined) return;
         
         if (e.target.classList.contains('tracker-btn')) {
             const op = e.target.dataset.op;
@@ -617,7 +655,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAll();
     });
     
-    // Reward/Inventory Actions (Redeem, Delete)
     function handleItemDeletion(e) {
         if (e.target.classList.contains('delete-btn')) {
             const type = e.target.dataset.type;
@@ -632,7 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rewardListEl.addEventListener('click', e => {
         handleItemDeletion(e);
         const index = e.target.dataset.index;
-        if (e.target.classList.contains('redeem-btn') && index) {
+        if (e.target.classList.contains('redeem-btn') && index !== undefined) {
             const reward = state.rewards[index];
             if (state.points >= reward.cost) {
                 state.points -= reward.cost;
@@ -647,14 +684,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     inventoryListEl.addEventListener('click', handleItemDeletion);
 
-    // Free Reward Logic
+    // Free Reward Logic (No changes needed here)
     const freeRewardBtn = document.getElementById('free-reward-btn');
-    const freeRewardModal = document.getElementById('free-reward-modal');
-    const spinnerWordsEl = document.getElementById('spinner-words');
-    const spinnerResultEl = document.getElementById('spinner-result');
-    const claimRewardBtn = document.getElementById('claim-reward-btn');
-    let spinInterval;
-
     freeRewardBtn.addEventListener('click', () => {
         const eligibleRewards = state.rewards.filter(r => r.cost <= state.settings.freeRewardCostLimit);
         if (eligibleRewards.length < 2) {
@@ -663,11 +694,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         freeRewardBtn.disabled = true;
         openModal('free-reward-modal');
+        const spinnerWordsEl = document.getElementById('spinner-words');
+        const spinnerResultEl = document.getElementById('spinner-result');
+        const claimRewardBtn = document.getElementById('claim-reward-btn');
         spinnerResultEl.classList.add('hidden');
         claimRewardBtn.classList.add('hidden');
 
         let i = 0;
-        spinInterval = setInterval(() => {
+        const spinInterval = setInterval(() => {
             spinnerWordsEl.textContent = eligibleRewards[i % eligibleRewards.length].name;
             i++;
         }, 100);
@@ -686,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     });
     
-    claimRewardBtn.addEventListener('click', () => {
+    document.getElementById('claim-reward-btn').addEventListener('click', () => {
         closeModal('free-reward-modal');
         renderAll();
     });
