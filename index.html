@@ -28,8 +28,9 @@
         @keyframes marquee {
             0% {transform:translateX(100%)} 100% {transform:translateX(-100%)}
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         body {
@@ -90,6 +91,7 @@
             transition: background-color 0.2s ease; width: 100%; box-sizing: border-box;
         }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
+        .btn-secondary { background-color: #555; }
         .btn-free { background: linear-gradient(45deg, #ff00ff, #00ffff); color: black; }
         
         input, select {
@@ -113,20 +115,20 @@
             display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%;
             overflow: auto; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center;
         }
-        .modal-content { margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; position: relative; }
+        .modal.active { display: flex; }
+        .modal-content { 
+            margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
         .dark-mode .modal-content { background-color: var(--surface-color-dark); }
         .light-mode .modal-content { background-color: var(--surface-color-light); }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; font-weight: bold; cursor: pointer; }
         .checkbox-label {
             display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 15px; cursor: pointer;
+            margin: 15px 0; cursor: pointer;
         }
-
-        /* Spinner Styles */
-        #free-reward-spinner { text-align: center; }
-        #spinner-arrow { font-size: 3rem; color: var(--accent-red); margin-bottom: 20px; }
-        .spinner-container { height: 100px; overflow: hidden; position: relative; mask-image: linear-gradient(transparent, black 25%, black 75%, transparent); }
-        #spinner-words { font-size: 1.5rem; font-weight: bold; animation: spin 1s cubic-bezier(0.7, 0, 0.3, 1) infinite; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .modal-buttons .btn { width: auto; min-width: 80px; }
         
         .moving-banner {
             position: fixed; bottom: 60px; left: 0; width: 100%; background-color: rgba(0,0,0,0.9);
@@ -176,15 +178,10 @@
             <div class="section-header"><button class="btn" data-modal-target="add-quest-modal">Add Quest</button></div>
             <div id="quest-list" class="item-list"></div>
         </div>
-
         <div id="rewards-tab" class="tab-content">
-            <div class="section-header">
-                <button class="btn" data-modal-target="add-reward-modal">Add Reward</button>
-                <button id="free-reward-btn" class="btn btn-free">Get Daily Free Reward</button>
-            </div>
+            <div class="section-header"><button class="btn" data-modal-target="add-reward-modal">Add Reward</button></div>
             <div id="reward-list" class="item-list"></div>
         </div>
-
         <div id="inventory-tab" class="tab-content">
             <h2 style="text-align:center;">My Redeemed Rewards</h2>
             <div id="inventory-list" class="item-list"></div>
@@ -208,12 +205,9 @@
                 <input type="text" name="name" placeholder="Quest Name" required>
                 <select name="frequency"><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Yearly</option></select>
                 <input type="number" name="points" placeholder="Points Reward" min="0" required>
-                <label class="checkbox-label">
-                    <span>Add number tracker?</span>
-                    <input type="checkbox" name="hasTracker">
-                </label>
+                <label class="checkbox-label"><span>Add number tracker?</span><input type="checkbox" name="hasTracker"></label>
                 <div class="hidden" id="quest-tracker-setup"><input type="number" name="target" placeholder="Target number" min="1"></div>
-                <button type="submit" class="btn" style="margin-top: 20px;">Save Quest</button>
+                <button type="submit" class="btn">Save Quest</button>
             </form>
         </div>
     </div>
@@ -224,12 +218,9 @@
             <form id="add-reward-form">
                 <input type="text" name="name" placeholder="Reward Name" required>
                 <input type="number" name="cost" placeholder="Cost in Points" min="0" required>
-                <label class="checkbox-label">
-                    <span>Add expiration?</span>
-                    <input type="checkbox" name="hasExpiry">
-                </label>
+                <label class="checkbox-label"><span>Add expiration?</span><input type="checkbox" name="hasExpiry"></label>
                 <div class="hidden" id="reward-expiry-setup"><input type="number" name="expiryDays" placeholder="Expires in how many days?" min="1"></div>
-                <button type="submit" class="btn" style="margin-top: 20px;">Save Reward</button>
+                <button type="submit" class="btn">Save Reward</button>
             </form>
         </div>
     </div>
@@ -238,37 +229,32 @@
             <span class="close-btn" data-modal-close>&times;</span>
             <h2>Settings</h2>
             <form id="settings-form">
-                <label for="theme-select">Theme:</label>
+                <label>Theme:</label>
                 <select name="theme"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
-                <label for="free-reward-cost-limit" style="margin-top:15px; display:block;">Max cost for Free Reward:</label>
-                <input type="number" name="freeRewardCostLimit" min="0">
-                <label for="banner-text-input" style="margin-top:15px; display:block;">Moving Banner Text:</label>
+                <label style="margin-top:15px; display:block;">Moving Banner Text:</label>
                 <input type="text" name="bannerText">
-                <button type="submit" class="btn" style="margin-top: 20px;">Save Settings</button>
+                <button type="submit" class="btn">Save Settings</button>
             </form>
         </div>
     </div>
-    <div id="free-reward-modal" class="modal">
-        <div class="modal-content" id="free-reward-spinner">
-            <span class="close-btn" data-modal-close>&times;</span>
-            <h2>Spinning for a Reward!</h2>
-            <div id="spinner-arrow">▼</div>
-            <div class="spinner-container">
-                <div id="spinner-words"></div>
+    <div id="custom-dialog-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="dialog-title"></h2>
+            <p id="dialog-message"></p>
+            <div class="modal-buttons">
+                <button id="dialog-cancel-btn" class="btn btn-secondary">Cancel</button>
+                <button id="dialog-confirm-btn" class="btn">OK</button>
             </div>
-            <p id="spinner-result" class="hidden" style="font-size:1.5em; font-weight:bold; margin-top:20px;"></p>
-            <button id="claim-reward-btn" class="btn hidden">Claim & Close</button>
         </div>
     </div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- STATE & DOM ELEMENTS ---
     let state = {
         points: 0, quests: [], rewards: [], inventory: [],
-        settings: { theme: 'dark', freeRewardCostLimit: 20, bannerText: 'Level up your life!', activeQuestFilter: 'Daily' },
-        lastFreeRewardDate: null
+        settings: { theme: 'dark', bannerText: 'Level up your life!', activeQuestFilter: 'Daily' }
     };
 
     const dom = {
@@ -278,26 +264,57 @@ document.addEventListener('DOMContentLoaded', () => {
         inventoryList: document.getElementById('inventory-list'),
         bannerText: document.getElementById('banner-text'),
         bottomNav: document.querySelector('.bottom-nav'),
-        questSubNav: document.querySelector('.quest-sub-nav'),
-        freeRewardBtn: document.getElementById('free-reward-btn')
+        questSubNav: document.querySelector('.quest-sub-nav')
     };
 
-    // --- DATA & STATE ---
     const saveState = () => localStorage.setItem('gamefyState', JSON.stringify(state));
     const loadState = () => {
         const saved = localStorage.getItem('gamefyState');
         if (saved) {
             try { 
                 const savedState = JSON.parse(saved);
-                // Merge saved state with default state to prevent errors if new properties are added
-                state = { ...state, ...savedState };
-                state.settings = { ...state.settings, ...savedState.settings };
+                state = { ...state, ...savedState, settings: { ...state.settings, ...savedState.settings } };
             } catch (e) { console.error("Error loading state, resetting.", e); }
         }
-        // Daily limit check
-        if (state.lastFreeRewardDate === new Date().toDateString()) {
-            dom.freeRewardBtn.disabled = true;
-        }
+    };
+
+    // --- CUSTOM DIALOGS (REPLACES ALERT/CONFIRM) ---
+    const dialog = {
+        modal: document.getElementById('custom-dialog-modal'),
+        title: document.getElementById('dialog-title'),
+        message: document.getElementById('dialog-message'),
+        confirmBtn: document.getElementById('dialog-confirm-btn'),
+        cancelBtn: document.getElementById('dialog-cancel-btn')
+    };
+
+    const showAlert = (message, title = 'Alert') => {
+        dialog.title.textContent = title;
+        dialog.message.textContent = message;
+        dialog.cancelBtn.classList.add('hidden');
+        dialog.modal.classList.add('active');
+        return new Promise(resolve => {
+            dialog.confirmBtn.onclick = () => {
+                dialog.modal.classList.remove('active');
+                resolve();
+            };
+        });
+    };
+
+    const showConfirm = (message, title = 'Confirm') => {
+        dialog.title.textContent = title;
+        dialog.message.textContent = message;
+        dialog.cancelBtn.classList.remove('hidden');
+        dialog.modal.classList.add('active');
+        return new Promise(resolve => {
+            dialog.confirmBtn.onclick = () => {
+                dialog.modal.classList.remove('active');
+                resolve(true);
+            };
+            dialog.cancelBtn.onclick = () => {
+                dialog.modal.classList.remove('active');
+                resolve(false);
+            };
+        });
     };
 
     // --- RENDERING ---
@@ -337,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>` : ''}
                 <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
             dom.questList.appendChild(card);
-        }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one to get started!</p>`);
+        }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one!</p>`);
     };
 
     const renderRewards = () => {
@@ -350,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${reward.hasExpiry ? `<p>Expires in ${reward.expiryDays} days.</p>` : ''}
                 <button class="btn redeem-btn" data-index="${index}" ${state.points < reward.cost ? 'disabled' : ''}>Redeem</button>`;
             dom.rewardList.appendChild(card);
-        }, '<h3>No rewards available.</h3><p>Add a reward you can work towards!</p>');
+        }, '<h3>No rewards available.</h3><p>Add one!</p>');
     };
 
     const renderInventory = () => {
@@ -364,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3>${item.name}</h3>
                 ${item.expiryTimestamp ? `<p style="color:${isExpired ? 'var(--accent-red)' : 'inherit'}">${isExpired ? 'Expired' : 'Expires'}: ${expiryDate.toLocaleDateString()}</p>` : '<p>Does not expire.</p>'}`;
             dom.inventoryList.appendChild(card);
-        }, '<h3>Inventory is empty.</h3><p>Redeem rewards to add them here.</p>');
+        }, '<h3>Inventory is empty.</h3><p>Redeem rewards to fill it up.</p>');
     };
 
     const applySettings = () => {
@@ -372,13 +389,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.bannerText.textContent = state.settings.bannerText;
         const settingsForm = document.getElementById('settings-form');
         settingsForm.theme.value = state.settings.theme;
-        settingsForm.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
         settingsForm.bannerText.value = state.settings.bannerText;
     };
 
     // --- MODAL & NAVIGATION ---
-    const openModal = (id) => document.getElementById(id).style.display = 'flex';
-    const closeModal = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    const openModal = (id) => document.getElementById(id).classList.add('active');
+    const closeModal = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
 
     document.addEventListener('click', (e) => {
         if (e.target.dataset.modalTarget) openModal(e.target.dataset.modalTarget);
@@ -408,7 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const formData = new FormData(e.target);
         state.settings.theme = formData.get('theme');
-        state.settings.freeRewardCostLimit = parseInt(formData.get('freeRewardCostLimit')) || 20;
         state.settings.bannerText = formData.get('bannerText') || 'Level up your life!';
         saveState(); renderAll(); closeModal();
     });
@@ -417,7 +432,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('add-quest-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        const form = e.target; const data = Object.fromEntries(new FormData(form));
+        const form = e.target;
+        const data = Object.fromEntries(new FormData(form));
         state.quests.push({
             name: data.name, points: parseInt(data.points), frequency: data.frequency, hasTracker: !!data.hasTracker,
             target: data.hasTracker ? (parseInt(data.target) || 1) : 1, currentProgress: 0,
@@ -430,7 +446,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('add-reward-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        const form = e.target; const data = Object.fromEntries(new FormData(form));
+        const form = e.target;
+        const data = Object.fromEntries(new FormData(form));
         state.rewards.push({
             name: data.name, cost: parseInt(data.cost), hasExpiry: !!data.hasExpiry,
             expiryDays: data.hasExpiry ? (parseInt(data.expiryDays) || 7) : null,
@@ -441,85 +458,43 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- ITEM INTERACTIONS ---
     const handleListClick = (listEl, listName, actions) => {
-        listEl.addEventListener('click', e => {
+        listEl.addEventListener('click', async (e) => { // Make listener async
             const target = e.target.closest('[data-index]');
             if (!target) return;
             const index = parseInt(target.dataset.index);
             const item = state[listName][index];
             for (const actionClass in actions) {
                 if (target.classList.contains(actionClass)) {
-                    actions[actionClass](item, index, e);
+                    await actions[actionClass](item, index, e); // await the action
                     break;
                 }
             }
-            saveState(); renderAll();
+            saveState();
+            renderAll();
         });
     };
     handleListClick(dom.questList, 'quests', {
-        'delete-btn': (item, index) => { if (confirm(`Delete "${item.name}"?`)) state.quests.splice(index, 1); },
+        'delete-btn': async (item, index) => { 
+            if (await showConfirm(`Delete quest "${item.name}"?`)) state.quests.splice(index, 1);
+        },
         'done-btn': (item, index) => { state.points += item.points; state.quests.splice(index, 1); },
         'tracker-btn': (item, index, e) => { e.target.dataset.op === 'plus' ? item.currentProgress++ : item.currentProgress = Math.max(0, item.currentProgress - 1); }
     });
     handleListClick(dom.rewardList, 'rewards', {
-        'delete-btn': (item, index) => { if (confirm(`Delete "${item.name}"?`)) state.rewards.splice(index, 1); },
+        'delete-btn': async (item, index) => {
+            if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1);
+        },
         'redeem-btn': (item) => {
             if (state.points >= item.cost) {
                 state.points -= item.cost;
                 state.inventory.push({ name: item.name, expiryTimestamp: item.hasExpiry ? new Date().setDate(new Date().getDate() + item.expiryDays) : null });
-            } else { alert("Not enough points!"); }
+            } else { showAlert("Not enough points!"); }
         }
     });
     handleListClick(dom.inventoryList, 'inventory', {
-        'delete-btn': (item, index) => { if (confirm(`Delete "${item.name}"?`)) state.inventory.splice(index, 1); }
-    });
-
-    // --- DAILY FREE REWARD (RESTORED) ---
-    dom.freeRewardBtn.addEventListener('click', () => {
-        const eligibleRewards = state.rewards.filter(r => r.cost <= state.settings.freeRewardCostLimit);
-        if (eligibleRewards.length < 2) {
-            alert(`You need at least two rewards costing ${state.settings.freeRewardCostLimit} points or less to spin!`);
-            return;
+        'delete-btn': async (item, index) => { 
+            if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1);
         }
-
-        openModal('free-reward-modal');
-        const spinnerWordsEl = document.getElementById('spinner-words');
-        const spinnerResultEl = document.getElementById('spinner-result');
-        const claimRewardBtn = document.getElementById('claim-reward-btn');
-        spinnerResultEl.classList.add('hidden');
-        claimRewardBtn.classList.add('hidden');
-
-        let i = 0;
-        const spinInterval = setInterval(() => {
-            spinnerWordsEl.textContent = eligibleRewards[i % eligibleRewards.length].name;
-            i++;
-        }, 100);
-
-        setTimeout(() => {
-            clearInterval(spinInterval);
-            const winner = eligibleRewards[Math.floor(Math.random() * eligibleRewards.length)];
-            spinnerWordsEl.textContent = winner.name;
-            spinnerResultEl.innerHTML = `You won: <span style="color: var(--accent-red);">${winner.name}</span>!`;
-            spinnerResultEl.classList.remove('hidden');
-            claimRewardBtn.classList.remove('hidden');
-
-            // Add the reward to inventory
-            state.inventory.push({
-                name: winner.name,
-                // Free rewards always have a 7-day expiry, regardless of their original setting
-                expiryTimestamp: new Date().setDate(new Date().getDate() + 7) 
-            });
-
-            // Set the button as used for today
-            state.lastFreeRewardDate = new Date().toDateString();
-            dom.freeRewardBtn.disabled = true;
-            saveState();
-            // Don't renderAll() until the modal is closed
-        }, 3000); // 3 seconds of spinning
-    });
-
-    document.getElementById('claim-reward-btn').addEventListener('click', () => {
-        closeModal();
-        renderAll();
     });
 
     // --- INITIALIZATION ---
