@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Click to Write</title>
+<style>
+:root {
+--background-color-light: #f4f4f9;
+--text-color-light: #333;
+--background-color-dark: #1a1a1a;
+--text-color-dark: #f4f4f9;
+--primary-font: 'Helvetica Neue', sans-serif;
+}
+    body {
+        background-color: var(--background-color-light);
+        color: var(--text-color-light);
+        font-family: var(--primary-font);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+        background-color: var(--background-color-dark);
+        color: var(--text-color-dark);
+    }
+
+    .theme-switcher {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+    }
+
+    #theme-toggle-button {
+        background: none;
+        border: 2px solid var(--text-color-light);
+        color: var(--text-color-light);
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    body.dark-mode #theme-toggle-button {
+        border-color: var(--text-color-dark);
+        color: var(--text-color-dark);
+    }
+
+    #theme-toggle-button:hover {
+        background-color: var(--text-color-light);
+        color: var(--background-color-light);
+    }
+
+    body.dark-mode #theme-toggle-button:hover {
+        background-color: var(--text-color-dark);
+        color: var(--background-color-dark);
+    }
+
+    .title {
+        font-size: 5rem;
+        font-weight: 300;
+        cursor: pointer;
+        text-align: center;
+    }
+</style>
+
+</head>
+<body>
+<div class="theme-switcher">
+    <button id="theme-toggle-button">Mode</button>
+</div>
+
+<h1 class="title">Click to Write</h1>
+
+<script>
+    const themeToggleButton = document.getElementById('theme-toggle-button');
+    const body = document.body;
+
+    themeToggleButton.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+    });
+</script>
+
+</body>
+</html>
