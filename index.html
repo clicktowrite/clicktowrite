@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Click to Write</title>
+<title>Habit Tracker</title>
 <style>
 :root {
 --background-color-light: #f4f4f9;
@@ -16,10 +16,6 @@
         background-color: var(--background-color-light);
         color: var(--text-color-light);
         font-family: var(--primary-font);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
         margin: 0;
         transition: background-color 0.3s, color 0.3s;
     }
@@ -61,10 +57,40 @@
     }
 
     .title {
-        font-size: 5rem;
+        font-size: 3rem; /* Adjusted font size */
         font-weight: 300;
-        cursor: pointer;
         text-align: center;
+        margin-top: 60px; /* Added margin to push it down from the top */
+        margin-bottom: 40px;
+    }
+
+    nav {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .nav-link {
+        color: var(--text-color-light);
+        text-decoration: none;
+        padding: 10px 20px;
+        margin: 0 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    body.dark-mode .nav-link {
+        color: var(--text-color-dark);
+    }
+
+    .nav-link:hover {
+        background-color: var(--text-color-light);
+        color: var(--background-color-light);
+    }
+
+    body.dark-mode .nav-link:hover {
+        background-color: var(--text-color-dark);
+        color: var(--background-color-dark);
     }
 </style>
 
@@ -74,7 +100,13 @@
     <button id="theme-toggle-button">Mode</button>
 </div>
 
-<h1 class="title">Click to Write</h1>
+<h1 class="title">Habit Tracker</h1>
+
+<nav>
+    <a href="#" class="nav-link">Quest</a>
+    <a href="#" class="nav-link">Rewards</a>
+    <a href="#" class="nav-link">Inventory</a>
+</nav>
 
 <script>
     const themeToggleButton = document.getElementById('theme-toggle-button');
