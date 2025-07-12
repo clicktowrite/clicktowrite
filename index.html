@@ -32,9 +32,6 @@
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
 
         body {
             font-family: var(--font-primary);
@@ -95,7 +92,6 @@
         }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
         .btn-secondary { background-color: #555; }
-        .btn-free { background: linear-gradient(45deg, #ff00ff, #00ffff); color: black; }
         
         input, select {
             width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444;
@@ -110,7 +106,6 @@
         .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
         .item-card h3 { margin-top: 0; word-wrap: break-word; }
         .tracker { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
-        .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
         .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; }
 
@@ -132,12 +127,8 @@
         }
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .modal-buttons .btn { width: auto; min-width: 80px; }
+        .timer-inputs { display: flex; gap: 10px; }
         
-        #free-reward-spinner { text-align: center; }
-        #spinner-arrow { font-size: 3rem; color: var(--accent-red); margin-bottom: 20px; }
-        .spinner-container { height: 100px; overflow: hidden; position: relative; mask-image: linear-gradient(transparent, black 25%, black 75%, transparent); }
-        #spinner-words { font-size: 1.5rem; font-weight: bold; animation: spin 1s cubic-bezier(0.7, 0, 0.3, 1) infinite; }
-
         .moving-banner {
             position: fixed; bottom: 60px; left: 0; width: 100%; background-color: rgba(0,0,0,0.9);
             padding: 8px 0; overflow: hidden; white-space: nowrap; z-index: 99;
@@ -157,6 +148,23 @@
         }
         .bottom-nav-link.active { color: var(--accent-red); opacity: 1; transform: scale(1.1); }
         .bottom-nav-link .icon { font-size: 1.5rem; }
+        
+        .accordion-btn {
+            background-color: var(--surface-color-dark);
+            color: var(--text-color-dark);
+            cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left;
+            outline: none; font-size: 1.1rem; transition: background-color 0.4s ease;
+            border-radius: var(--border-radius);
+        }
+        .light-mode .accordion-btn { background-color: #eee; color: var(--text-color-light); }
+        .accordion-btn:hover, .accordion-btn.active { background-color: #333; }
+        .light-mode .accordion-btn:hover, .light-mode .accordion-btn.active { background-color: #ccc; }
+        .accordion-panel {
+            padding: 0 18px; background-color: transparent;
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.3s ease-out; margin-bottom: 15px;
+        }
+        
         .hidden { display: none !important; }
 
         @media (min-width: 768px) {
@@ -187,14 +195,15 @@
             <div id="quest-list" class="item-list"></div>
         </div>
         <div id="rewards-tab" class="tab-content">
-            <div class="section-header">
-                <button class="btn" data-modal-target="add-reward-modal">Add Reward</button>
-                <button id="free-reward-btn" class="btn btn-free">Get Daily Free Reward</button>
-            </div>
+            <div class="section-header"><button class="btn" data-modal-target="add-reward-modal">Add Reward</button></div>
             <div id="reward-list" class="item-list"></div>
         </div>
         <div id="inventory-tab" class="tab-content">
-            <h2 style="text-align:center;">My Redeemed Rewards</h2>
+            <button id="toggle-active-rewards-btn" class="accordion-btn">Active Rewards</button>
+            <div id="active-rewards-panel" class="accordion-panel">
+                <div id="active-rewards-list" class="item-list"></div>
+            </div>
+            <h2 style="text-align:center; margin-top: 30px;">My Inventory</h2>
             <div id="inventory-list" class="item-list"></div>
         </div>
     </main>
@@ -231,6 +240,11 @@
                 <input type="number" name="cost" placeholder="Cost in Points" min="0" required>
                 <label class="checkbox-label"><span>Add expiration?</span><input type="checkbox" name="hasExpiry"></label>
                 <div class="hidden" id="reward-expiry-setup"><input type="number" name="expiryDays" placeholder="Expires in how many days?" min="1"></div>
+                <label class="checkbox-label"><span>Add Timer?</span><input type="checkbox" name="hasTimer"></label>
+                <div class="hidden timer-inputs" id="reward-timer-setup">
+                    <input type="number" name="timerHours" placeholder="Hours" min="0">
+                    <input type="number" name="timerMinutes" placeholder="Minutes" min="0">
+                </div>
                 <button type="submit" class="btn">Save Reward</button>
             </form>
         </div>
@@ -242,22 +256,10 @@
             <form id="settings-form">
                 <label>Theme:</label>
                 <select name="theme"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
-                <label style="margin-top:15px; display:block;">Max cost for Free Reward:</label>
-                <input type="number" name="freeRewardCostLimit" min="0">
                 <label style="margin-top:15px; display:block;">Moving Banner Text:</label>
                 <input type="text" name="bannerText">
                 <button type="submit" class="btn">Save Settings</button>
             </form>
-        </div>
-    </div>
-    <div id="free-reward-modal" class="modal">
-        <div id="free-reward-spinner" class="modal-content">
-            <span class="close-btn" data-modal-close>&times;</span>
-            <h2>Spinning for a Reward!</h2>
-            <div id="spinner-arrow">▼</div>
-            <div class="spinner-container"><div id="spinner-words"></div></div>
-            <p id="spinner-result" class="hidden" style="font-size:1.5em; font-weight:bold; margin-top:20px;"></p>
-            <button id="claim-reward-btn" class="btn hidden">Claim & Close</button>
         </div>
     </div>
     <div id="custom-dialog-modal" class="modal">
@@ -275,14 +277,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     let state = {
-        points: 0, quests: [], rewards: [], inventory: [],
-        settings: { 
-            theme: 'dark', 
-            bannerText: 'Level up your life!', 
-            activeQuestFilter: 'Daily',
-            freeRewardCostLimit: 20 // Feature restored
-        },
-        lastFreeRewardDate: null // Feature restored
+        points: 0, quests: [], rewards: [], inventory: [], activeRewards: [],
+        settings: { theme: 'dark', bannerText: 'Level up your life!', activeQuestFilter: 'Daily' }
     };
 
     const dom = {
@@ -290,10 +286,12 @@ document.addEventListener('DOMContentLoaded', () => {
         questList: document.getElementById('quest-list'),
         rewardList: document.getElementById('reward-list'),
         inventoryList: document.getElementById('inventory-list'),
+        activeRewardsList: document.getElementById('active-rewards-list'),
         bannerText: document.getElementById('banner-text'),
         bottomNav: document.querySelector('.bottom-nav'),
         questSubNav: document.querySelector('.quest-sub-nav'),
-        freeRewardBtn: document.getElementById('free-reward-btn')
+        activeRewardsBtn: document.getElementById('toggle-active-rewards-btn'),
+        activeRewardsPanel: document.getElementById('active-rewards-panel')
     };
 
     const saveState = () => localStorage.setItem('gamefyState', JSON.stringify(state));
@@ -304,9 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const savedState = JSON.parse(saved);
                 state = { ...state, ...savedState, settings: { ...state.settings, ...savedState.settings } };
             } catch (e) { console.error("Error loading state, resetting.", e); }
-        }
-        if (state.lastFreeRewardDate === new Date().toDateString()) {
-            dom.freeRewardBtn.disabled = true;
         }
     };
 
@@ -352,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderQuests();
         renderRewards();
         renderInventory();
+        renderActiveRewards();
     };
 
     const renderList = (element, items, renderFunc, emptyMsg) => {
@@ -375,11 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                 <h3>${quest.name}</h3><p>+${quest.points} Points</p>
-                ${quest.hasTracker ? `<div class="tracker">
-                    <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
-                    <span>${quest.currentProgress} / ${quest.target}</span>
-                    <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${index}">+</button>
-                </div>` : ''}
+                ${quest.hasTracker ? `<div class="tracker">...</div>` : ''}
                 <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
             dom.questList.appendChild(card);
         }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one!</p>`);
@@ -392,24 +384,33 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <button class="delete-btn" data-index="${index}" aria-label="Delete reward">&times;</button>
                 <h3>${reward.name}</h3><p>Cost: <span class="cost">${reward.cost} Points</span></p>
-                ${reward.hasExpiry ? `<p>Expires in ${reward.expiryDays} days.</p>` : ''}
                 <button class="btn redeem-btn" data-index="${index}" ${state.points < reward.cost ? 'disabled' : ''}>Redeem</button>`;
             dom.rewardList.appendChild(card);
-        }, '<h3>No rewards available.</h3><p>Add some rewards to work towards!</p>');
+        }, '<h3>No rewards available.</h3><p>Add one!</p>');
     };
 
     const renderInventory = () => {
         renderList(dom.inventoryList, state.inventory, (item, index) => {
             const card = document.createElement('div');
             card.className = 'item-card';
-            const expiryDate = new Date(item.expiryTimestamp);
-            const isExpired = item.expiryTimestamp ? new Date() > expiryDate : false;
             card.innerHTML = `
                 <button class="delete-btn" data-index="${index}" aria-label="Delete item">&times;</button>
                 <h3>${item.name}</h3>
-                ${item.expiryTimestamp ? `<p style="color:${isExpired ? 'var(--accent-red)' : 'inherit'}">${isExpired ? 'Expired' : 'Expires'}: ${expiryDate.toLocaleDateString()}</p>` : '<p>Does not expire.</p>'}`;
+                ${item.hasTimer ? `<button class="btn activate-btn" data-index="${index}">Activate</button>` : `<p>Standard Item</p>`}`;
             dom.inventoryList.appendChild(card);
         }, '<h3>Inventory is empty.</h3><p>Redeem rewards to fill it up.</p>');
+    };
+    
+    const renderActiveRewards = () => {
+        renderList(dom.activeRewardsList, state.activeRewards, (item, index) => {
+            const card = document.createElement('div');
+            card.className = 'item-card active-reward-card';
+            card.dataset.id = item.id;
+            const timeRemaining = item.endTime - Date.now();
+            const timeString = timeRemaining > 0 ? new Date(timeRemaining).toISOString().substr(11, 8) : "Expired";
+            card.innerHTML = `<h3>${item.name}</h3><p>Time Left: ${timeString}</p>`;
+            dom.activeRewardsList.appendChild(card);
+        }, '<h3>No active rewards.</h3>');
     };
 
     const applySettings = () => {
@@ -418,7 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const settingsForm = document.getElementById('settings-form');
         settingsForm.theme.value = state.settings.theme;
         settingsForm.bannerText.value = state.settings.bannerText;
-        settingsForm.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
     };
 
     const openModal = (id) => document.getElementById(id).classList.add('active');
@@ -446,18 +446,35 @@ document.addEventListener('DOMContentLoaded', () => {
             renderQuests();
         }
     });
+    
+    dom.activeRewardsBtn.addEventListener('click', function() {
+        this.classList.toggle('active');
+        const panel = dom.activeRewardsPanel;
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    });
 
     document.getElementById('settings-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         state.settings.theme = formData.get('theme');
         state.settings.bannerText = formData.get('bannerText') || 'Level up your life!';
-        state.settings.freeRewardCostLimit = parseInt(formData.get('freeRewardCostLimit')) || 20;
         saveState(); renderAll(); closeModal();
     });
-    document.getElementById('add-quest-form').querySelector('[name="hasTracker"]').addEventListener('change', (e) => {
-        document.getElementById('quest-tracker-setup').classList.toggle('hidden', !e.target.checked);
+
+    ['add-quest-form', 'add-reward-form'].forEach(formId => {
+        const form = document.getElementById(formId);
+        form.querySelector(`[name="has${formId.includes('quest') ? 'Tracker' : 'Expiry'}"]`)?.addEventListener('change', (e) => {
+            form.querySelector(`#${formId.includes('quest') ? 'quest-tracker-setup' : 'reward-expiry-setup'}`).classList.toggle('hidden', !e.target.checked);
+        });
+        form.querySelector('[name="hasTimer"]')?.addEventListener('change', (e) => {
+            form.querySelector('#reward-timer-setup').classList.toggle('hidden', !e.target.checked);
+        });
     });
+    
     document.getElementById('add-quest-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const form = e.target; const data = Object.fromEntries(new FormData(form));
@@ -468,18 +485,20 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState(); renderAll(); closeModal(); form.reset();
         document.getElementById('quest-tracker-setup').classList.add('hidden');
     });
-    document.getElementById('add-reward-form').querySelector('[name="hasExpiry"]').addEventListener('change', (e) => {
-        document.getElementById('reward-expiry-setup').classList.toggle('hidden', !e.target.checked);
-    });
+
     document.getElementById('add-reward-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const form = e.target; const data = Object.fromEntries(new FormData(form));
         state.rewards.push({
             name: data.name, cost: parseInt(data.cost), hasExpiry: !!data.hasExpiry,
             expiryDays: data.hasExpiry ? (parseInt(data.expiryDays) || 7) : null,
+            hasTimer: !!data.hasTimer,
+            timerHours: data.hasTimer ? (parseInt(data.timerHours) || 0) : 0,
+            timerMinutes: data.hasTimer ? (parseInt(data.timerMinutes) || 0) : 0,
         });
         saveState(); renderAll(); closeModal(); form.reset();
         document.getElementById('reward-expiry-setup').classList.add('hidden');
+        document.getElementById('reward-timer-setup').classList.add('hidden');
     });
     
     const handleListClick = (listEl, listName, actions) => {
@@ -495,68 +514,56 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
                 }
             }
-            saveState(); renderAll();
+            saveState();
+            renderAll();
         });
     };
+
     handleListClick(dom.questList, 'quests', {
-        'delete-btn': async (item, index) => { 
-            if (await showConfirm(`Delete quest "${item.name}"?`)) state.quests.splice(index, 1);
-        },
+        'delete-btn': async (item, index) => { if (await showConfirm(`Delete quest "${item.name}"?`)) state.quests.splice(index, 1); },
         'done-btn': (item, index) => { state.points += item.points; state.quests.splice(index, 1); },
-        'tracker-btn': (item, index, e) => { e.target.dataset.op === 'plus' ? item.currentProgress++ : item.currentProgress = Math.max(0, item.currentProgress - 1); }
     });
     handleListClick(dom.rewardList, 'rewards', {
-        'delete-btn': async (item, index) => {
-            if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1);
-        },
-        'redeem-btn': (item) => {
+        'delete-btn': async (item, index) => { if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1); },
+        'redeem-btn': (item, index) => {
             if (state.points >= item.cost) {
                 state.points -= item.cost;
-                state.inventory.push({ name: item.name, expiryTimestamp: item.hasExpiry ? new Date().setDate(new Date().getDate() + item.expiryDays) : null });
+                state.inventory.push(state.rewards.splice(index, 1)[0]);
             } else { showAlert("Not enough points!"); }
         }
     });
     handleListClick(dom.inventoryList, 'inventory', {
-        'delete-btn': async (item, index) => { 
-            if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1);
+        'delete-btn': async (item, index) => { if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1); },
+        'activate-btn': (item, index) => {
+            const durationMs = ((item.timerHours * 60) + item.timerMinutes) * 60000;
+            state.activeRewards.push({
+                ...item,
+                id: Date.now(),
+                endTime: Date.now() + durationMs,
+            });
+            state.inventory.splice(index, 1);
         }
     });
 
-    // --- DAILY FREE REWARD (RESTORED) ---
-    dom.freeRewardBtn.addEventListener('click', () => {
-        const eligibleRewards = state.rewards.filter(r => r.cost <= state.settings.freeRewardCostLimit);
-        if (eligibleRewards.length < 2) {
-            showAlert(`You need at least two rewards costing ${state.settings.freeRewardCostLimit} points or less to spin!`, "Not Enough Rewards");
-            return;
-        }
-        openModal('free-reward-modal');
-        const spinnerWordsEl = document.getElementById('spinner-words');
-        const spinnerResultEl = document.getElementById('spinner-result');
-        const claimRewardBtn = document.getElementById('claim-reward-btn');
-        spinnerResultEl.classList.add('hidden');
-        claimRewardBtn.classList.add('hidden');
-        let i = 0;
-        const spinInterval = setInterval(() => {
-            spinnerWordsEl.textContent = eligibleRewards[i % eligibleRewards.length].name;
-            i++;
-        }, 100);
-        setTimeout(() => {
-            clearInterval(spinInterval);
-            const winner = eligibleRewards[Math.floor(Math.random() * eligibleRewards.length)];
-            spinnerWordsEl.textContent = winner.name;
-            spinnerResultEl.innerHTML = `You won: <span style="color: var(--accent-red);">${winner.name}</span>!`;
-            spinnerResultEl.classList.remove('hidden');
-            claimRewardBtn.classList.remove('hidden');
-            state.inventory.push({ name: winner.name, expiryTimestamp: new Date().setDate(new Date().getDate() + 7) });
-            state.lastFreeRewardDate = new Date().toDateString();
-            dom.freeRewardBtn.disabled = true;
+    setInterval(() => {
+        let changed = false;
+        state.activeRewards = state.activeRewards.filter(item => {
+            const remaining = item.endTime - Date.now();
+            if (remaining <= 0) {
+                changed = true;
+                return false;
+            }
+            const card = dom.activeRewardsList.querySelector(`[data-id="${item.id}"]`);
+            if (card) {
+                card.querySelector('p').textContent = `Time Left: ${new Date(remaining).toISOString().substr(11, 8)}`;
+            }
+            return true;
+        });
+        if (changed) {
             saveState();
-        }, 3000);
-    });
-    document.getElementById('claim-reward-btn').addEventListener('click', () => {
-        closeModal();
-        renderAll();
-    });
+            renderAll();
+        }
+    }, 1000);
 
     loadState();
     renderAll();
