@@ -8,41 +8,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables and Core Styles */
         :root {
             --bg-color-dark: #12121a;
             --surface-color-dark: #1e1e28;
             --text-color-dark: #e0e0e0;
-            
             --bg-color-light: #f0f2f5;
             --surface-color-light: #ffffff;
             --text-color-light: #1c1e21;
-
             --accent-red: #c00000;
-            --accent-red-hover: #e00000;
-            
             --points-color: #00ffdd;
             --border-radius: 8px;
             --font-primary: 'Roboto', sans-serif;
             --font-display: 'Orbitron', sans-serif;
         }
 
-        /* Keyframes and Animations */
         @keyframes text-rgb {
-            0% { color: #ff0000; text-shadow: 0 0 3px #ff0000; }
-            17% { color: #ffff00; text-shadow: 0 0 3px #ffff00; }
-            33% { color: #00ff00; text-shadow: 0 0 3px #00ff00; }
-            50% { color: #00ffff; text-shadow: 0 0 3px #00ffff; }
-            67% { color: #0000ff; text-shadow: 0 0 3px #0000ff; }
-            83% { color: #ff00ff; text-shadow: 0 0 3px #ff00ff; }
-            100% { color: #ff0000; text-shadow: 0 0 3px #ff0000; }
+            0%{color:#ff0000} 17%{color:#ffff00} 33%{color:#00ff00} 50%{color:#00ffff} 67%{color:#0000ff} 83%{color:#ff00ff} 100%{color:#ff0000}
         }
         @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            0% {transform:translateX(100%)} 100% {transform:translateX(-100%)}
         }
 
-        /* General Body and Theme Styles */
         body {
             font-family: var(--font-primary);
             margin: 0;
@@ -53,7 +39,6 @@
         .dark-mode { background-color: var(--bg-color-dark); color: var(--text-color-dark); }
         .light-mode { background-color: var(--bg-color-light); color: var(--text-color-light); }
         
-        /* Header */
         header {
             display: flex;
             justify-content: space-between;
@@ -73,25 +58,17 @@
             font-weight: 900;
             font-size: 2.2rem;
             color: var(--accent-red);
-            text-shadow: 0 0 5px var(--accent-red), 0 0 10px var(--accent-red);
+            text-shadow: 0 0 5px var(--accent-red);
         }
-        .points-display { font-size: 1rem; font-weight: 700; color: var(--points-color); text-shadow: 0 0 5px var(--points-color);}
+        .points-display { font-size: 1rem; font-weight: 700; color: var(--points-color); }
         
-        /* Main Content */
         main { padding: 20px 15px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .section-header { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 20px; gap: 10px; }
+        .section-header { display: flex; flex-direction: column; margin-bottom: 20px; gap: 10px; }
         .empty-state { text-align: center; opacity: 0.6; padding: 40px 20px; }
-
-        /* Quest Sub-Navigation */
-        .quest-sub-nav {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+        
+        .quest-sub-nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .sub-nav-btn {
             background-color: #444;
             color: var(--text-color-dark);
@@ -101,102 +78,65 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .light-mode .sub-nav-btn {
-            background-color: #e0e0e0;
-            color: var(--text-color-light);
-            border-color: #ccc;
-        }
-        .sub-nav-btn.active {
-            background-color: var(--accent-red);
-            color: white;
-            border-color: var(--accent-red);
-            font-weight: bold;
-        }
+        .light-mode .sub-nav-btn { background-color: #e0e0e0; color: var(--text-color-light); border-color: #ccc; }
+        .sub-nav-btn.active { background-color: var(--accent-red); color: white; border-color: var(--accent-red); }
 
-
-        /* Buttons and Inputs */
         .btn {
-            background-color: var(--accent-red);
-            color: white;
-            border: none; padding: 12px 20px; border-radius: var(--border-radius);
-            cursor: pointer; font-size: 1rem; font-weight: 700;
-            transition: all 0.2s ease;
-            width: 100%;
-            box-sizing: border-box;
+            background-color: var(--accent-red); color: white; border: none; padding: 12px 20px;
+            border-radius: var(--border-radius); cursor: pointer; font-size: 1rem; font-weight: 700;
+            transition: background-color 0.2s ease; width: 100%; box-sizing: border-box;
         }
-        .btn:hover:not(:disabled) { background-color: var(--accent-red-hover); }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
-        .btn-secondary { background-color: #444; }
-        .btn-free { background: linear-gradient(45deg, #ff00ff, #00ffff); color: black; font-weight: bold; }
+        .btn-free { background: linear-gradient(45deg, #ff00ff, #00ffff); color: black; }
+        
         input, select {
-            width: 100%; padding: 12px; margin-bottom: 15px;
-            border: 1px solid #444; border-radius: 5px;
-            background-color: #333; color: white;
-            box-sizing: border-box;
-            font-size: 1rem;
+            width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444;
+            border-radius: 5px; background-color: #333; color: white;
+            box-sizing: border-box; font-size: 1rem;
         }
         .light-mode input, .light-mode select { background-color: #eee; color: #333; border-color: #ccc;}
         
-        /* Item Cards */
         .item-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .item-card {
-            padding: 20px; border-radius: var(--border-radius);
-            position: relative;
-        }
+        .item-card { padding: 20px; border-radius: var(--border-radius); position: relative; }
         .dark-mode .item-card { background-color: var(--surface-color-dark); border: 1px solid #333; }
         .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
         .item-card h3 { margin-top: 0; word-wrap: break-word; }
         .tracker { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
-        .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; }
+        .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
         .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; }
 
-        /* Modals */
         .modal {
-            display: none; position: fixed; z-index: 1001;
-            left: 0; top: 0; width: 100%; height: 100%;
-            overflow: auto; background-color: rgba(0,0,0,0.7);
-            align-items: center; justify-content: center;
+            display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center;
         }
-        .modal-content {
-            margin: auto; padding: 25px;
-            border-radius: var(--border-radius);
-            width: 90%; max-width: 500px;
-        }
+        .modal-content { margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; }
         .dark-mode .modal-content { background-color: var(--surface-color-dark); }
         .light-mode .modal-content { background-color: var(--surface-color-light); }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; font-weight: bold; cursor: pointer; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; cursor: pointer;}
         
-        /* Moving Banner and Bottom Nav */
         .moving-banner {
-            position: fixed; bottom: 60px; 
-            left: 0; width: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            position: fixed; bottom: 60px; left: 0; width: 100%; background-color: rgba(0,0,0,0.9);
             padding: 8px 0; overflow: hidden; white-space: nowrap; z-index: 99;
         }
         .banner-text {
-            font-weight: bold; font-size: 1rem; display: inline-block;
-            padding-left: 100%; animation: marquee 15s linear infinite, text-rgb 5s linear infinite;
+            font-weight: bold; font-size: 1rem; display: inline-block; padding-left: 100%;
+            animation: marquee 15s linear infinite, text-rgb 5s linear infinite;
         }
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background-color: var(--surface-color);
-            display: flex; justify-content: space-around; align-items: center;
-            z-index: 100; border-top: 1px solid #333;
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: var(--surface-color);
+            display: flex; justify-content: space-around; align-items: center; z-index: 100; border-top: 1px solid #333;
         }
         .light-mode .bottom-nav { border-top: 1px solid #ddd; }
         .bottom-nav-link {
-            background: none; border: none; color: var(--text-color);
-            text-decoration: none; display: flex; flex-direction: column;
-            align-items: center; gap: 4px; font-size: 0.8rem;
-            opacity: 0.7; transition: all 0.2s ease; cursor: pointer;
+            background: none; border: none; color: var(--text-color); text-decoration: none; display: flex; flex-direction: column;
+            align-items: center; gap: 4px; font-size: 0.8rem; opacity: 0.7; transition: all 0.2s ease; cursor: pointer;
         }
-        .bottom-nav-link:hover { opacity: 1; }
         .bottom-nav-link.active { color: var(--accent-red); opacity: 1; transform: scale(1.1); }
         .bottom-nav-link .icon { font-size: 1.5rem; }
         .hidden { display: none !important; }
 
-        /* Media Queries */
         @media (min-width: 768px) {
             .section-header { flex-direction: row; justify-content: center; }
             .btn { width: auto; }
@@ -210,9 +150,7 @@
 
     <header>
         <div class="logo">Gamefy</div>
-        <div class="header-right">
-            <div class="points-display">PTS: <span id="points-total">0</span></div>
-        </div>
+        <div class="header-right"><div class="points-display">PTS: <span id="points-total">0</span></div></div>
     </header>
     
     <main>
@@ -223,13 +161,13 @@
                 <button class="sub-nav-btn" data-frequency="Monthly">Monthly</button>
                 <button class="sub-nav-btn" data-frequency="Yearly">Yearly</button>
             </div>
-            <div class="section-header"><button id="add-quest-btn" class="btn">Add Quest</button></div>
+            <div class="section-header"><button class="btn" data-modal-target="add-quest-modal">Add Quest</button></div>
             <div id="quest-list" class="item-list"></div>
         </div>
 
         <div id="rewards-tab" class="tab-content">
             <div class="section-header">
-                <button id="add-reward-btn" class="btn">Add Reward</button>
+                <button class="btn" data-modal-target="add-reward-modal">Add Reward</button>
                 <button id="free-reward-btn" class="btn btn-free">Get Daily Free Reward</button>
             </div>
             <div id="reward-list" class="item-list"></div>
@@ -247,48 +185,49 @@
         <a href="#" class="bottom-nav-link active" data-tab="quests"><span class="icon">🎯</span><span>Quests</span></a>
         <a href="#" class="bottom-nav-link" data-tab="rewards"><span class="icon">🏆</span><span>Rewards</span></a>
         <a href="#" class="bottom-nav-link" data-tab="inventory"><span class="icon">🎒</span><span>Inventory</span></a>
-        <button id="bottom-settings-btn" class="bottom-nav-link" aria-label="Settings"><span class="icon">⚙️</span><span>Settings</span></button>
+        <button class="bottom-nav-link" data-modal-target="settings-modal" aria-label="Settings"><span class="icon">⚙️</span><span>Settings</span></button>
     </nav>
 
     <div id="add-quest-modal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" data-modal="add-quest-modal">&times;</span>
+            <span class="close-btn" data-modal-close>&times;</span>
             <h2>Add New Quest</h2>
-            <input type="text" id="quest-name" placeholder="Quest Name (e.g., Read a chapter)">
-            <select id="quest-frequency">
-                <option value="Daily">Daily</option>
-                <option value="Weekly">Weekly</option>
-                <option value="Monthly">Monthly</option>
-                <option value="Yearly">Yearly</option>
-            </select>
-            <input type="number" id="quest-points" placeholder="Points Reward (e.g., 10)" min="0">
-            <label><input type="checkbox" id="quest-has-tracker"> Add number tracker?</label>
-            <div id="quest-tracker-setup" class="hidden" style="margin-top: 10px;"><input type="number" id="quest-target-number" placeholder="Target number" min="1"></div>
-            <button id="save-quest-btn" class="btn" style="margin-top: 20px;">Save Quest</button>
+            <form id="add-quest-form">
+                <input type="text" name="name" placeholder="Quest Name" required>
+                <select name="frequency"><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Yearly</option></select>
+                <input type="number" name="points" placeholder="Points Reward" min="0" required>
+                <label class="checkbox-label"><input type="checkbox" name="hasTracker"> Add number tracker?</label>
+                <div class="hidden" id="quest-tracker-setup"><input type="number" name="target" placeholder="Target number" min="1"></div>
+                <button type="submit" class="btn" style="margin-top: 20px;">Save Quest</button>
+            </form>
         </div>
     </div>
     <div id="add-reward-modal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" data-modal="add-reward-modal">&times;</span>
+            <span class="close-btn" data-modal-close>&times;</span>
             <h2>Add New Reward</h2>
-            <input type="text" id="reward-name" placeholder="Reward Name (e.g., 1 hour of gaming)">
-            <input type="number" id="reward-cost" placeholder="Cost in Points" min="0">
-            <label><input type="checkbox" id="reward-has-expiry"> Add expiration?</label>
-            <div id="reward-expiry-setup" class="hidden" style="margin-top: 10px;"><input type="number" id="reward-expiry-days" placeholder="Expires in how many days?" min="1"></div>
-            <button id="save-reward-btn" class="btn" style="margin-top: 20px;">Save Reward</button>
+            <form id="add-reward-form">
+                <input type="text" name="name" placeholder="Reward Name" required>
+                <input type="number" name="cost" placeholder="Cost in Points" min="0" required>
+                <label class="checkbox-label"><input type="checkbox" name="hasExpiry"> Add expiration?</label>
+                <div class="hidden" id="reward-expiry-setup"><input type="number" name="expiryDays" placeholder="Expires in how many days?" min="1"></div>
+                <button type="submit" class="btn" style="margin-top: 20px;">Save Reward</button>
+            </form>
         </div>
     </div>
     <div id="settings-modal" class="modal">
          <div class="modal-content">
-            <span class="close-btn" data-modal="settings-modal">&times;</span>
+            <span class="close-btn" data-modal-close>&times;</span>
             <h2>Settings</h2>
-            <label for="theme-select">Theme:</label>
-            <select id="theme-select"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
-            <label for="free-reward-cost-limit" style="margin-top:15px; display:block;">Max cost for Free Reward:</label>
-            <input type="number" id="free-reward-cost-limit" placeholder="Default: 20" min="0">
-            <label for="banner-text-input" style="margin-top:15px; display:block;">Moving Banner Text:</label>
-            <input type="text" id="banner-text-input">
-            <button id="save-settings-btn" class="btn" style="margin-top: 20px;">Save Settings</button>
+            <form id="settings-form">
+                <label for="theme-select">Theme:</label>
+                <select name="theme"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
+                <label for="free-reward-cost-limit" style="margin-top:15px; display:block;">Max cost for Free Reward:</label>
+                <input type="number" name="freeRewardCostLimit" min="0">
+                <label for="banner-text-input" style="margin-top:15px; display:block;">Moving Banner Text:</label>
+                <input type="text" name="bannerText">
+                <button type="submit" class="btn" style="margin-top: 20px;">Save Settings</button>
+            </form>
         </div>
     </div>
 
@@ -298,80 +237,71 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- STATE & DOM ELEMENTS ---
     let state = {
         points: 0, quests: [], rewards: [], inventory: [],
-        settings: { 
-            theme: 'dark', 
-            freeRewardCostLimit: 20, 
-            bannerText: 'Level up your life!',
-            // NEW: Keep track of the active quest filter
-            activeQuestFilter: 'Daily' 
-        },
+        settings: { theme: 'dark', freeRewardCostLimit: 20, bannerText: 'Level up your life!', activeQuestFilter: 'Daily' },
         lastFreeRewardDate: null
     };
 
-    const pointsTotalEl = document.getElementById('points-total');
-    const questListEl = document.getElementById('quest-list');
-    const rewardListEl = document.getElementById('reward-list');
-    const inventoryListEl = document.getElementById('inventory-list');
-    const bannerTextEl = document.getElementById('banner-text');
-    const bottomNavEl = document.querySelector('.bottom-nav');
-    // NEW: Quest sub-navigation container
-    const questSubNavEl = document.querySelector('.quest-sub-nav');
+    const dom = {
+        points: document.getElementById('points-total'),
+        questList: document.getElementById('quest-list'),
+        rewardList: document.getElementById('reward-list'),
+        inventoryList: document.getElementById('inventory-list'),
+        bannerText: document.getElementById('banner-text'),
+        bottomNav: document.querySelector('.bottom-nav'),
+        questSubNav: document.querySelector('.quest-sub-nav')
+    };
 
     // --- DATA & STATE ---
-    function saveState() {
-        localStorage.setItem('gamefyState', JSON.stringify(state));
-    }
-    function loadState() {
-        const savedState = localStorage.getItem('gamefyState');
-        if (savedState) {
-            try { state = JSON.parse(savedState); } 
-            catch (e) { console.error("Error loading state, resetting.", e); }
+    const saveState = () => localStorage.setItem('gamefyState', JSON.stringify(state));
+    const loadState = () => {
+        const saved = localStorage.getItem('gamefyState');
+        if (saved) {
+            try { state = JSON.parse(saved); } catch (e) { console.error("Error loading state, resetting.", e); }
         }
-    }
+    };
 
     // --- RENDERING ---
-    function renderAll() {
-        applySettings(); renderPoints(); renderQuests(); renderRewards(); renderInventory();
-    }
-    function renderPoints() { pointsTotalEl.textContent = state.points; }
-    function renderQuests() {
-        // NEW: Update active class on sub-nav buttons
-        questSubNavEl.querySelectorAll('.sub-nav-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.frequency === state.settings.activeQuestFilter);
-        });
+    const renderAll = () => {
+        applySettings();
+        dom.points.textContent = state.points;
+        renderQuests();
+        renderRewards();
+        renderInventory();
+    };
 
-        // NEW: Filter quests based on the active filter
-        const filteredQuests = state.quests.filter(quest => quest.frequency === state.settings.activeQuestFilter);
-
-        questListEl.innerHTML = '';
-        if (filteredQuests.length === 0) {
-            questListEl.innerHTML = `<div class="empty-state"><h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one to get started!</p></div>`;
+    const renderList = (element, items, renderFunc, emptyMsg) => {
+        element.innerHTML = '';
+        if (items.length === 0) {
+            element.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
             return;
         }
-        filteredQuests.forEach(quest => {
-            // To find the original index for modification, we search the main quests array
-            const originalIndex = state.quests.findIndex(q => q === quest);
+        items.forEach(renderFunc);
+    };
+
+    const renderQuests = () => {
+        dom.questSubNav.querySelectorAll('.sub-nav-btn').forEach(btn => 
+            btn.classList.toggle('active', btn.dataset.frequency === state.settings.activeQuestFilter)
+        );
+        const filteredQuests = state.quests.filter(q => q.frequency === state.settings.activeQuestFilter);
+        renderList(dom.questList, filteredQuests, (quest) => {
+            const index = state.quests.findIndex(q => q === quest);
             const card = document.createElement('div');
             card.className = 'item-card';
             card.innerHTML = `
-                <button class="delete-btn" data-index="${originalIndex}" aria-label="Delete quest">&times;</button>
+                <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                 <h3>${quest.name}</h3><p>+${quest.points} Points</p>
                 ${quest.hasTracker ? `<div class="tracker">
-                        <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${originalIndex}">-</button>
-                        <span>${quest.currentProgress} / ${quest.target}</span>
-                        <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${originalIndex}">+</button>
-                    </div>` : ''}
-                <button class="btn done-btn" data-index="${originalIndex}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
-            questListEl.appendChild(card);
-        });
-    }
-    function renderRewards() {
-        rewardListEl.innerHTML = '';
-        if (state.rewards.length === 0) {
-            rewardListEl.innerHTML = `<div class="empty-state"><h3>No rewards available.</h3><p>Add a reward you can work towards!</p></div>`;
-            return;
-        }
-        state.rewards.forEach((reward, index) => {
+                    <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
+                    <span>${quest.currentProgress} / ${quest.target}</span>
+                    <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${index}">+</button>
+                </div>` : ''}
+                <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
+            dom.questList.appendChild(card);
+        }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3>`);
+    };
+
+    const renderRewards = () => {
+        renderList(dom.rewardList, state.rewards, (reward, index) => {
             const card = document.createElement('div');
             card.className = 'item-card';
             card.innerHTML = `
@@ -379,16 +309,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3>${reward.name}</h3><p>Cost: <span class="cost">${reward.cost} Points</span></p>
                 ${reward.hasExpiry ? `<p>Expires in ${reward.expiryDays} days.</p>` : ''}
                 <button class="btn redeem-btn" data-index="${index}" ${state.points < reward.cost ? 'disabled' : ''}>Redeem</button>`;
-            rewardListEl.appendChild(card);
-        });
-    }
-    function renderInventory() {
-        inventoryListEl.innerHTML = '';
-        if (state.inventory.length === 0) {
-            inventoryListEl.innerHTML = `<div class="empty-state"><h3>Your inventory is empty.</h3><p>Redeem rewards to add them here.</p></div>`;
-            return;
-        }
-        state.inventory.forEach((item, index) => {
+            dom.rewardList.appendChild(card);
+        }, '<h3>No rewards available.</h3>');
+    };
+
+    const renderInventory = () => {
+        renderList(dom.inventoryList, state.inventory, (item, index) => {
             const card = document.createElement('div');
             card.className = 'item-card';
             const expiryDate = new Date(item.expiryTimestamp);
@@ -397,140 +323,128 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="delete-btn" data-index="${index}" aria-label="Delete item">&times;</button>
                 <h3>${item.name}</h3>
                 ${item.expiryTimestamp ? `<p style="color:${isExpired ? 'var(--accent-red)' : 'inherit'}">${isExpired ? 'Expired' : 'Expires'}: ${expiryDate.toLocaleDateString()}</p>` : '<p>Does not expire.</p>'}`;
-            inventoryListEl.appendChild(card);
-        });
-    }
-    function applySettings() {
+            dom.inventoryList.appendChild(card);
+        }, '<h3>Inventory is empty.</h3>');
+    };
+
+    const applySettings = () => {
         document.body.className = state.settings.theme === 'dark' ? 'dark-mode' : 'light-mode';
-        document.getElementById('theme-select').value = state.settings.theme;
-        bannerTextEl.textContent = state.settings.bannerText;
-        document.getElementById('banner-text-input').value = state.settings.bannerText;
-        document.getElementById('free-reward-cost-limit').value = state.settings.freeRewardCostLimit;
-    }
+        dom.bannerText.textContent = state.settings.bannerText;
+        const settingsForm = document.getElementById('settings-form');
+        settingsForm.theme.value = state.settings.theme;
+        settingsForm.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
+        settingsForm.bannerText.value = state.settings.bannerText;
+    };
 
     // --- MODAL & NAVIGATION ---
-    function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
-    function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
-    document.querySelectorAll('[data-modal]').forEach(el => el.addEventListener('click', () => closeModal(el.dataset.modal)));
-    document.querySelectorAll('.modal').forEach(el => el.addEventListener('click', (e) => { if (e.target === el) closeModal(el.id); }));
-    document.getElementById('add-quest-btn').addEventListener('click', () => openModal('add-quest-modal'));
-    document.getElementById('add-reward-btn').addEventListener('click', () => openModal('add-reward-modal'));
-    document.getElementById('bottom-settings-btn').addEventListener('click', () => openModal('settings-modal'));
+    const openModal = (id) => document.getElementById(id).style.display = 'flex';
+    const closeModal = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
 
-    bottomNavEl.addEventListener('click', (e) => {
+    document.addEventListener('click', (e) => {
+        if (e.target.dataset.modalTarget) openModal(e.target.dataset.modalTarget);
+        if (e.target.dataset.modalClose || e.target.classList.contains('modal')) closeModal();
+    });
+
+    dom.bottomNav.addEventListener('click', (e) => {
         const navLink = e.target.closest('.bottom-nav-link[data-tab]');
         if (!navLink) return;
         e.preventDefault();
         const tabId = navLink.dataset.tab;
-        bottomNavEl.querySelectorAll('.bottom-nav-link').forEach(link => link.classList.remove('active'));
+        dom.bottomNav.querySelectorAll('.bottom-nav-link').forEach(link => link.classList.remove('active'));
         navLink.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById(`${tabId}-tab`).classList.add('active');
     });
 
-    // NEW: Listener for Quest Sub-Navigation
-    questSubNavEl.addEventListener('click', (e) => {
-        const subNavBtn = e.target.closest('.sub-nav-btn');
-        if (!subNavBtn) return;
-        state.settings.activeQuestFilter = subNavBtn.dataset.frequency;
-        // No need to save state for a temporary filter change
-        renderQuests();
+    dom.questSubNav.addEventListener('click', (e) => {
+        if (e.target.matches('.sub-nav-btn')) {
+            state.settings.activeQuestFilter = e.target.dataset.frequency;
+            renderQuests();
+        }
     });
 
-
-    // --- EVENT LISTENERS (FORM SUBMISSIONS) ---
-    document.getElementById('save-settings-btn').addEventListener('click', () => {
-        state.settings.theme = document.getElementById('theme-select').value;
-        state.settings.freeRewardCostLimit = parseInt(document.getElementById('free-reward-cost-limit').value) || 20;
-        state.settings.bannerText = document.getElementById('banner-text-input').value || 'Level up your life!';
-        saveState(); applySettings(); closeModal('settings-modal');
+    // --- FORM SUBMISSIONS ---
+    document.getElementById('settings-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        state.settings.theme = formData.get('theme');
+        state.settings.freeRewardCostLimit = parseInt(formData.get('freeRewardCostLimit')) || 20;
+        state.settings.bannerText = formData.get('bannerText') || 'Level up your life!';
+        saveState(); renderAll(); closeModal();
     });
-    document.getElementById('quest-has-tracker').addEventListener('change', (e) => {
+
+    document.getElementById('add-quest-form').querySelector('[name="hasTracker"]').addEventListener('change', (e) => {
         document.getElementById('quest-tracker-setup').classList.toggle('hidden', !e.target.checked);
     });
-    document.getElementById('save-quest-btn').addEventListener('click', () => {
-        const name = document.getElementById('quest-name').value;
-        const points = parseInt(document.getElementById('quest-points').value);
-        if (!name || isNaN(points) || points < 0) { alert("Invalid name or points."); return; }
-        const hasTracker = document.getElementById('quest-has-tracker').checked;
+
+    document.getElementById('add-quest-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = Object.fromEntries(new FormData(form));
         state.quests.push({
-            name, points, hasTracker,
-            target: hasTracker ? (parseInt(document.getElementById('quest-target-number').value) || 1) : 1,
+            name: data.name,
+            points: parseInt(data.points),
+            frequency: data.frequency,
+            hasTracker: !!data.hasTracker,
+            target: data.hasTracker ? (parseInt(data.target) || 1) : 1,
             currentProgress: 0,
-            frequency: document.getElementById('quest-frequency').value
         });
-        saveState(); renderAll(); closeModal('add-quest-modal');
-        document.getElementById('add-quest-modal').querySelectorAll('input, select').forEach(el => {
-            if (el.type === 'checkbox') el.checked = false;
-            else if (el.tagName !== 'SELECT') el.value = '';
-        });
+        saveState(); renderAll(); closeModal(); form.reset();
+        document.getElementById('quest-tracker-setup').classList.add('hidden');
     });
-    document.getElementById('reward-has-expiry').addEventListener('change', (e) => {
+
+    document.getElementById('add-reward-form').querySelector('[name="hasExpiry"]').addEventListener('change', (e) => {
         document.getElementById('reward-expiry-setup').classList.toggle('hidden', !e.target.checked);
     });
-    document.getElementById('save-reward-btn').addEventListener('click', () => {
-        const name = document.getElementById('reward-name').value;
-        const cost = parseInt(document.getElementById('reward-cost').value);
-        if (!name || isNaN(cost) || cost < 0) { alert("Invalid name or cost."); return; }
-        const hasExpiry = document.getElementById('reward-has-expiry').checked;
+    
+    document.getElementById('add-reward-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const data = Object.fromEntries(new FormData(form));
         state.rewards.push({
-            name, cost, hasExpiry,
-            expiryDays: hasExpiry ? (parseInt(document.getElementById('reward-expiry-days').value) || 7) : null
+            name: data.name,
+            cost: parseInt(data.cost),
+            hasExpiry: !!data.hasExpiry,
+            expiryDays: data.hasExpiry ? (parseInt(data.expiryDays) || 7) : null,
         });
-        saveState(); renderAll(); closeModal('add-reward-modal');
-        document.getElementById('add-reward-modal').querySelectorAll('input').forEach(i => i.type === 'checkbox' ? i.checked = false : i.value = '');
+        saveState(); renderAll(); closeModal(); form.reset();
+        document.getElementById('reward-expiry-setup').classList.add('hidden');
     });
     
-    // --- EVENT LISTENERS (ITEM INTERACTIONS) ---
-    questListEl.addEventListener('click', e => {
+    // --- ITEM INTERACTIONS ---
+    const handleListClick = (e, listName, actions) => {
         const target = e.target.closest('[data-index]');
         if (!target) return;
         const index = parseInt(target.dataset.index);
-        if (target.classList.contains('delete-btn')) {
-            if (confirm(`Delete quest "${state.quests[index].name}"?`)) {
-                state.quests.splice(index, 1);
+        const item = state[listName][index];
+        for (const actionClass in actions) {
+            if (target.classList.contains(actionClass)) {
+                actions[actionClass](item, index);
+                break;
             }
-        } else if (target.classList.contains('tracker-btn')) {
-            const op = target.dataset.op;
-            if (op === 'plus') state.quests[index].currentProgress++;
-            if (op === 'minus') state.quests[index].currentProgress = Math.max(0, state.quests[index].currentProgress - 1);
-        } else if (target.classList.contains('done-btn')) {
-            state.points += state.quests[index].points;
-            state.quests.splice(index, 1);
         }
         saveState(); renderAll();
-    });
-    rewardListEl.addEventListener('click', e => {
-        const target = e.target.closest('[data-index]');
-        if (!target) return;
-        const index = parseInt(target.dataset.index);
-        if (target.classList.contains('delete-btn')) {
-            if (confirm(`Delete reward "${state.rewards[index].name}"?`)) {
-                state.rewards.splice(index, 1);
-            }
-        } else if (target.classList.contains('redeem-btn')) {
-            const reward = state.rewards[index];
-            if (state.points >= reward.cost) {
-                state.points -= reward.cost;
-                state.inventory.push({
-                    name: reward.name,
-                    expiryTimestamp: reward.hasExpiry ? new Date().setDate(new Date().getDate() + reward.expiryDays) : null
-                });
+    };
+
+    dom.questList.addEventListener('click', e => handleListClick(e, 'quests', {
+        'delete-btn': (item, index) => { if (confirm(`Delete "${item.name}"?`)) state.quests.splice(index, 1); },
+        'done-btn': (item, index) => { state.points += item.points; state.quests.splice(index, 1); },
+        'tracker-btn': (item) => { e.target.dataset.op === 'plus' ? item.currentProgress++ : item.currentProgress = Math.max(0, item.currentProgress - 1); }
+    }));
+
+    dom.rewardList.addEventListener('click', e => handleListClick(e, 'rewards', {
+        'delete-btn': (item, index) => { if (confirm(`Delete "${item.name}"?`)) state.rewards.splice(index, 1); },
+        'redeem-btn': (item) => {
+            if (state.points >= item.cost) {
+                state.points -= item.cost;
+                state.inventory.push({ name: item.name, expiryTimestamp: item.hasExpiry ? new Date().setDate(new Date().getDate() + item.expiryDays) : null });
             } else { alert("Not enough points!"); }
         }
-        saveState(); renderAll();
-    });
-    inventoryListEl.addEventListener('click', e => {
-        const target = e.target.closest('[data-index]');
-        if (!target) return;
-        const index = parseInt(target.dataset.index);
-        if (target.classList.contains('delete-btn')) {
-            if (confirm(`Delete item "${state.inventory[index].name}"?`)) {
-                state.inventory.splice(index, 1);
-            }
-        }
-        saveState(); renderAll();
-    });
+    }));
+
+    dom.inventoryList.addEventListener('click', e => handleListClick(e, 'inventory', {
+        'delete-btn': (item, index) => { if (confirm(`Delete "${item.name}"?`)) state.inventory.splice(index, 1); }
+    }));
 
     // --- INITIALIZATION ---
     loadState();
