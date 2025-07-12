@@ -84,6 +84,36 @@
         .section-header { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 20px; gap: 10px; }
         .empty-state { text-align: center; opacity: 0.6; padding: 40px 20px; }
 
+        /* Quest Sub-Navigation */
+        .quest-sub-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .sub-nav-btn {
+            background-color: #444;
+            color: var(--text-color-dark);
+            border: 1px solid #666;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .light-mode .sub-nav-btn {
+            background-color: #e0e0e0;
+            color: var(--text-color-light);
+            border-color: #ccc;
+        }
+        .sub-nav-btn.active {
+            background-color: var(--accent-red);
+            color: white;
+            border-color: var(--accent-red);
+            font-weight: bold;
+        }
+
+
         /* Buttons and Inputs */
         .btn {
             background-color: var(--accent-red);
@@ -187,6 +217,12 @@
     
     <main>
         <div id="quests-tab" class="tab-content active">
+            <div class="quest-sub-nav">
+                <button class="sub-nav-btn active" data-frequency="Daily">Daily</button>
+                <button class="sub-nav-btn" data-frequency="Weekly">Weekly</button>
+                <button class="sub-nav-btn" data-frequency="Monthly">Monthly</button>
+                <button class="sub-nav-btn" data-frequency="Yearly">Yearly</button>
+            </div>
             <div class="section-header"><button id="add-quest-btn" class="btn">Add Quest</button></div>
             <div id="quest-list" class="item-list"></div>
         </div>
@@ -219,7 +255,12 @@
             <span class="close-btn" data-modal="add-quest-modal">&times;</span>
             <h2>Add New Quest</h2>
             <input type="text" id="quest-name" placeholder="Quest Name (e.g., Read a chapter)">
-            <select id="quest-frequency"><option value="Daily">Daily</option><option value="Weekly">Weekly</option><option value="Monthly">Monthly</option></select>
+            <select id="quest-frequency">
+                <option value="Daily">Daily</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Yearly">Yearly</option>
+            </select>
             <input type="number" id="quest-points" placeholder="Points Reward (e.g., 10)" min="0">
             <label><input type="checkbox" id="quest-has-tracker"> Add number tracker?</label>
             <div id="quest-tracker-setup" class="hidden" style="margin-top: 10px;"><input type="number" id="quest-target-number" placeholder="Target number" min="1"></div>
@@ -257,7 +298,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- STATE & DOM ELEMENTS ---
     let state = {
         points: 0, quests: [], rewards: [], inventory: [],
-        settings: { theme: 'dark', freeRewardCostLimit: 20, bannerText: 'Level up your life!' },
+        settings: { 
+            theme: 'dark', 
+            freeRewardCostLimit: 20, 
+            bannerText: 'Level up your life!',
+            // NEW: Keep track of the active quest filter
+            activeQuestFilter: 'Daily' 
+        },
         lastFreeRewardDate: null
     };
 
@@ -267,6 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const inventoryListEl = document.getElementById('inventory-list');
     const bannerTextEl = document.getElementById('banner-text');
     const bottomNavEl = document.querySelector('.bottom-nav');
+    // NEW: Quest sub-navigation container
+    const questSubNavEl = document.querySelector('.quest-sub-nav');
 
     // --- DATA & STATE ---
     function saveState() {
@@ -286,23 +335,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function renderPoints() { pointsTotalEl.textContent = state.points; }
     function renderQuests() {
+        // NEW: Update active class on sub-nav buttons
+        questSubNavEl.querySelectorAll('.sub-nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.frequency === state.settings.activeQuestFilter);
+        });
+
+        // NEW: Filter quests based on the active filter
+        const filteredQuests = state.quests.filter(quest => quest.frequency === state.settings.activeQuestFilter);
+
         questListEl.innerHTML = '';
-        if (state.quests.length === 0) {
-            questListEl.innerHTML = `<div class="empty-state"><h3>No quests yet.</h3><p>Tap 'Add Quest' to get started!</p></div>`;
+        if (filteredQuests.length === 0) {
+            questListEl.innerHTML = `<div class="empty-state"><h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one to get started!</p></div>`;
             return;
         }
-        state.quests.forEach((quest, index) => {
+        filteredQuests.forEach(quest => {
+            // To find the original index for modification, we search the main quests array
+            const originalIndex = state.quests.findIndex(q => q === quest);
             const card = document.createElement('div');
             card.className = 'item-card';
             card.innerHTML = `
-                <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
+                <button class="delete-btn" data-index="${originalIndex}" aria-label="Delete quest">&times;</button>
                 <h3>${quest.name}</h3><p>+${quest.points} Points</p>
                 ${quest.hasTracker ? `<div class="tracker">
-                        <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
+                        <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${originalIndex}">-</button>
                         <span>${quest.currentProgress} / ${quest.target}</span>
-                        <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${index}">+</button>
+                        <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${originalIndex}">+</button>
                     </div>` : ''}
-                <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
+                <button class="btn done-btn" data-index="${originalIndex}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
             questListEl.appendChild(card);
         });
     }
@@ -369,6 +428,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(`${tabId}-tab`).classList.add('active');
     });
 
+    // NEW: Listener for Quest Sub-Navigation
+    questSubNavEl.addEventListener('click', (e) => {
+        const subNavBtn = e.target.closest('.sub-nav-btn');
+        if (!subNavBtn) return;
+        state.settings.activeQuestFilter = subNavBtn.dataset.frequency;
+        // No need to save state for a temporary filter change
+        renderQuests();
+    });
+
+
     // --- EVENT LISTENERS (FORM SUBMISSIONS) ---
     document.getElementById('save-settings-btn').addEventListener('click', () => {
         state.settings.theme = document.getElementById('theme-select').value;
@@ -391,7 +460,10 @@ document.addEventListener('DOMContentLoaded', () => {
             frequency: document.getElementById('quest-frequency').value
         });
         saveState(); renderAll(); closeModal('add-quest-modal');
-        document.getElementById('add-quest-modal').querySelectorAll('input').forEach(i => i.type === 'checkbox' ? i.checked = false : i.value = '');
+        document.getElementById('add-quest-modal').querySelectorAll('input, select').forEach(el => {
+            if (el.type === 'checkbox') el.checked = false;
+            else if (el.tagName !== 'SELECT') el.value = '';
+        });
     });
     document.getElementById('reward-has-expiry').addEventListener('change', (e) => {
         document.getElementById('reward-expiry-setup').classList.toggle('hidden', !e.target.checked);
