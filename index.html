@@ -61,7 +61,7 @@
         body {
             font-family: var(--font-primary);
             margin: 0;
-            padding-bottom: 100px; /* Space for banner and content */
+            padding-bottom: 100px;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -80,33 +80,33 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 30px;
+            padding: 15px 20px;
             background-color: var(--surface-color);
             position: relative;
         }
         .logo {
             font-family: var(--font-display);
             font-weight: 900;
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
             color: var(--accent-red);
             text-shadow: 0 0 5px var(--accent-red), 0 0 10px var(--accent-red);
         }
-        .header-right { display: flex; align-items: center; gap: 20px; }
-        .points-display { font-size: 1.2rem; font-weight: 700; color: var(--points-color); text-shadow: 0 0 5px var(--points-color);}
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .points-display { font-size: 1rem; font-weight: 700; color: var(--points-color); text-shadow: 0 0 5px var(--points-color);}
         .points-display span { font-family: var(--font-display); }
 
         /* Navigation */
-        nav { display: flex; justify-content: center; padding: 20px; gap: 15px; }
+        nav { display: flex; justify-content: center; flex-wrap: wrap; padding: 15px; gap: 10px; }
         .nav-link { 
-            padding: 12px 25px; 
+            padding: 10px 20px; 
             border: 2px solid var(--accent-red);
             color: var(--accent-red);
             background-color: transparent;
             text-decoration: none; border-radius: var(--border-radius);
-            font-weight: 700; font-size: 1.1rem;
+            font-weight: 700; font-size: 1rem;
             transition: all 0.2s ease;
         }
         .nav-link:hover, .nav-link.active {
@@ -116,18 +116,20 @@
         }
 
         /* Main Content */
-        main { padding: 0 30px; }
+        main { padding: 0 15px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .section-header { display: flex; justify-content: center; margin-bottom: 20px; gap: 15px; }
+        .section-header { display: flex; flex-direction: column; align-items: stretch; margin-bottom: 20px; gap: 10px; }
 
         /* Buttons and Inputs */
         .btn {
             background-color: var(--accent-red);
             color: white;
-            border: none; padding: 10px 20px; border-radius: var(--border-radius);
+            border: none; padding: 12px 20px; border-radius: var(--border-radius);
             cursor: pointer; font-size: 1rem; font-weight: 700;
             transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
         }
         .btn:hover:not(:disabled) { background-color: var(--accent-red-hover); box-shadow: 0 0 10px var(--accent-red); }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
@@ -143,15 +145,16 @@
         }
 
         input, select {
-            width: 100%; padding: 10px; margin-bottom: 15px;
+            width: 100%; padding: 12px; margin-bottom: 15px;
             border: 1px solid #444; border-radius: 5px;
             background-color: #333; color: white;
             box-sizing: border-box;
+            font-size: 1rem;
         }
         .light-mode input, .light-mode select { background-color: #eee; color: #333; border-color: #ccc;}
         
         /* Item Cards (Quests, Rewards) */
-        .item-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .item-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
         .item-card {
             padding: 20px; border-radius: var(--border-radius);
             border: 2px solid transparent;
@@ -164,10 +167,10 @@
         .item-card:hover { transform: translateY(-5px); border-color: var(--accent-red); }
         .item-card.rgb-border:hover { animation: var(--rgb-animation); }
 
-        .item-card h3 { margin-top: 0; }
+        .item-card h3 { margin-top: 0; word-wrap: break-word; }
         .item-card p { opacity: 0.8; }
         .tracker { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
-        .tracker-btn { font-size: 1.5rem; padding: 0 10px; }
+        .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; }
         .item-actions { display: flex; gap: 10px; margin-top: 15px; }
         .cost { color: var(--points-color); font-weight: bold; }
         .expires { font-style: italic; opacity: 0.7; font-size: 0.9em;}
@@ -182,7 +185,7 @@
             align-items: center; justify-content: center;
         }
         .modal-content {
-            margin: auto; padding: 30px;
+            margin: auto; padding: 25px;
             border-radius: var(--border-radius);
             width: 90%; max-width: 500px;
             position: relative;
@@ -223,7 +226,7 @@
         }
         .banner-text {
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             display: inline-block;
             padding-left: 100%;
             animation: marquee 15s linear infinite;
@@ -233,6 +236,40 @@
         /* Helper Classes */
         .hidden { display: none !important; }
 
+        /* ----------------------------------- */
+        /* --- MOBILE RESPONSIVE STYLES --- */
+        /* ----------------------------------- */
+        @media (min-width: 768px) {
+            /* On larger screens, revert some mobile-first styles */
+            .section-header {
+                flex-direction: row;
+                justify-content: center;
+            }
+            .btn {
+                width: auto; /* Allow buttons to size to their content */
+            }
+            .item-list {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+             main {
+                padding: 0 30px;
+             }
+        }
+        
+        @media (max-width: 480px) {
+             /* Specific tweaks for very small screens */
+            .logo {
+                font-size: 1.8rem;
+            }
+            .header-right {
+                gap: 10px;
+            }
+            .points-display {
+                font-size: 0.9rem;
+            }
+        }
+
+
     </style>
 </head>
 <body>
@@ -240,8 +277,8 @@
     <header>
         <div class="logo">Gamefy</div>
         <div class="header-right">
-            <div class="points-display">POINTS: <span id="points-total">0</span></div>
-            <button id="settings-btn" class="btn btn-secondary">Settings</button>
+            <div class="points-display">PTS: <span id="points-total">0</span></div>
+            <button id="settings-btn" class="btn btn-secondary">⚙️</button>
         </div>
     </header>
 
@@ -291,11 +328,11 @@
             </select>
             <input type="number" id="quest-points" placeholder="Points Reward (e.g., 10)">
             <label><input type="checkbox" id="quest-has-tracker"> Add number tracker?</label>
-            <div id="quest-tracker-setup" class="hidden">
+            <div id="quest-tracker-setup" class="hidden" style="margin-top: 10px;">
                 <input type="number" id="quest-target-number" placeholder="Target number (e.g., 30 books)">
             </div>
-            <label><input type="checkbox" id="quest-has-alarm"> Set reminder alarm?</label>
-            <button id="save-quest-btn" class="btn">Save Quest</button>
+            <label style="margin-top: 10px; display: block;"><input type="checkbox" id="quest-has-alarm"> Set reminder alarm?</label>
+            <button id="save-quest-btn" class="btn" style="margin-top: 20px;">Save Quest</button>
         </div>
     </div>
 
@@ -306,10 +343,10 @@
             <input type="text" id="reward-name" placeholder="Reward Name (e.g., 1 hour of gaming)">
             <input type="number" id="reward-cost" placeholder="Cost in Points">
             <label><input type="checkbox" id="reward-has-expiry"> Add expiration?</label>
-            <div id="reward-expiry-setup" class="hidden">
+            <div id="reward-expiry-setup" class="hidden" style="margin-top: 10px;">
                 <input type="number" id="reward-expiry-days" placeholder="Expires in how many days?">
             </div>
-            <button id="save-reward-btn" class="btn">Save Reward</button>
+            <button id="save-reward-btn" class="btn" style="margin-top: 20px;">Save Reward</button>
         </div>
     </div>
 
@@ -322,18 +359,18 @@
                 <option value="dark">Dark Mode</option>
                 <option value="light">Light Mode</option>
             </select>
-            <label for="free-reward-cost-limit">Max cost for Free Reward:</label>
+            <label for="free-reward-cost-limit" style="margin-top:15px; display:block;">Max cost for Free Reward:</label>
             <input type="number" id="free-reward-cost-limit" placeholder="Default: 20">
-            <label for="banner-text-input">Moving Banner Text:</label>
+            <label for="banner-text-input" style="margin-top:15px; display:block;">Moving Banner Text:</label>
             <input type="text" id="banner-text-input">
-            <label><input type="checkbox" id="free-reward-notification-toggle"> Notify me for daily free reward</label>
-            <button id="save-settings-btn" class="btn">Save Settings</button>
+            <label style="margin-top:15px; display:block;"><input type="checkbox" id="free-reward-notification-toggle"> Notify me for daily free reward</label>
+            <button id="save-settings-btn" class="btn" style="margin-top: 20px;">Save Settings</button>
         </div>
     </div>
 
     <div id="free-reward-modal" class="modal">
         <div id="free-reward-spinner" class="modal-content">
-            <h2>Spinning for a Reward!</h2>
+            <h2 style="word-wrap: break-word;">Spinning for a Reward!</h2>
             <div id="spinner-arrow">▼</div>
             <div class="spinner-container">
                 <div id="spinner-words"></div>
@@ -463,18 +500,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SETTINGS & THEME ---
     function applySettings() {
-        // Theme
         document.body.className = state.settings.theme === 'dark' ? 'dark-mode' : 'light-mode';
         document.getElementById('theme-select').value = state.settings.theme;
-        
-        // Banner Text
         bannerTextEl.textContent = state.settings.bannerText;
         document.getElementById('banner-text-input').value = state.settings.bannerText;
-
-        // Free Reward Limit
         document.getElementById('free-reward-cost-limit').value = state.settings.freeRewardCostLimit;
-        
-        // Notification Toggle
         document.getElementById('free-reward-notification-toggle').checked = state.settings.freeRewardNotification;
     }
 
@@ -489,20 +519,13 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal('settings-modal');
     });
 
-
     // --- MODAL CONTROLS ---
     const modals = document.querySelectorAll('.modal');
-    const openModalBtns = {
-        'add-quest-btn': 'add-quest-modal',
-        'add-reward-btn': 'add-reward-modal'
-    };
-
     function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
     function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
     
-    Object.keys(openModalBtns).forEach(btnId => {
-        document.getElementById(btnId).addEventListener('click', () => openModal(openModalBtns[btnId]));
-    });
+    document.getElementById('add-quest-btn').addEventListener('click', () => openModal('add-quest-modal'));
+    document.getElementById('add-reward-btn').addEventListener('click', () => openModal('add-reward-modal'));
 
     modals.forEach(modal => {
         modal.querySelector('.close-btn').addEventListener('click', (e) => closeModal(e.target.dataset.modal));
@@ -522,16 +545,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.classList.contains('nav-link')) {
             e.preventDefault();
             const tabId = e.target.dataset.tab;
-            
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             e.target.classList.add('active');
-
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(`${tabId}-tab`).classList.add('active');
         }
     });
 
-    // Add Quest Logic
+    // Add Quest Logic (with form reset fix)
     document.getElementById('quest-has-tracker').addEventListener('change', (e) => {
         document.getElementById('quest-tracker-setup').classList.toggle('hidden', !e.target.checked);
     });
@@ -547,15 +568,19 @@ document.addEventListener('DOMContentLoaded', () => {
             currentProgress: 0
         };
         if (!quest.name) { alert("Quest name is required."); return; }
-        
         state.quests.push(quest);
         saveState();
         renderQuests();
         closeModal('add-quest-modal');
-        document.getElementById('add-quest-modal').querySelector('form')?.reset(); // Reset form if it exists
+        document.getElementById('quest-name').value = '';
+        document.getElementById('quest-points').value = '';
+        document.getElementById('quest-target-number').value = '';
+        document.getElementById('quest-has-tracker').checked = false;
+        document.getElementById('quest-has-alarm').checked = false;
+        document.getElementById('quest-tracker-setup').classList.add('hidden');
     });
 
-    // Add Reward Logic
+    // Add Reward Logic (with form reset fix)
     document.getElementById('reward-has-expiry').addEventListener('change', (e) => {
         document.getElementById('reward-expiry-setup').classList.toggle('hidden', !e.target.checked);
     });
@@ -568,11 +593,15 @@ document.addEventListener('DOMContentLoaded', () => {
             expiryDays: hasExpiry ? parseInt(document.getElementById('reward-expiry-days').value) || 7 : null
         };
         if (!reward.name || reward.cost <= 0) { alert("Valid reward name and cost are required."); return; }
-
         state.rewards.push(reward);
         saveState();
         renderRewards();
         closeModal('add-reward-modal');
+        document.getElementById('reward-name').value = '';
+        document.getElementById('reward-cost').value = '';
+        document.getElementById('reward-expiry-days').value = '';
+        document.getElementById('reward-has-expiry').checked = false;
+        document.getElementById('reward-expiry-setup').classList.add('hidden');
     });
 
     // Quest Actions (Done, Tracker, Delete)
@@ -580,18 +609,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = e.target.dataset.index;
         if (!index) return;
         
-        // Tracker buttons
         if (e.target.classList.contains('tracker-btn')) {
             const op = e.target.dataset.op;
             if (op === 'plus') state.quests[index].currentProgress++;
             if (op === 'minus') state.quests[index].currentProgress = Math.max(0, state.quests[index].currentProgress - 1);
         }
-        // Done button
         else if (e.target.classList.contains('done-btn')) {
             state.points += state.quests[index].points;
             state.quests.splice(index, 1);
         }
-        
         saveState();
         renderAll();
     });
@@ -615,10 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const reward = state.rewards[index];
             if (state.points >= reward.cost) {
                 state.points -= reward.cost;
-                const inventoryItem = {
-                    name: reward.name,
-                    expiryTimestamp: reward.hasExpiry ? new Date().setDate(new Date().getDate() + reward.expiryDays) : null
-                };
+                const inventoryItem = { name: reward.name, expiryTimestamp: reward.hasExpiry ? new Date().setDate(new Date().getDate() + reward.expiryDays) : null };
                 state.inventory.push(inventoryItem);
                 saveState();
                 renderAll();
@@ -629,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     inventoryListEl.addEventListener('click', handleItemDeletion);
 
-    // --- FREE REWARD LOGIC ---
+    // Free Reward Logic
     const freeRewardBtn = document.getElementById('free-reward-btn');
     const freeRewardModal = document.getElementById('free-reward-modal');
     const spinnerWordsEl = document.getElementById('spinner-words');
@@ -643,37 +666,29 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("You need at least two rewards costing " + state.settings.freeRewardCostLimit + " or less to spin!");
             return;
         }
-
         freeRewardBtn.disabled = true;
         openModal('free-reward-modal');
         spinnerResultEl.classList.add('hidden');
         claimRewardBtn.classList.add('hidden');
 
-        // Start spinner animation
         let i = 0;
         spinInterval = setInterval(() => {
             spinnerWordsEl.textContent = eligibleRewards[i % eligibleRewards.length].name;
             i++;
         }, 100);
 
-        // Stop spinner after a few seconds
         setTimeout(() => {
             clearInterval(spinInterval);
             const winner = eligibleRewards[Math.floor(Math.random() * eligibleRewards.length)];
-            spinnerWordsEl.textContent = winner.name; // Final word
+            spinnerWordsEl.textContent = winner.name;
             spinnerResultEl.innerHTML = `You won: <span style="color: var(--accent-red);">${winner.name}</span>!`;
             spinnerResultEl.classList.remove('hidden');
             claimRewardBtn.classList.remove('hidden');
-            
-            // Add to inventory and state
-            const inventoryItem = {
-                name: winner.name,
-                expiryTimestamp: new Date().setDate(new Date().getDate() + 7) // 7 day expiry
-            };
+            const inventoryItem = { name: winner.name, expiryTimestamp: new Date().setDate(new Date().getDate() + 7) };
             state.inventory.push(inventoryItem);
             state.lastFreeRewardDate = new Date().toDateString();
             saveState();
-        }, 3000); // 3 seconds of spinning
+        }, 3000);
     });
     
     claimRewardBtn.addEventListener('click', () => {
@@ -681,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAll();
     });
 
-    // --- INITIALIZATION ---
+    // INITIALIZATION
     loadState();
     renderAll();
 });
