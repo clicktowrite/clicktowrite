@@ -236,9 +236,7 @@
         /* Helper Classes */
         .hidden { display: none !important; }
 
-        /* ----------------------------------- */
         /* --- MOBILE RESPONSIVE STYLES --- */
-        /* ----------------------------------- */
         @media (min-width: 768px) {
             /* On larger screens, revert some mobile-first styles */
             .section-header {
@@ -268,8 +266,6 @@
                 font-size: 0.9rem;
             }
         }
-
-
     </style>
 </head>
 <body>
@@ -415,7 +411,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedState) {
             state = JSON.parse(savedState);
         }
-        // Check if daily reward needs reset
         const today = new Date().toDateString();
         if (state.lastFreeRewardDate !== today) {
             document.getElementById('free-reward-btn').disabled = false;
@@ -552,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Add Quest Logic (with form reset fix)
+    // Add Quest Logic
     document.getElementById('quest-has-tracker').addEventListener('change', (e) => {
         document.getElementById('quest-tracker-setup').classList.toggle('hidden', !e.target.checked);
     });
@@ -570,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!quest.name) { alert("Quest name is required."); return; }
         state.quests.push(quest);
         saveState();
-        renderQuests();
+        renderAll();
         closeModal('add-quest-modal');
         document.getElementById('quest-name').value = '';
         document.getElementById('quest-points').value = '';
@@ -580,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('quest-tracker-setup').classList.add('hidden');
     });
 
-    // Add Reward Logic (with form reset fix)
+    // Add Reward Logic
     document.getElementById('reward-has-expiry').addEventListener('change', (e) => {
         document.getElementById('reward-expiry-setup').classList.toggle('hidden', !e.target.checked);
     });
@@ -595,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!reward.name || reward.cost <= 0) { alert("Valid reward name and cost are required."); return; }
         state.rewards.push(reward);
         saveState();
-        renderRewards();
+        renderAll();
         closeModal('add-reward-modal');
         document.getElementById('reward-name').value = '';
         document.getElementById('reward-cost').value = '';
