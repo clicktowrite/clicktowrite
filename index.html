@@ -42,24 +42,46 @@
             padding-top: 70px;
             padding-bottom: 120px; 
             transition: background-color 0.3s, color 0.3s;
+            background-size: 400% 400%;
+            animation: fadeIn 1s ease-out;
         }
-        .dark-mode { background-color: var(--bg-color-dark); color: var(--text-color-dark); }
-        .light-mode { background-color: var(--bg-color-light); color: var(--text-color-light); }
+        .dark-mode { 
+            color: var(--text-color-dark);
+            background: #12121a;
+        }
+        .light-mode {
+            color: var(--text-color-light);
+            background: #f0f2f5;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(315deg, rgba(255,0,0,0.3), rgba(0,0,255,0.3), rgba(0,255,0,0.3));
+            background-size: 400% 400%;
+            animation: fadeIn 10s ease infinite alternate;
+            z-index: -1;
+        }
         
+        header, .bottom-nav {
+            background-color: var(--surface-color);
+            position: fixed;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 100;
+        }
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 15px 20px;
-            background-color: var(--surface-color);
-            position: fixed;
             top: 0;
-            width: 100%;
-            box-sizing: border-box;
-            z-index: 100;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .light-mode header { border-bottom: 1px solid #ddd; }
+        .dark-mode header, .dark-mode .bottom-nav { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .light-mode header, .light-mode .bottom-nav { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
         .logo {
             font-family: var(--font-display);
             font-weight: 900;
@@ -73,7 +95,9 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .section-header { display: flex; flex-direction: column; margin-bottom: 20px; gap: 10px; }
-        .empty-state { text-align: center; opacity: 0.6; padding: 40px 20px; }
+        .empty-state { text-align: center; opacity: 0.6; padding: 40px 20px; border-radius: var(--border-radius); }
+        .dark-mode .empty-state { background-color: rgba(30, 30, 40, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .light-mode .empty-state { background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
         
         .quest-sub-nav {
             display: flex;
@@ -160,8 +184,8 @@
             justify-content: space-between;
             overflow: hidden;
         }
-        .dark-mode .item-card { background-color: var(--surface-color-dark); border: 1px solid #333; }
-        .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
+        .dark-mode .item-card { background-color: rgba(30, 30, 40, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .light-mode .item-card { background-color: rgba(255, 255, 255, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(0, 0, 0, 0.1); }
         .item-card h3 { margin-top: 0; margin-bottom: 5px; word-wrap: break-word; }
         
         .quest-cycle-date {
@@ -227,15 +251,15 @@
 
         .modal {
             display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%;
-            overflow: auto; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center;
+            overflow: auto; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;
         }
         .modal.active { display: flex; }
         .modal-content { 
             margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; position: relative;
             animation: fadeIn 0.3s ease-out;
         }
-        .dark-mode .modal-content { background-color: var(--surface-color-dark); }
-        .light-mode .modal-content { background-color: var(--surface-color-light); }
+        .dark-mode .modal-content { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .light-mode .modal-content { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(0, 0, 0, 0.1); }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; font-weight: bold; cursor: pointer; }
         
         .checkbox-label {
@@ -313,25 +337,20 @@
             animation: marquee 15s linear infinite, text-rgb 5s linear infinite;
         }
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: var(--surface-color);
-            display: flex; justify-content: space-around; align-items: center; z-index: 100; border-top: 1px solid #333;
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
         }
-        .light-mode .bottom-nav { border-top: 1px solid #ddd; }
-        .bottom-nav-link {
-            background: none; border: none; color: var(--text-color); text-decoration: none; display: flex; flex-direction: column;
-            align-items: center; gap: 4px; font-size: 0.8rem; opacity: 0.7; transition: all 0.2s ease; cursor: pointer;
-        }
-        .bottom-nav-link.active { color: var(--accent-red); opacity: 1; transform: scale(1.1); }
-        .bottom-nav-link .icon { font-size: 1.5rem; }
         
         .accordion-btn {
-            background-color: var(--surface-color-dark);
+            background-color: rgba(30, 30, 40, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-color-dark);
-            cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left;
+            cursor: pointer; padding: 18px; width: 100%;
+            text-align: left;
             outline: none; font-size: 1.1rem; transition: background-color 0.4s ease;
             border-radius: var(--border-radius);
         }
-        .light-mode .accordion-btn { background-color: #eee; color: var(--text-color-light); }
+        .light-mode .accordion-btn { background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); color: var(--text-color-light); }
         .accordion-btn:hover, .accordion-btn.active { background-color: #333; }
         .light-mode .accordion-btn:hover, .light-mode .accordion-btn.active { background-color: #ccc; }
         .accordion-panel {
@@ -340,21 +359,6 @@
             transition: max-height 0.3s ease-out; margin-top: 15px;
         }
         
-        #accordion-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 50;
-            backdrop-filter: blur(4px);
-            background-color: rgba(0,0,0,0.3);
-            transition: opacity 0.3s;
-        }
-        #accordion-backdrop.hidden {
-            display: none;
-        }
-
         .hidden { display: none !important; }
 
         @media (min-width: 768px) {
@@ -533,8 +537,6 @@
         </div>
     </div>
 
-    <div id="accordion-backdrop" class="hidden"></div>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -565,7 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
         activeRewardsPanel: document.getElementById('active-rewards-panel'),
         usedRewardsBtn: document.getElementById('toggle-used-rewards-btn'),
         usedRewardsPanel: document.getElementById('used-rewards-panel'),
-        accordionBackdrop: document.getElementById('accordion-backdrop'),
         freeRewardBtn: document.getElementById('free-reward-btn'),
         choiceRewardList: document.getElementById('choice-reward-list'),
         addQuestModal: {
@@ -799,12 +800,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const canClaim = !state.lastClaimTimestamp || hasNewCycleBegun({ frequency: 'Daily' }, state.lastClaimTimestamp);
         dom.freeRewardBtn.disabled = !canClaim;
         
-        const yesterday = new Date();
+        const yesterday = getAdjustedDate(new Date());
         yesterday.setDate(yesterday.getDate() - 1);
+        
         const lastClaimDate = state.lastClaimTimestamp ? getAdjustedDate(new Date(state.lastClaimTimestamp)).toDateString() : null;
-        const yesterdayDate = getAdjustedDate(yesterday).toDateString();
-
-        if(canClaim && lastClaimDate !== yesterdayDate && lastClaimDate !== getAdjustedDate(new Date()).toDateString()) {
+        
+        if (canClaim && lastClaimDate && lastClaimDate !== yesterday.toDateString()) {
              if (state.consecutiveDays > 0) {
                  state.consecutiveDays = 0; 
              }
@@ -942,16 +943,6 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsForm.startOfDay.value = state.settings.startOfDay;
     };
     
-    const updateAccordionBackdrop = () => {
-        const isActiveOpen = dom.activeRewardsPanel.style.maxHeight;
-        const isUsedOpen = dom.usedRewardsPanel.style.maxHeight;
-        if (isActiveOpen || isUsedOpen) {
-            dom.accordionBackdrop.classList.remove('hidden');
-        } else {
-            dom.accordionBackdrop.classList.add('hidden');
-        }
-    };
-
     const openModal = (id) => document.getElementById(id).classList.add('active');
     const closeModal = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
 
@@ -991,7 +982,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const panel = dom.activeRewardsPanel;
         if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
         else { panel.style.maxHeight = panel.scrollHeight + "px"; }
-        updateAccordionBackdrop();
     });
     
     dom.usedRewardsBtn.addEventListener('click', function() {
@@ -999,7 +989,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const panel = dom.usedRewardsPanel;
         if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
         else { panel.style.maxHeight = panel.scrollHeight + "px"; }
-        updateAccordionBackdrop();
     });
 
     document.getElementById('settings-form').addEventListener('submit', (e) => {
@@ -1150,10 +1139,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dom.freeRewardBtn.addEventListener('click', () => {
-        updateFreeRewardButton(); // Recalculate streak just before claiming
+        updateFreeRewardButton();
         const eligibleRewards = state.rewards.filter(r => r.cost <= state.settings.freeRewardCostLimit);
-        if (eligibleRewards.length < 2) {
-            showAlert(`You need at least two rewards costing ${state.settings.freeRewardCostLimit} points or less to spin!`, "Not Enough Rewards");
+        if (eligibleRewards.length === 0) {
+            showAlert(`You need at least one reward costing ${state.settings.freeRewardCostLimit} points or less to get a free reward!`, "Not Enough Rewards");
             return;
         }
 
@@ -1168,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.innerHTML = `<span>${reward.name}</span> <span class="cost">${reward.cost} PTS</span>`;
                 btn.onclick = () => {
                     state.inventory.push({ ...reward, dateAcquired: Date.now() });
-                    state.consecutiveDays = 0; // Reset streak
+                    state.consecutiveDays = 0;
                     saveState();
                     renderAll();
                     closeModal();
@@ -1238,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAll();
     saveState(); 
 
-    setInterval(updateFreeRewardButton, 60000); // Check every minute
+    setInterval(updateFreeRewardButton, 60000);
 });
 </script>
 
