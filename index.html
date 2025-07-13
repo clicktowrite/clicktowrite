@@ -77,10 +77,16 @@
         
         .quest-sub-nav {
             display: flex;
-            justify-content: center;
-            gap: 6px;
+            gap: 10px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            padding-bottom: 10px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .quest-sub-nav::-webkit-scrollbar {
+            display: none;
         }
 
         .sub-nav-btn {
@@ -315,7 +321,7 @@
                 <input type="text" name="name" placeholder="Quest Name" required>
                 <select name="frequency"><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Yearly</option></select>
                 <div id="custom-cycle-setup" class="hidden">
-                    <label>Cycle Start Date:</label>
+                    <label>Cycle Start Date (optional):</label>
                     <input type="date" name="customCycleAnchor">
                 </div>
                 <input type="number" name="points" placeholder="Points Reward" min="0" required>
