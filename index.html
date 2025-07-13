@@ -113,6 +113,22 @@
         .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
         .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; }
+        .repeat-counter {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.5);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .light-mode .repeat-counter {
+            background-color: rgba(255,255,255,0.7);
+            color: #333;
+            border: 1px solid #ccc;
+        }
 
         .motivational-message {
             font-size: 0.8em;
@@ -247,6 +263,7 @@
                 <input type="number" name="points" placeholder="Points Reward" min="0" required>
                 <label class="checkbox-label"><span>Add number tracker?</span><input type="checkbox" name="hasTracker"></label>
                 <div class="hidden" id="quest-tracker-setup"><input type="number" name="target" placeholder="Target number" min="1"></div>
+                <label class="checkbox-label"><span>Make quest repeatable?</span><input type="checkbox" name="isRepeatable"></label>
                 <button type="submit" class="btn">Save Quest</button>
             </form>
         </div>
@@ -412,7 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const showMessage = quest.hasTracker && quest.currentProgress > quest.target;
             card.innerHTML = `
                 <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
-                <h3>${quest.name}</h3><p>+${quest.points} Points</p>
+                ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
+                <h3>${quest.name}</h3>
+                <p>+${quest.points} Points</p>
                 ${quest.hasTracker ? `<div class="tracker">
                     <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
                     <span>${quest.currentProgress} / ${quest.target}</span>
@@ -541,6 +560,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.quests.push({
             name: data.name, points: parseInt(data.points), frequency: data.frequency, hasTracker: !!data.hasTracker,
             target: data.hasTracker ? (parseInt(data.target) || 1) : 1, currentProgress: 0,
+            isRepeatable: !!data.isRepeatable,
+            repeatCount: 0,
         });
         saveState(); renderAll(); closeModal(); form.reset();
         document.getElementById('quest-tracker-setup').classList.add('hidden');
@@ -581,7 +602,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     handleListClick(dom.questList, 'quests', {
         'delete-btn': async (item, index) => { if (await showConfirm(`Delete quest "${item.name}"?`)) state.quests.splice(index, 1); },
-        'done-btn': (item, index) => { state.points += item.points; state.quests.splice(index, 1); },
+        'done-btn': (item, index) => { 
+            state.points += item.points;
+            if (item.isRepeatable) {
+                item.repeatCount++;
+                item.currentProgress = 0;
+            } else {
+                state.quests.splice(index, 1);
+            }
+        },
         'tracker-btn': (item, index, e) => { e.target.dataset.op === 'plus' ? item.currentProgress++ : item.currentProgress = Math.max(0, item.currentProgress - 1); }
     });
     handleListClick(dom.rewardList, 'rewards', {
