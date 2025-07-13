@@ -89,7 +89,6 @@
             color: var(--accent-red);
             text-shadow: 0 0 5px var(--accent-red);
             text-align: center;
-            /* Added to prevent the logo from shrinking */
             flex-shrink: 0;
         }
         .points-display { 
@@ -171,7 +170,7 @@
         }
         body.side-nav-collapsed .nav-link { justify-content: center; }
         body.side-nav-collapsed .nav-link .text { opacity: 0; width: 0; pointer-events: none; }
-        
+
         .tab-content { 
             display: none; 
             justify-content: center;
@@ -507,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const processExpiredInventory = () => { const now = Date.now(); state.inventory = state.inventory.filter(item => { if (item.hasExpiry) { const expiryDate = new Date(item.dateAcquired).setDate(new Date(item.dateAcquired).getDate() + item.expiryDays); if (now > expiryDate) { state.usedRewards.push({ ...item, status: 'Expired', dateUsed: expiryDate }); return false; } } return true; }); };
     
     // --- RENDERING ---
-    const updateNavToggleButton = () => { const toggleBtn = document.getElementById('nav-toggle-btn'); if(!toggleBtn) return; toggleBtn.innerHTML = state.settings.sideNavCollapsed ? '»' : '☰'; };
+    const updateNavToggleButton = () => { const toggleBtn = document.getElementById('nav-toggle-btn'); if(!toggleBtn) return; toggleBtn.textContent = state.settings.sideNavCollapsed ? '»' : '☰'; };
     const renderAll = () => { applySettings(); dom.points.textContent = state.points; updateFreeRewardButton(); renderQuests(); renderRewards(); renderInventory(); renderActiveRewards(); renderUsedRewards(); };
     const applySettings = () => {
         const isDark = state.settings.theme === 'dark';
@@ -517,12 +516,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNavToggleButton();
         
         const settingsForm = document.getElementById('settings-form');
+        const themeToggle = document.getElementById('theme-toggle-checkbox');
+        if (themeToggle) themeToggle.checked = !isDark;
         settingsForm.useAnimatedBackground.checked = !!state.settings.useAnimatedBackground;
         settingsForm.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
         settingsForm.startOfDay.value = state.settings.startOfDay;
-
-        const themeToggle = document.getElementById('theme-toggle-checkbox');
-        if (themeToggle) themeToggle.checked = !isDark;
     };
     
     const renderList = (element, items, renderFunc, emptyMsg) => { element.innerHTML = items.length > 0 ? '' : `<div class="empty-state">${emptyMsg}</div>`; if (items.length > 0) items.forEach(renderFunc); };
