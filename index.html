@@ -75,7 +75,20 @@
         .section-header { display: flex; flex-direction: column; margin-bottom: 20px; gap: 10px; }
         .empty-state { text-align: center; opacity: 0.6; padding: 40px 20px; }
         
-        .quest-sub-nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .quest-sub-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            padding-bottom: 10px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .quest-sub-nav::-webkit-scrollbar {
+            display: none;
+        }
+
         .sub-nav-btn {
             background-color: #444;
             color: var(--text-color-dark);
@@ -84,9 +97,30 @@
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
         .light-mode .sub-nav-btn { background-color: #e0e0e0; color: var(--text-color-light); border-color: #ccc; }
         .sub-nav-btn.active { background-color: var(--accent-red); color: white; border-color: var(--accent-red); }
+
+        .tab-counter {
+            margin-left: 8px;
+            background-color: #555;
+            color: white;
+            font-size: 0.8em;
+            font-weight: bold;
+            padding: 3px 7px;
+            border-radius: 6px;
+            vertical-align: middle;
+            transition: all 0.2s ease;
+        }
+        .sub-nav-btn.active .tab-counter {
+            background-color: white;
+            color: var(--accent-red);
+        }
+        .light-mode .sub-nav-btn:not(.active) .tab-counter {
+            background-color: #bbb;
+            color: #1c1e21;
+        }
 
         .btn {
             background-color: var(--accent-red); color: white; border: none; padding: 12px 20px;
@@ -388,7 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saved) {
             try { 
                 const savedState = JSON.parse(saved);
-                // Ensure new state properties exist
                 const defaultState = { usedRewards: [] };
                 state = { ...defaultState, ...state, ...savedState, settings: { ...state.settings, ...savedState.settings } };
             } catch (e) { console.error("Error loading state, resetting.", e); }
@@ -556,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         dom.questSubNav.querySelectorAll('.sub-nav-btn').forEach(btn => {
             const freq = btn.dataset.frequency;
-            btn.textContent = `${freq} (${questCounts[freq] || 0})`;
+            btn.innerHTML = `${freq}<span class="tab-counter">[${questCounts[freq] || 0}]</span>`;
             btn.classList.toggle('active', freq === state.settings.activeQuestFilter);
         });
 
@@ -569,8 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const canComplete = quest.hasTracker ? quest.currentProgress >= quest.target : true;
             
             card.innerHTML = `
-                <div> <!-- Main content wrapper -->
-                    <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
+                <div> <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                     <h3>${quest.name}</h3>
                     <div class="quest-cycle-date">${getCycleDateString(quest)}</div>
                     <p>+${quest.points} Points / -${quest.penalty} Points</p>
@@ -581,8 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>` : ''}
                     <div class="motivational-message" style="display: ${showMessage ? 'block' : 'none'};">Keep moving forward! you're doing great!</div>
                 </div>
-                <div class="quest-controls-right"> <!-- Bottom-right controls wrapper -->
-                     ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
+                <div class="quest-controls-right"> ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
                     <button class="btn done-btn" data-index="${index}" ${!canComplete || (quest.isRepeatable && !isReady) ? 'disabled' : ''}>Done</button>
                 </div>`;
             dom.questList.appendChild(card);
@@ -675,8 +706,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dom.questSubNav.addEventListener('click', (e) => {
-        if (e.target.matches('.sub-nav-btn')) {
-            state.settings.activeQuestFilter = e.target.dataset.frequency;
+        const subNavBtn = e.target.closest('.sub-nav-btn');
+        if (subNavBtn) {
+            state.settings.activeQuestFilter = subNavBtn.dataset.frequency;
             renderQuests();
         }
     });
