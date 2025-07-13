@@ -68,7 +68,6 @@
             align-items: center;
             z-index: 1000;
             border-bottom: 1px solid;
-            transition: transform var(--anim-speed) var(--anim-ease);
         }
         .dark-mode header { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,0.1);}
         .light-mode header { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(0,0,0,0.1);}
@@ -185,24 +184,25 @@
             bottom: 30px;
             right: 30px;
             z-index: 900;
-            transition: transform var(--anim-speed) var(--anim-ease);
         }
         
         main { 
             padding: 40px;
-            transition: transform var(--anim-speed) var(--anim-ease);
         }
 
-        body.nav-open header,
-        body.nav-open main {
-            transform: translateX(var(--nav-width));
+        .tab-content { 
+            display: none; 
+            justify-content: center;
         }
-        body.nav-open .sticky-settings-container {
-            transform: translateX(calc(var(--nav-width) * -1));
+        .tab-content.active { 
+            display: flex; 
+            animation: fadeIn 0.5s ease; 
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.5s ease; }
+        .tab-inner-content {
+            width: 100%;
+            max-width: 1200px;
+        }
         
         .page-header {
             display: flex;
@@ -355,51 +355,57 @@
     
     <main>
         <div id="quests-tab" class="tab-content active">
-            <div class="page-header">
-                <h1>Quests</h1>
-                <button class="btn" data-modal-target="add-quest-modal">Add Quest</button>
+            <div class="tab-inner-content">
+                <div class="page-header">
+                    <h1>Quests</h1>
+                    <button class="btn" data-modal-target="add-quest-modal">Add Quest</button>
+                </div>
+                <div class="quest-sub-nav">
+                    <button class="sub-nav-btn active" data-frequency="Daily">Daily</button>
+                    <button class="sub-nav-btn" data-frequency="Weekly">Weekly</button>
+                    <button class="sub-nav-btn" data-frequency="Monthly">Monthly</button>
+                    <button class="sub-nav-btn" data-frequency="Yearly">Yearly</button>
+                </div>
+                <div id="quest-list" class="item-list"></div>
             </div>
-            <div class="quest-sub-nav">
-                <button class="sub-nav-btn active" data-frequency="Daily">Daily</button>
-                <button class="sub-nav-btn" data-frequency="Weekly">Weekly</button>
-                <button class="sub-nav-btn" data-frequency="Monthly">Monthly</button>
-                <button class="sub-nav-btn" data-frequency="Yearly">Yearly</button>
-            </div>
-            <div id="quest-list" class="item-list"></div>
         </div>
         
         <div id="rewards-tab" class="tab-content">
-             <div class="page-header">
-                <h1>Rewards</h1>
-                 <div style="display:flex; gap: 15px;">
-                    <button class="btn" data-modal-target="add-reward-modal">Add Reward</button>
-                    <button id="free-reward-btn" class="btn btn-free">
-                        Get Daily Free Reward
-                        <span class="day-streak-counter">🔥 0</span>
-                    </button>
+             <div class="tab-inner-content">
+                <div class="page-header">
+                    <h1>Rewards</h1>
+                     <div style="display:flex; gap: 15px;">
+                        <button class="btn" data-modal-target="add-reward-modal">Add Reward</button>
+                        <button id="free-reward-btn" class="btn btn-free">
+                            Get Daily Free Reward
+                            <span class="day-streak-counter">🔥 0</span>
+                        </button>
+                    </div>
                 </div>
+                <div id="reward-list" class="item-list"></div>
             </div>
-            <div id="reward-list" class="item-list"></div>
         </div>
 
         <div id="inventory-tab" class="tab-content">
-            <div class="page-header">
-                <h1>Inventory</h1>
-            </div>
-            <div id="inventory-list" class="item-list"></div>
-            <hr style="margin: 40px 0; border-color: rgba(255,255,255,0.1);">
-            
-            <button id="toggle-active-rewards-btn" class="accordion-btn">
-                <span>Active Rewards</span>
-                <span class="indicator-box hidden"></span>
-            </button>
-            <div id="active-rewards-panel" class="accordion-panel">
-                <div id="active-rewards-list" class="item-list"></div>
-            </div>
+            <div class="tab-inner-content">
+                <div class="page-header">
+                    <h1>Inventory</h1>
+                </div>
+                <div id="inventory-list" class="item-list"></div>
+                <hr style="margin: 40px 0; border-color: rgba(255,255,255,0.1);">
+                
+                <button id="toggle-active-rewards-btn" class="accordion-btn">
+                    <span>Active Rewards</span>
+                    <span class="indicator-box hidden"></span>
+                </button>
+                <div id="active-rewards-panel" class="accordion-panel">
+                    <div id="active-rewards-list" class="item-list"></div>
+                </div>
 
-            <button id="toggle-used-rewards-btn" class="accordion-btn" style="margin-top: 15px;">Used Rewards</button>
-            <div id="used-rewards-panel" class="accordion-panel">
-                <div id="used-rewards-list" class="item-list"></div>
+                <button id="toggle-used-rewards-btn" class="accordion-btn" style="margin-top: 15px;">Used Rewards</button>
+                <div id="used-rewards-panel" class="accordion-panel">
+                    <div id="used-rewards-list" class="item-list"></div>
+                </div>
             </div>
         </div>
     </main>
