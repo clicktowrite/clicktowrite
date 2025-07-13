@@ -54,7 +54,7 @@
             background: #f0f2f5;
         }
         
-        .glass-effect::before {
+        .animated-bg-on::before {
             content: '';
             position: fixed;
             top: 0; left: 0;
@@ -77,12 +77,10 @@
             align-items: center;
             padding: 15px 20px;
             top: 0;
-            background-color: var(--surface-color);
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .light-mode header { border-bottom: 1px solid #ddd; }
-        .glass-effect.dark-mode header { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .glass-effect.light-mode header { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .dark-mode header, .dark-mode .bottom-nav { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .light-mode header, .light-mode .bottom-nav { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 
         .logo {
             font-family: var(--font-display);
@@ -97,10 +95,9 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .section-header { display: flex; flex-direction: column; margin-bottom: 20px; gap: 10px; }
-        .empty-state { text-align: center; opacity: 0.8; padding: 40px 20px; border-radius: var(--border-radius); background-color: var(--surface-color-dark); }
-        .light-mode .empty-state { background-color: var(--surface-color-light); }
-        .glass-effect.dark-mode .empty-state { background-color: rgba(30, 30, 40, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        .glass-effect.light-mode .empty-state { background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .empty-state { text-align: center; opacity: 0.8; padding: 40px 20px; border-radius: var(--border-radius); }
+        .dark-mode .empty-state { background-color: rgba(30, 30, 40, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .light-mode .empty-state { background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
         
         .quest-sub-nav {
             display: flex;
@@ -186,12 +183,15 @@
             flex-direction: column;
             justify-content: space-between;
             overflow: hidden;
+            background-color: rgba(30, 30, 40, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .dark-mode .item-card { background-color: var(--surface-color-dark); border: 1px solid #333; }
-        .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
-        .glass-effect.dark-mode .item-card { background-color: rgba(30, 30, 40, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .glass-effect.light-mode .item-card { background-color: rgba(255, 255, 255, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(0, 0, 0, 0.1); }
-
+        .light-mode .item-card {
+            background-color: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
         .item-card h3 { margin-top: 0; margin-bottom: 5px; word-wrap: break-word; }
         
         .quest-cycle-date {
@@ -263,11 +263,14 @@
         .modal-content { 
             margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; position: relative;
             animation: fadeIn 0.3s ease-out;
+            background-color: rgba(30, 30, 40, 0.75);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .dark-mode .modal-content { background-color: var(--surface-color-dark); }
-        .light-mode .modal-content { background-color: var(--surface-color-light); }
-        .glass-effect.dark-mode .modal-content { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .glass-effect.light-mode .modal-content { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(0, 0, 0, 0.1); }
+        .light-mode .modal-content {
+             background-color: rgba(255, 255, 255, 0.75);
+             border: 1px solid rgba(0, 0, 0, 0.1);
+        }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; font-weight: bold; cursor: pointer; }
         
         .checkbox-label {
@@ -346,16 +349,12 @@
         }
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background-color: var(--surface-color);
-            border-top: 1px solid #333;
+            border-top: 1px solid rgba(255,255,255,0.1);
             display: flex; justify-content: space-around; align-items: center; z-index: 100;
         }
-        .light-mode .bottom-nav { border-top: 1px solid #ddd; }
-        .dark-mode .bottom-nav { background-color: var(--surface-color-dark); }
-        .light-mode .bottom-nav { background-color: var(--surface-color-light); }
         
         .bottom-nav-link {
-            background: none; border: none; color: var(--text-color); text-decoration: none; display: flex; flex-direction: column;
+            background: none; border: none; text-decoration: none; display: flex; flex-direction: column;
             align-items: center; gap: 4px; font-size: 0.8rem; opacity: 0.7; transition: all 0.2s ease; cursor: pointer;
         }
         .light-mode .bottom-nav-link { color: var(--text-color-light); }
@@ -364,17 +363,21 @@
         .bottom-nav-link.active { color: var(--accent-red); opacity: 1; transform: scale(1.1); }
         
         .accordion-btn {
-            background-color: var(--surface-color-dark);
             color: var(--text-color-dark);
             cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left;
             outline: none; font-size: 1.1rem; transition: background-color 0.4s ease;
             border-radius: var(--border-radius);
+            background-color: rgba(30, 30, 40, 0.65);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .light-mode .accordion-btn { background-color: #eee; color: var(--text-color-light); }
+        .light-mode .accordion-btn {
+             background-color: rgba(255, 255, 255, 0.65);
+             border: 1px solid rgba(0, 0, 0, 0.1);
+             color: var(--text-color-light);
+        }
         .accordion-btn:hover, .accordion-btn.active { background-color: #333; }
         .light-mode .accordion-btn:hover, .light-mode .accordion-btn.active { background-color: #ccc; }
-        .glass-effect.dark-mode .accordion-btn { background-color: rgba(30, 30, 40, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .glass-effect.light-mode .accordion-btn { background-color: rgba(255, 255, 255, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(0, 0, 0, 0.1); }
         
         .accordion-panel {
             padding: 0 18px; background-color: transparent;
@@ -522,9 +525,9 @@
                 <label>Theme:</label>
                 <select name="theme"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
                 <div class="checkbox-label">
-                    <span>Use Frosted Glass Effect</span>
+                    <span>Show Animated Background</span>
                     <label class="toggle-switch">
-                        <input type="checkbox" name="useGlassEffect">
+                        <input type="checkbox" name="useAnimatedBackground">
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -578,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeQuestFilter: 'Daily',
             freeRewardCostLimit: 20,
             startOfDay: '00:00',
-            useGlassEffect: true,
+            useAnimatedBackground: true,
         },
         lastClaimTimestamp: null,
         consecutiveDays: 0,
@@ -613,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try { 
                 const savedState = JSON.parse(saved);
                 const defaultState = { usedRewards: [], consecutiveDays: 0, lastClaimTimestamp: null };
-                const defaultSettings = { useGlassEffect: true };
+                const defaultSettings = { useAnimatedBackground: true };
                 state = { ...defaultState, ...state, ...savedState, settings: { ...defaultSettings, ...state.settings, ...savedState.settings } };
             } catch (e) { console.error("Error loading state, resetting.", e); }
         }
@@ -967,14 +970,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const applySettings = () => {
         document.body.className = state.settings.theme === 'dark' ? 'dark-mode' : 'light-mode';
-        document.body.classList.toggle('glass-effect', !!state.settings.useGlassEffect);
+        document.body.classList.toggle('animated-bg-on', !!state.settings.useAnimatedBackground);
         dom.bannerText.textContent = state.settings.bannerText;
         const settingsForm = document.getElementById('settings-form');
         settingsForm.theme.value = state.settings.theme;
         settingsForm.bannerText.value = state.settings.bannerText;
         settingsForm.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
         settingsForm.startOfDay.value = state.settings.startOfDay;
-        settingsForm.useGlassEffect.checked = !!state.settings.useGlassEffect;
+        settingsForm.useAnimatedBackground.checked = !!state.settings.useAnimatedBackground;
     };
     
     const openModal = (id) => document.getElementById(id).classList.add('active');
@@ -1032,7 +1035,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.settings.bannerText = formData.get('bannerText') || 'Level up your life!';
         state.settings.freeRewardCostLimit = parseInt(formData.get('freeRewardCostLimit')) || 20;
         state.settings.startOfDay = formData.get('startOfDay') || '00:00';
-        state.settings.useGlassEffect = !!formData.get('useGlassEffect');
+        state.settings.useAnimatedBackground = !!formData.get('useAnimatedBackground');
         saveState(); renderAll(); closeModal();
     });
     
