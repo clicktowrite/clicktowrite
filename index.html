@@ -702,9 +702,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const getQuestCycleDisplayString = (quest) => {
-        const now = Date.now();
+        const now = new Date();
         const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
-        
+
         const getStartOfWeek = (date) => {
             const d = new Date(date);
             const day = d.getDay();
@@ -716,20 +716,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switch (quest.frequency) {
             case 'Daily':
-                return `For ${formatDate(getAdjustedDate(new Date(now)))}`;
+                return `For ${formatDate(getAdjustedDate(now))}`;
             case 'Weekly':
-                startDate = quest.customCycleAnchor ? getCurrentCycleStartDate(quest, now) : getStartOfWeek(getAdjustedDate(new Date(now)));
-                endDate = new Date(startDate);
-                endDate.setDate(startDate.getDate() + 6);
-                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                if (quest.customCycleAnchor) {
+                    startDate = getCurrentCycleStartDate(quest, now);
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                } else {
+                    startDate = getStartOfWeek(getAdjustedDate(now));
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    return `Monday[${startDate.getDate()}] - Sunday [${endDate.getDate()}]`;
+                }
             case 'Monthly':
-                startDate = quest.customCycleAnchor ? getCurrentCycleStartDate(quest, now) : new Date(getAdjustedDate(new Date(now)).getFullYear(), getAdjustedDate(new Date(now)).getMonth(), 1);
-                endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
-                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                if (quest.customCycleAnchor) {
+                    startDate = getCurrentCycleStartDate(quest, now);
+                    endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                } else {
+                    return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(getAdjustedDate(now));
+                }
             case 'Yearly':
-                startDate = quest.customCycleAnchor ? getCurrentCycleStartDate(quest, now) : new Date(getAdjustedDate(new Date(now)).getFullYear(), 0, 1);
-                endDate = new Date(startDate.getFullYear(), 11, 31);
-                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                if (quest.customCycleAnchor) {
+                    startDate = getCurrentCycleStartDate(quest, now);
+                    endDate = new Date(startDate.getFullYear(), 11, 31);
+                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                } else {
+                    return `Year ${getAdjustedDate(now).getFullYear()}`;
+                }
             default:
                 return "";
         }
