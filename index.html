@@ -340,6 +340,7 @@
             <form id="add-reward-form">
                 <input type="text" name="name" placeholder="Reward Name" required>
                 <input type="number" name="cost" placeholder="Cost in Points" min="0" required>
+                <label class="checkbox-label"><span>Single redemption only?</span><input type="checkbox" name="redeemOnce"></label>
                 <label class="checkbox-label"><span>Add expiration?</span><input type="checkbox" name="hasExpiry"></label>
                 <div class="hidden" id="reward-expiry-setup"><input type="number" name="expiryDays" placeholder="Expires in how many days?" min="1"></div>
                 <label class="checkbox-label"><span>Add Timer?</span><input type="checkbox" name="hasTimer"></label>
@@ -849,7 +850,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const form = e.target; const data = Object.fromEntries(new FormData(form));
         state.rewards.push({
-            name: data.name, cost: parseInt(data.cost), hasExpiry: !!data.hasExpiry,
+            name: data.name, cost: parseInt(data.cost) || 0,
+            redeemOnce: !!data.redeemOnce,
+            hasExpiry: !!data.hasExpiry,
             expiryDays: data.hasExpiry ? (parseInt(data.expiryDays) || 7) : null,
             hasTimer: !!data.hasTimer,
             timerHours: data.hasTimer ? (parseInt(data.timerHours) || 0) : 0,
@@ -909,7 +912,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'redeem-btn': (item, index) => {
             if (state.points >= item.cost) {
                 state.points -= item.cost;
-                state.inventory.push(state.rewards.splice(index, 1)[0]);
+                state.inventory.push({ ...item });
+                if (item.redeemOnce) {
+                    state.rewards.splice(index, 1);
+                }
             } else { showAlert("Not enough points!"); }
         }
     });
