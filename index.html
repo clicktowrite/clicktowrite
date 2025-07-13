@@ -115,7 +115,16 @@
         }
         .dark-mode .item-card { background-color: var(--surface-color-dark); border: 1px solid #333; }
         .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
-        .item-card h3 { margin-top: 0; word-wrap: break-word; }
+        .item-card h3 { margin-top: 0; margin-bottom: 5px; word-wrap: break-word; }
+        
+        .quest-cycle-date {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .light-mode .quest-cycle-date { color: #777; }
+
         .tracker { display: flex; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;}
         .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
@@ -461,7 +470,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = Date.now();
 
         state.quests.forEach(quest => {
-            const hasExpired = hasNewCycleBegun(quest, quest.cycleStart) && !isQuestReadyForReset(quest);
+            // A quest has expired if a new cycle has begun AND it was never completed in its last cycle.
+            const hasExpired = hasNewCycleBegun(quest, quest.cycleStart) && !quest.lastCompleted;
 
             if (hasExpired) {
                 if (quest.penalty > 0) {
@@ -476,6 +486,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     questsToKeep.push(quest);
                 }
             } else {
+                // If a quest was completed, but a new cycle has begun, reset it without penalty.
+                if (quest.isRepeatable && hasNewCycleBegun(quest, quest.cycleStart)) {
+                     quest.cycleStart = now;
+                     quest.lastCompleted = null;
+                }
                 questsToKeep.push(quest);
             }
         });
@@ -486,6 +501,26 @@ document.addEventListener('DOMContentLoaded', () => {
             showAlert(`The following quests expired and penalties were applied: ${expiredQuestMessages.join(', ')}`, "Quests Expired");
         }
     };
+    
+    const getCycleDateString = (quest) => {
+        const cycleDate = new Date(quest.cycleStart);
+        switch(quest.frequency) {
+            case 'Weekly': {
+                const msInDay = 86400000;
+                // Adjust to make Monday the first day of the week (0)
+                const dayOfWeek = (cycleDate.getDay() + 6) % 7; 
+                const weekStart = new Date(cycleDate.getTime() - dayOfWeek * msInDay);
+                return `Week of ${weekStart.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}`;
+            }
+            case 'Monthly':
+                return `Month of ${cycleDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`;
+            case 'Yearly':
+                return `Year of ${cycleDate.toLocaleDateString(undefined, { year: 'numeric' })}`;
+            default:
+                return '';
+        }
+    };
+
 
     const renderAll = () => {
         applySettings();
@@ -506,9 +541,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderQuests = () => {
-        dom.questSubNav.querySelectorAll('.sub-nav-btn').forEach(btn => 
-            btn.classList.toggle('active', btn.dataset.frequency === state.settings.activeQuestFilter)
-        );
+        const questCounts = { Daily: 0, Weekly: 0, Monthly: 0, Yearly: 0 };
+        for (const quest of state.quests) {
+            if (questCounts[quest.frequency] !== undefined) {
+                questCounts[quest.frequency]++;
+            }
+        }
+        dom.questSubNav.querySelectorAll('.sub-nav-btn').forEach(btn => {
+            const freq = btn.dataset.frequency;
+            btn.textContent = `${freq} (${questCounts[freq] || 0})`;
+            btn.classList.toggle('active', freq === state.settings.activeQuestFilter);
+        });
+
         const filteredQuests = state.quests.filter(q => q.frequency === state.settings.activeQuestFilter);
         renderList(dom.questList, filteredQuests, (quest, index) => {
             const card = document.createElement('div');
@@ -516,10 +560,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const showMessage = quest.hasTracker && quest.currentProgress > quest.target;
             const isReady = isQuestReadyForReset(quest);
             const canComplete = quest.hasTracker ? quest.currentProgress >= quest.target : true;
-
+            
             card.innerHTML = `
                 <div> <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                     <h3>${quest.name}</h3>
+                    <div class="quest-cycle-date">${getCycleDateString(quest)}</div>
                     <p>+${quest.points} Points / -${quest.penalty} Points</p>
                     ${quest.hasTracker ? `<div class="tracker">
                         <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
@@ -683,11 +728,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = e.target.closest('[data-index]');
             if (!target) return;
             const index = parseInt(target.dataset.index);
-            const item = state[listName][index];
+            
+            const list = listName === 'quests' ? state.quests.filter(q => q.frequency === state.settings.activeQuestFilter) : state[listName];
+            const item = list[index];
             if (!item) return;
+
+            const originalIndex = state[listName].findIndex(i => i === item);
+
             for (const actionClass in actions) {
                 if (target.classList.contains(actionClass)) {
-                    await actions[actionClass](item, index, e);
+                    await actions[actionClass](item, originalIndex, e);
                     break;
                 }
             }
