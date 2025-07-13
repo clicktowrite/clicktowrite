@@ -262,6 +262,10 @@
             <div id="active-rewards-panel" class="accordion-panel">
                 <div id="active-rewards-list" class="item-list"></div>
             </div>
+            <button id="toggle-used-rewards-btn" class="accordion-btn" style="margin-top: 15px;">Used Rewards</button>
+            <div id="used-rewards-panel" class="accordion-panel">
+                <div id="used-rewards-list" class="item-list"></div>
+            </div>
         </div>
     </main>
 
@@ -350,7 +354,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     let state = {
-        points: 0, quests: [], rewards: [], inventory: [], activeRewards: [],
+        points: 0, quests: [], rewards: [], inventory: [], activeRewards: [], usedRewards: [],
         settings: { 
             theme: 'dark', 
             bannerText: 'Level up your life!', 
@@ -367,11 +371,14 @@ document.addEventListener('DOMContentLoaded', () => {
         rewardList: document.getElementById('reward-list'),
         inventoryList: document.getElementById('inventory-list'),
         activeRewardsList: document.getElementById('active-rewards-list'),
+        usedRewardsList: document.getElementById('used-rewards-list'),
         bannerText: document.getElementById('banner-text'),
         bottomNav: document.querySelector('.bottom-nav'),
         questSubNav: document.querySelector('.quest-sub-nav'),
         activeRewardsBtn: document.getElementById('toggle-active-rewards-btn'),
         activeRewardsPanel: document.getElementById('active-rewards-panel'),
+        usedRewardsBtn: document.getElementById('toggle-used-rewards-btn'),
+        usedRewardsPanel: document.getElementById('used-rewards-panel'),
         freeRewardBtn: document.getElementById('free-reward-btn')
     };
 
@@ -381,7 +388,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saved) {
             try { 
                 const savedState = JSON.parse(saved);
-                state = { ...state, ...savedState, settings: { ...state.settings, ...savedState.settings } };
+                // Ensure new state properties exist
+                const defaultState = { usedRewards: [] };
+                state = { ...defaultState, ...state, ...savedState, settings: { ...state.settings, ...savedState.settings } };
             } catch (e) { console.error("Error loading state, resetting.", e); }
         }
         if (state.lastFreeRewardDate === new Date().toDateString()) {
@@ -470,7 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = Date.now();
 
         state.quests.forEach(quest => {
-            // A quest has expired if a new cycle has begun AND it was never completed in its last cycle.
             const hasExpired = hasNewCycleBegun(quest, quest.cycleStart) && !quest.lastCompleted;
 
             if (hasExpired) {
@@ -486,7 +494,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     questsToKeep.push(quest);
                 }
             } else {
-                // If a quest was completed, but a new cycle has begun, reset it without penalty.
                 if (quest.isRepeatable && hasNewCycleBegun(quest, quest.cycleStart)) {
                      quest.cycleStart = now;
                      quest.lastCompleted = null;
@@ -507,7 +514,6 @@ document.addEventListener('DOMContentLoaded', () => {
         switch(quest.frequency) {
             case 'Weekly': {
                 const msInDay = 86400000;
-                // Adjust to make Monday the first day of the week (0)
                 const dayOfWeek = (cycleDate.getDay() + 6) % 7; 
                 const weekStart = new Date(cycleDate.getTime() - dayOfWeek * msInDay);
                 return `Week of ${weekStart.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}`;
@@ -529,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRewards();
         renderInventory();
         renderActiveRewards();
+        renderUsedRewards();
     };
 
     const renderList = (element, items, renderFunc, emptyMsg) => {
@@ -562,7 +569,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const canComplete = quest.hasTracker ? quest.currentProgress >= quest.target : true;
             
             card.innerHTML = `
-                <div> <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
+                <div> <!-- Main content wrapper -->
+                    <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                     <h3>${quest.name}</h3>
                     <div class="quest-cycle-date">${getCycleDateString(quest)}</div>
                     <p>+${quest.points} Points / -${quest.penalty} Points</p>
@@ -573,7 +581,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>` : ''}
                     <div class="motivational-message" style="display: ${showMessage ? 'block' : 'none'};">Keep moving forward! you're doing great!</div>
                 </div>
-                <div class="quest-controls-right"> ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
+                <div class="quest-controls-right"> <!-- Bottom-right controls wrapper -->
+                     ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
                     <button class="btn done-btn" data-index="${index}" ${!canComplete || (quest.isRepeatable && !isReady) ? 'disabled' : ''}>Done</button>
                 </div>`;
             dom.questList.appendChild(card);
@@ -596,10 +605,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderList(dom.inventoryList, state.inventory, (item, index) => {
             const card = document.createElement('div');
             card.className = 'item-card';
+            const actionButton = item.hasTimer
+                ? `<button class="btn activate-btn" data-index="${index}">Activate</button>`
+                : `<button class="btn redeem-item-btn" data-index="${index}">Redeem</button>`;
+
             card.innerHTML = `
                 <button class="delete-btn" data-index="${index}" aria-label="Delete item">&times;</button>
                 <h3>${item.name}</h3>
-                ${item.hasTimer ? `<button class="btn activate-btn" data-index="${index}">Activate</button>` : `<p>Standard Item</p>`}`;
+                ${actionButton}`;
             dom.inventoryList.appendChild(card);
         }, '<h3>Inventory is empty.</h3><p>Redeem rewards to fill it up.</p>');
     };
@@ -614,6 +627,15 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `<h3>${item.name}</h3><p>Time Left: <span class="timer-countdown">${timeString}</span></p>`;
             dom.activeRewardsList.appendChild(card);
         }, '<h3>No active rewards.</h3>');
+    };
+    
+    const renderUsedRewards = () => {
+        renderList(dom.usedRewardsList, state.usedRewards, (item, index) => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `<h3>${item.name}</h3><p>Redeemed</p>`;
+            dom.usedRewardsList.appendChild(card);
+        }, '<h3>No used rewards.</h3><p>Redeem non-timed items from your inventory.</p>');
     };
 
     const applySettings = () => {
@@ -662,11 +684,15 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.activeRewardsBtn.addEventListener('click', function() {
         this.classList.toggle('active');
         const panel = dom.activeRewardsPanel;
-        if (panel.style.maxHeight) {
-            panel.style.maxHeight = null;
-        } else {
-            panel.style.maxHeight = panel.scrollHeight + "px";
-        }
+        if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
+        else { panel.style.maxHeight = panel.scrollHeight + "px"; }
+    });
+    
+    dom.usedRewardsBtn.addEventListener('click', function() {
+        this.classList.toggle('active');
+        const panel = dom.usedRewardsPanel;
+        if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
+        else { panel.style.maxHeight = panel.scrollHeight + "px"; }
     });
 
     document.getElementById('settings-form').addEventListener('submit', (e) => {
@@ -727,13 +753,20 @@ document.addEventListener('DOMContentLoaded', () => {
         listEl.addEventListener('click', async (e) => {
             const target = e.target.closest('[data-index]');
             if (!target) return;
-            const index = parseInt(target.dataset.index);
-            
-            const list = listName === 'quests' ? state.quests.filter(q => q.frequency === state.settings.activeQuestFilter) : state[listName];
-            const item = list[index];
-            if (!item) return;
+            let index = parseInt(target.dataset.index);
+            let item;
+            let originalIndex;
 
-            const originalIndex = state[listName].findIndex(i => i === item);
+            if (listName === 'quests') {
+                const filteredQuests = state.quests.filter(q => q.frequency === state.settings.activeQuestFilter);
+                item = filteredQuests[index];
+                if (!item) return;
+                originalIndex = state.quests.findIndex(q => q === item);
+            } else {
+                item = state[listName][index];
+                if (!item) return;
+                originalIndex = index;
+            }
 
             for (const actionClass in actions) {
                 if (target.classList.contains(actionClass)) {
@@ -779,6 +812,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             state.activeRewards.push({ ...item, id: Date.now(), endTime: Date.now() + durationMs });
             state.inventory.splice(index, 1);
+        },
+        'redeem-item-btn': (item, index) => {
+            state.usedRewards.push(state.inventory.splice(index, 1)[0]);
         }
     });
 
