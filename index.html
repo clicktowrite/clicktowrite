@@ -77,33 +77,28 @@
         
         .quest-sub-nav {
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            gap: 6px;
             margin-bottom: 20px;
-            overflow-x: auto;
-            flex-wrap: nowrap;
-            padding-bottom: 10px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        .quest-sub-nav::-webkit-scrollbar {
-            display: none;
+            flex-wrap: wrap;
         }
 
         .sub-nav-btn {
             background-color: #444;
             color: var(--text-color-dark);
             border: 1px solid #666;
-            padding: 8px 16px;
+            padding: 8px 12px;
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
+            font-size: 0.9rem;
         }
         .light-mode .sub-nav-btn { background-color: #e0e0e0; color: var(--text-color-light); border-color: #ccc; }
         .sub-nav-btn.active { background-color: var(--accent-red); color: white; border-color: var(--accent-red); }
 
         .tab-counter {
-            margin-left: 8px;
+            margin-left: 6px;
             background-color: #555;
             color: white;
             font-size: 0.8em;
@@ -519,14 +514,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const hasNewCycleBegun = (quest, dateToCheck) => {
         if (!dateToCheck) return false; 
         
-        // Handle custom anchor date logic
         if (quest.customCycleAnchor) {
             const lastCycleStart = getCurrentCycleStartDate(quest, dateToCheck);
             const currentCycleStart = getCurrentCycleStartDate(quest, Date.now());
             return currentCycleStart.getTime() > lastCycleStart.getTime();
         }
 
-        // Fallback to original logic
         const now = getAdjustedDate(new Date());
         const last = getAdjustedDate(new Date(dateToCheck));
         switch(quest.frequency) {
@@ -593,7 +586,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const getCycleDateString = (quest) => {
         const formatDate = (date) => date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
         
-        // Handle custom anchor quests
         if (quest.customCycleAnchor) {
             const cycleStart = getCurrentCycleStartDate(quest, Date.now());
             let cycleEnd;
@@ -615,7 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return `Cycle: ${formatDate(cycleStart)} - ${formatDate(cycleEnd)}`;
         }
 
-        // Fallback to original logic
         const cycleDate = new Date(quest.cycleStart);
         switch(quest.frequency) {
             case 'Weekly': {
