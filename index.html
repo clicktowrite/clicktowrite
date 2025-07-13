@@ -105,18 +105,29 @@
         .light-mode input, .light-mode select { background-color: #eee; color: #333; border-color: #ccc;}
         
         .item-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .item-card { padding: 20px; border-radius: var(--border-radius); position: relative; }
+        .item-card {
+            padding: 20px;
+            border-radius: var(--border-radius);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
         .dark-mode .item-card { background-color: var(--surface-color-dark); border: 1px solid #333; }
         .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
         .item-card h3 { margin-top: 0; word-wrap: break-word; }
-        .tracker { display: flex; align-items: center; gap: 10px; margin: 15px 0; flex-wrap: wrap;}
+        .tracker { display: flex; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;}
         .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
         .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; }
+        .quest-controls-right {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
         .repeat-counter {
-            position: absolute;
-            top: 10px;
-            left: 10px;
             background-color: rgba(0,0,0,0.5);
             color: #fff;
             padding: 2px 6px;
@@ -125,15 +136,16 @@
             font-weight: bold;
         }
         .light-mode .repeat-counter {
-            background-color: rgba(255,255,255,0.7);
+            background-color: rgba(200, 200, 200, 0.8);
             color: #333;
-            border: 1px solid #ccc;
+            border: 1px solid #bbb;
         }
 
         .motivational-message {
             font-size: 0.8em;
             color: #17a2b8;
             font-style: italic;
+            margin-top: 10px;
         }
 
         .modal {
@@ -293,6 +305,8 @@
             <form id="settings-form">
                 <label>Theme:</label>
                 <select name="theme"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
+                <label style="margin-top:15px; display:block;">Start of Day (for daily resets):</label>
+                <input type="time" name="startOfDay">
                 <label style="margin-top:15px; display:block;">Max cost for Free Reward:</label>
                 <input type="number" name="freeRewardCostLimit" min="0">
                 <label style="margin-top:15px; display:block;">Moving Banner Text:</label>
@@ -331,7 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
             theme: 'dark', 
             bannerText: 'Level up your life!', 
             activeQuestFilter: 'Daily',
-            freeRewardCostLimit: 20
+            freeRewardCostLimit: 20,
+            startOfDay: '00:00'
         },
         lastFreeRewardDate: null
     };
@@ -399,6 +414,37 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
     };
+    
+    const getAdjustedDate = (date) => {
+        const [hours, minutes] = state.settings.startOfDay.split(':').map(Number);
+        const adjustedDate = new Date(date);
+        adjustedDate.setHours(adjustedDate.getHours() - hours);
+        adjustedDate.setMinutes(adjustedDate.getMinutes() - minutes);
+        return adjustedDate;
+    };
+    
+    const isQuestReadyForReset = (quest) => {
+        if (!quest.isRepeatable) return true; 
+        if (!quest.lastCompleted) return true;
+
+        const now = getAdjustedDate(new Date());
+        const last = getAdjustedDate(new Date(quest.lastCompleted));
+
+        switch(quest.frequency) {
+            case 'Daily':
+                return now.toDateString() !== last.toDateString();
+            case 'Weekly':
+                const weekStartNow = new Date(now.setDate(now.getDate() - now.getDay()));
+                const weekStartLast = new Date(last.setDate(last.getDate() - last.getDay()));
+                return weekStartNow.toDateString() !== weekStartLast.toDateString();
+            case 'Monthly':
+                return now.getMonth() !== last.getMonth() || now.getFullYear() !== last.getFullYear();
+            case 'Yearly':
+                return now.getFullYear() !== last.getFullYear();
+            default:
+                return false;
+        }
+    };
 
     const renderAll = () => {
         applySettings();
@@ -427,19 +473,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'item-card';
             const showMessage = quest.hasTracker && quest.currentProgress > quest.target;
+            const isReady = isQuestReadyForReset(quest);
+            const canComplete = quest.hasTracker ? quest.currentProgress >= quest.target : true;
+
             card.innerHTML = `
-                <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
-                ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
-                <h3>${quest.name}</h3>
-                <p>+${quest.points} Points</p>
-                ${quest.hasTracker ? `<div class="tracker">
-                    <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
-                    <span>${quest.currentProgress} / ${quest.target}</span>
-                    <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${index}">+</button>
-                </div>` : ''}
-                <span class="motivational-message" style="display: ${showMessage ? 'inline-block' : 'none'}; margin-top: 10px;">Keep moving forward! you're doing great!</span>
-                <br>
-                <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
+                <div> <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
+                    <h3>${quest.name}</h3>
+                    <p>+${quest.points} Points</p>
+                    ${quest.hasTracker ? `<div class="tracker">
+                        <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
+                        <span>${quest.currentProgress} / ${quest.target}</span>
+                        <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${index}">+</button>
+                    </div>` : ''}
+                    <div class="motivational-message" style="display: ${showMessage ? 'block' : 'none'};">Keep moving forward! you're doing great!</div>
+                </div>
+                <div class="quest-controls-right"> ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
+                    <button class="btn done-btn" data-index="${index}" ${!canComplete || (quest.isRepeatable && !isReady) ? 'disabled' : ''}>Done</button>
+                </div>`;
             dom.questList.appendChild(card);
         }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one!</p>`);
     };
@@ -487,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsForm.theme.value = state.settings.theme;
         settingsForm.bannerText.value = state.settings.bannerText;
         settingsForm.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
+        settingsForm.startOfDay.value = state.settings.startOfDay;
     };
 
     const openModal = (id) => document.getElementById(id).classList.add('active');
@@ -538,6 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.settings.theme = formData.get('theme');
         state.settings.bannerText = formData.get('bannerText') || 'Level up your life!';
         state.settings.freeRewardCostLimit = parseInt(formData.get('freeRewardCostLimit')) || 20;
+        state.settings.startOfDay = formData.get('startOfDay') || '00:00';
         saveState(); renderAll(); closeModal();
     });
 
@@ -562,6 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
             target: data.hasTracker ? (parseInt(data.target) || 1) : 1, currentProgress: 0,
             isRepeatable: !!data.isRepeatable,
             repeatCount: 0,
+            lastCompleted: null
         });
         saveState(); renderAll(); closeModal(); form.reset();
         document.getElementById('quest-tracker-setup').classList.add('hidden');
@@ -607,6 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.isRepeatable) {
                 item.repeatCount++;
                 item.currentProgress = 0;
+                item.lastCompleted = Date.now();
             } else {
                 state.quests.splice(index, 1);
             }
