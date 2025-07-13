@@ -204,10 +204,57 @@
         .dark-mode .modal-content { background-color: var(--surface-color-dark); }
         .light-mode .modal-content { background-color: var(--surface-color-light); }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; font-weight: bold; cursor: pointer; }
+        
         .checkbox-label {
-            display: flex; align-items: center; justify-content: space-between;
-            margin: 15px 0; cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
         }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #28a745;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+        .light-mode .slider {
+            background-color: #ccc;
+        }
+
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .modal-buttons .btn { width: auto; min-width: 80px; }
         .timer-inputs { display: flex; gap: 10px; }
@@ -326,9 +373,21 @@
                 </div>
                 <input type="number" name="points" placeholder="Points Reward" min="0" required>
                 <input type="number" name="penalty" placeholder="Points Penalty on Failure" min="0">
-                <label class="checkbox-label"><span>Add number tracker?</span><input type="checkbox" name="hasTracker"></label>
+                <div class="checkbox-label">
+                    <span>Add number tracker?</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="hasTracker">
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="hidden" id="quest-tracker-setup"><input type="number" name="target" placeholder="Target number" min="1"></div>
-                <label class="checkbox-label"><span>Make quest repeatable?</span><input type="checkbox" name="isRepeatable"></label>
+                <div class="checkbox-label">
+                    <span>Make quest repeatable?</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="isRepeatable">
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <button type="submit" class="btn">Save Quest</button>
             </form>
         </div>
@@ -340,10 +399,28 @@
             <form id="add-reward-form">
                 <input type="text" name="name" placeholder="Reward Name" required>
                 <input type="number" name="cost" placeholder="Cost in Points" min="0" required>
-                <label class="checkbox-label"><span>Single redemption only?</span><input type="checkbox" name="redeemOnce"></label>
-                <label class="checkbox-label"><span>Add expiration?</span><input type="checkbox" name="hasExpiry"></label>
+                <div class="checkbox-label">
+                    <span>Single redemption only?</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="redeemOnce">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="checkbox-label">
+                    <span>Add expiration?</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="hasExpiry">
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="hidden" id="reward-expiry-setup"><input type="number" name="expiryDays" placeholder="Expires in how many days?" min="1"></div>
-                <label class="checkbox-label"><span>Add Timer?</span><input type="checkbox" name="hasTimer"></label>
+                <div class="checkbox-label">
+                    <span>Add Timer?</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="hasTimer">
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="hidden timer-inputs" id="reward-timer-setup">
                     <input type="number" name="timerHours" placeholder="Hours" min="0">
                     <input type="number" name="timerMinutes" placeholder="Minutes" min="0">
@@ -815,15 +892,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ['add-quest-form', 'add-reward-form'].forEach(formId => {
         const form = document.getElementById(formId);
-        form.querySelector(`[name="hasTracker"]`)?.addEventListener('change', (e) => {
-            form.querySelector(`#quest-tracker-setup`).classList.toggle('hidden', !e.target.checked);
-        });
-        form.querySelector('[name="hasExpiry"]')?.addEventListener('change', (e) => {
-            form.querySelector('#reward-expiry-setup').classList.toggle('hidden', !e.target.checked);
-        });
-        form.querySelector('[name="hasTimer"]')?.addEventListener('change', (e) => {
-            form.querySelector('#reward-timer-setup').classList.toggle('hidden', !e.target.checked);
-        });
+        const trackerCheckbox = form.querySelector(`[name="hasTracker"]`);
+        if (trackerCheckbox) {
+            trackerCheckbox.addEventListener('change', (e) => {
+                form.querySelector(`#quest-tracker-setup`).classList.toggle('hidden', !e.target.checked);
+            });
+        }
+        const expiryCheckbox = form.querySelector('[name="hasExpiry"]');
+        if (expiryCheckbox) {
+            expiryCheckbox.addEventListener('change', (e) => {
+                form.querySelector('#reward-expiry-setup').classList.toggle('hidden', !e.target.checked);
+            });
+        }
+        const timerCheckbox = form.querySelector('[name="hasTimer"]');
+        if (timerCheckbox) {
+            timerCheckbox.addEventListener('change', (e) => {
+                form.querySelector('#reward-timer-setup').classList.toggle('hidden', !e.target.checked);
+            });
+        }
     });
     
     document.getElementById('add-quest-form').addEventListener('submit', (e) => {
