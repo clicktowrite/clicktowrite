@@ -656,9 +656,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
         
-        dom.activeRewardsList.querySelectorAll('.active-reward-card').forEach(card => {
-            const item = state.activeRewards.find(r => r.id == card.dataset.id);
-            if (item) {
+        state.activeRewards.forEach(item => {
+            const card = dom.activeRewardsList.querySelector(`[data-id="${item.id}"]`);
+            if (card) {
                 const remaining = item.endTime - Date.now();
                 card.querySelector('.timer-countdown').textContent = new Date(remaining).toISOString().substr(11, 8);
             }
