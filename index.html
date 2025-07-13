@@ -466,8 +466,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
 
     document.addEventListener('click', (e) => {
-        if (e.target.dataset.modalTarget) openModal(e.target.dataset.modalTarget);
-        if (e.target.dataset.modalClose || e.target.classList.contains('modal')) closeModal();
+        const modalButton = e.target.closest('[data-modal-target]');
+        if (modalButton) {
+            openModal(modalButton.dataset.modalTarget);
+        }
+        
+        const closeButton = e.target.closest('[data-modal-close]');
+        if (closeButton || e.target.classList.contains('modal')) {
+            closeModal();
+        }
     });
 
     dom.bottomNav.addEventListener('click', (e) => {
