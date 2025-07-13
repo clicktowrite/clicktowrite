@@ -127,11 +127,22 @@
             background-color: var(--accent-red); color: white; border: none; padding: 12px 20px;
             border-radius: var(--border-radius); cursor: pointer; font-size: 1rem; font-weight: 700;
             transition: background-color 0.2s ease; width: 100%; box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
         .btn-secondary { background-color: #555; }
         .btn-free { background: linear-gradient(45deg, #ff00ff, #00ffff); color: black; }
         
+        .day-streak-counter {
+            background-color: rgba(0,0,0,0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
         input, select {
             width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444;
             border-radius: 5px; background-color: #333; color: white;
@@ -281,6 +292,13 @@
         .modal-buttons .btn { width: auto; min-width: 80px; }
         .timer-inputs { display: flex; gap: 10px; }
         
+        #choice-reward-list .btn {
+            width: 100%;
+            margin-bottom: 10px;
+            justify-content: space-between;
+        }
+        #choice-reward-list .cost { color: var(--points-color); }
+
         #free-reward-spinner { text-align: center; }
         #spinner-arrow { font-size: 3rem; color: var(--accent-red); margin-bottom: 20px; }
         .spinner-container { height: 100px; overflow: hidden; position: relative; mask-image: linear-gradient(transparent, black 25%, black 75%, transparent); }
@@ -369,7 +387,10 @@
         <div id="rewards-tab" class="tab-content">
             <div class="section-header">
                 <button class="btn" data-modal-target="add-reward-modal">Add Reward</button>
-                <button id="free-reward-btn" class="btn btn-free">Get Daily Free Reward</button>
+                <button id="free-reward-btn" class="btn btn-free">
+                    Get Daily Free Reward
+                    <span class="day-streak-counter">🔥 0</span>
+                </button>
             </div>
             <div id="reward-list" class="item-list"></div>
         </div>
@@ -493,6 +514,14 @@
             <button id="claim-reward-btn" class="btn hidden">Claim & Close</button>
         </div>
     </div>
+    <div id="choose-reward-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal-close="true">&times;</span>
+            <h2>🎉 7-Day Streak! Choose Your Reward!</h2>
+            <p>Congratulations! As a reward for your consistency, you can choose any eligible reward for free.</p>
+            <div id="choice-reward-list" class="item-list" style="margin-top: 20px;"></div>
+        </div>
+    </div>
     <div id="custom-dialog-modal" class="modal">
         <div class="modal-content">
             <h2 id="dialog-title"></h2>
@@ -518,7 +547,8 @@ document.addEventListener('DOMContentLoaded', () => {
             freeRewardCostLimit: 20,
             startOfDay: '00:00'
         },
-        lastFreeRewardDate: null
+        lastClaimTimestamp: null,
+        consecutiveDays: 0,
     };
 
     const dom = {
@@ -537,6 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
         usedRewardsPanel: document.getElementById('used-rewards-panel'),
         accordionBackdrop: document.getElementById('accordion-backdrop'),
         freeRewardBtn: document.getElementById('free-reward-btn'),
+        choiceRewardList: document.getElementById('choice-reward-list'),
         addQuestModal: {
             frequencySelect: document.querySelector('#add-quest-form [name="frequency"]'),
             customCycleSetup: document.getElementById('custom-cycle-setup'),
@@ -549,12 +580,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saved) {
             try { 
                 const savedState = JSON.parse(saved);
-                const defaultState = { usedRewards: [] };
+                const defaultState = { usedRewards: [], consecutiveDays: 0, lastClaimTimestamp: null };
                 state = { ...defaultState, ...state, ...savedState, settings: { ...state.settings, ...savedState.settings } };
             } catch (e) { console.error("Error loading state, resetting.", e); }
-        }
-        if (state.lastFreeRewardDate === new Date().toDateString()) {
-            dom.freeRewardBtn.disabled = true;
         }
     };
 
@@ -767,10 +795,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const updateFreeRewardButton = () => {
+        const canClaim = !state.lastClaimTimestamp || hasNewCycleBegun({ frequency: 'Daily' }, state.lastClaimTimestamp);
+        dom.freeRewardBtn.disabled = !canClaim;
+        
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const lastClaimDate = state.lastClaimTimestamp ? getAdjustedDate(new Date(state.lastClaimTimestamp)).toDateString() : null;
+        const yesterdayDate = getAdjustedDate(yesterday).toDateString();
+
+        if(canClaim && lastClaimDate !== yesterdayDate && lastClaimDate !== getAdjustedDate(new Date()).toDateString()) {
+             if (state.consecutiveDays > 0) {
+                 state.consecutiveDays = 0; 
+             }
+        }
+
+        dom.freeRewardBtn.querySelector('.day-streak-counter').textContent = `🔥 ${state.consecutiveDays}`;
+    };
+
 
     const renderAll = () => {
         applySettings();
         dom.points.textContent = state.points;
+        updateFreeRewardButton();
         renderQuests();
         renderRewards();
         renderInventory();
@@ -1103,38 +1150,59 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dom.freeRewardBtn.addEventListener('click', () => {
+        updateFreeRewardButton(); // Recalculate streak just before claiming
         const eligibleRewards = state.rewards.filter(r => r.cost <= state.settings.freeRewardCostLimit);
         if (eligibleRewards.length < 2) {
             showAlert(`You need at least two rewards costing ${state.settings.freeRewardCostLimit} points or less to spin!`, "Not Enough Rewards");
             return;
         }
-        openModal('free-reward-modal');
-        const spinnerWordsEl = document.getElementById('spinner-words');
-        const spinnerResultEl = document.getElementById('spinner-result');
-        const claimRewardBtn = document.getElementById('claim-reward-btn');
-        spinnerResultEl.classList.add('hidden');
-        claimRewardBtn.classList.add('hidden');
-        let i = 0;
-        const spinInterval = setInterval(() => {
-            spinnerWordsEl.textContent = eligibleRewards[i % eligibleRewards.length].name;
-            i++;
-        }, 100);
-        setTimeout(() => {
-            clearInterval(spinInterval);
-            const winner = eligibleRewards[Math.floor(Math.random() * eligibleRewards.length)];
-            spinnerWordsEl.textContent = winner.name;
-            spinnerResultEl.innerHTML = `You won: <span style="color: var(--accent-red);">${winner.name}</span>!`;
-            spinnerResultEl.classList.remove('hidden');
-            claimRewardBtn.classList.remove('hidden');
-            state.inventory.push({ ...winner, dateAcquired: Date.now(), expiryTimestamp: new Date().setDate(new Date().getDate() + 7) });
-            state.lastFreeRewardDate = new Date().toDateString();
-            dom.freeRewardBtn.disabled = true;
-            saveState();
-        }, 3000);
-    });
-    document.getElementById('claim-reward-btn').addEventListener('click', () => {
-        closeModal();
-        renderAll();
+
+        state.consecutiveDays++;
+        state.lastClaimTimestamp = Date.now();
+
+        if (state.consecutiveDays >= 7) {
+            dom.choiceRewardList.innerHTML = '';
+            eligibleRewards.forEach(reward => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-secondary';
+                btn.innerHTML = `<span>${reward.name}</span> <span class="cost">${reward.cost} PTS</span>`;
+                btn.onclick = () => {
+                    state.inventory.push({ ...reward, dateAcquired: Date.now() });
+                    state.consecutiveDays = 0; // Reset streak
+                    saveState();
+                    renderAll();
+                    closeModal();
+                };
+                dom.choiceRewardList.appendChild(btn);
+            });
+            openModal('choose-reward-modal');
+        } else {
+            openModal('free-reward-modal');
+            const spinnerWordsEl = document.getElementById('spinner-words');
+            const spinnerResultEl = document.getElementById('spinner-result');
+            const claimRewardBtn = document.getElementById('claim-reward-btn');
+            spinnerResultEl.classList.add('hidden');
+            claimRewardBtn.classList.add('hidden');
+            let i = 0;
+            const spinInterval = setInterval(() => {
+                spinnerWordsEl.textContent = eligibleRewards[i % eligibleRewards.length].name;
+                i++;
+            }, 100);
+            setTimeout(() => {
+                clearInterval(spinInterval);
+                const winner = eligibleRewards[Math.floor(Math.random() * eligibleRewards.length)];
+                spinnerWordsEl.textContent = winner.name;
+                spinnerResultEl.innerHTML = `You won: <span style="color: var(--accent-red);">${winner.name}</span>!`;
+                spinnerResultEl.classList.remove('hidden');
+                claimRewardBtn.classList.remove('hidden');
+                claimRewardBtn.onclick = () => {
+                    state.inventory.push({ ...winner, dateAcquired: Date.now() });
+                    saveState(); renderAll(); closeModal();
+                }
+            }, 3000);
+        }
+        updateFreeRewardButton();
+        saveState();
     });
 
     setInterval(() => {
@@ -1169,6 +1237,8 @@ document.addEventListener('DOMContentLoaded', () => {
     processExpiredInventory();
     renderAll();
     saveState(); 
+
+    setInterval(updateFreeRewardButton, 60000); // Check every minute
 });
 </script>
 
