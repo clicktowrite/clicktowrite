@@ -147,6 +147,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            overflow: hidden;
         }
         .dark-mode .item-card { background-color: var(--surface-color-dark); border: 1px solid #333; }
         .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
@@ -159,11 +160,32 @@
             font-style: italic;
         }
         .light-mode .quest-cycle-date { color: #777; }
+        
+        .item-banner {
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background-color: var(--accent-red);
+            color: white;
+            padding: 4px 30px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transform: rotate(45deg);
+            z-index: 1;
+        }
+        .item-banner.used { background-color: #28a745; }
+        .item-banner.expired { background-color: var(--accent-red); }
+
+        .item-timestamp {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
 
         .tracker { display: flex; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;}
         .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
-        .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; }
+        .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; z-index: 2;}
         .quest-controls-right {
             margin-top: 15px;
             display: flex;
@@ -300,6 +322,21 @@
             transition: max-height 0.3s ease-out; margin-top: 15px;
         }
         
+        #accordion-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            backdrop-filter: blur(4px);
+            background-color: rgba(0,0,0,0.3);
+            transition: opacity 0.3s;
+        }
+        #accordion-backdrop.hidden {
+            display: none;
+        }
+
         .hidden { display: none !important; }
 
         @media (min-width: 768px) {
@@ -467,6 +504,8 @@
         </div>
     </div>
 
+    <div id="accordion-backdrop" class="hidden"></div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -496,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         activeRewardsPanel: document.getElementById('active-rewards-panel'),
         usedRewardsBtn: document.getElementById('toggle-used-rewards-btn'),
         usedRewardsPanel: document.getElementById('used-rewards-panel'),
+        accordionBackdrop: document.getElementById('accordion-backdrop'),
         freeRewardBtn: document.getElementById('free-reward-btn'),
         addQuestModal: {
             frequencySelect: document.querySelector('#add-quest-form [name="frequency"]'),
@@ -666,6 +706,25 @@ document.addEventListener('DOMContentLoaded', () => {
             showAlert(`The following quests expired and penalties were applied: ${expiredQuestMessages.join(', ')}`, "Quests Expired");
         }
     };
+
+    const processExpiredInventory = () => {
+        const remainingInventory = [];
+        const now = Date.now();
+
+        state.inventory.forEach(item => {
+            if (item.hasExpiry) {
+                const expiryDate = new Date(item.dateAcquired).setDate(new Date(item.dateAcquired).getDate() + item.expiryDays);
+                if (now > expiryDate) {
+                    state.usedRewards.push({ ...item, status: 'Expired', dateUsed: expiryDate });
+                } else {
+                    remainingInventory.push(item);
+                }
+            } else {
+                remainingInventory.push(item);
+            }
+        });
+        state.inventory = remainingInventory;
+    };
     
     const getCycleDateString = (quest) => {
         const formatDate = (date) => date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -812,7 +871,16 @@ document.addEventListener('DOMContentLoaded', () => {
         renderList(dom.usedRewardsList, state.usedRewards, (item, index) => {
             const card = document.createElement('div');
             card.className = 'item-card';
-            card.innerHTML = `<h3>${item.name}</h3><p>Redeemed</p>`;
+            const statusClass = item.status ? item.status.toLowerCase() : 'used';
+            const dateLabel = item.status === 'Expired' ? 'Expired' : 'Used';
+            card.innerHTML = `
+                <div class="item-banner ${statusClass}">${item.status || 'USED'}</div>
+                <h3>${item.name}</h3>
+                <div class="item-timestamp">
+                    <p>Acquired: ${new Date(item.dateAcquired).toLocaleString()}</p>
+                    <p>${dateLabel}: ${new Date(item.dateUsed).toLocaleString()}</p>
+                </div>
+            `;
             dom.usedRewardsList.appendChild(card);
         }, '<h3>No used rewards.</h3><p>Redeem non-timed items from your inventory.</p>');
     };
@@ -825,6 +893,16 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsForm.bannerText.value = state.settings.bannerText;
         settingsForm.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
         settingsForm.startOfDay.value = state.settings.startOfDay;
+    };
+    
+    const updateAccordionBackdrop = () => {
+        const isActiveOpen = dom.activeRewardsPanel.style.maxHeight;
+        const isUsedOpen = dom.usedRewardsPanel.style.maxHeight;
+        if (isActiveOpen || isUsedOpen) {
+            dom.accordionBackdrop.classList.remove('hidden');
+        } else {
+            dom.accordionBackdrop.classList.add('hidden');
+        }
     };
 
     const openModal = (id) => document.getElementById(id).classList.add('active');
@@ -866,6 +944,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const panel = dom.activeRewardsPanel;
         if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
         else { panel.style.maxHeight = panel.scrollHeight + "px"; }
+        updateAccordionBackdrop();
     });
     
     dom.usedRewardsBtn.addEventListener('click', function() {
@@ -873,6 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const panel = dom.usedRewardsPanel;
         if (panel.style.maxHeight) { panel.style.maxHeight = null; } 
         else { panel.style.maxHeight = panel.scrollHeight + "px"; }
+        updateAccordionBackdrop();
     });
 
     document.getElementById('settings-form').addEventListener('submit', (e) => {
@@ -998,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'redeem-btn': (item, index) => {
             if (state.points >= item.cost) {
                 state.points -= item.cost;
-                state.inventory.push({ ...item });
+                state.inventory.push({ ...item, dateAcquired: Date.now() });
                 if (item.redeemOnce) {
                     state.rewards.splice(index, 1);
                 }
@@ -1017,7 +1097,8 @@ document.addEventListener('DOMContentLoaded', () => {
             state.inventory.splice(index, 1);
         },
         'redeem-item-btn': (item, index) => {
-            state.usedRewards.push(state.inventory.splice(index, 1)[0]);
+            state.usedRewards.push({ ...item, status: 'Used', dateUsed: Date.now() });
+            state.inventory.splice(index, 1);
         }
     });
 
@@ -1045,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             spinnerResultEl.innerHTML = `You won: <span style="color: var(--accent-red);">${winner.name}</span>!`;
             spinnerResultEl.classList.remove('hidden');
             claimRewardBtn.classList.remove('hidden');
-            state.inventory.push({ ...winner, expiryTimestamp: new Date().setDate(new Date().getDate() + 7) });
+            state.inventory.push({ ...winner, dateAcquired: Date.now(), expiryTimestamp: new Date().setDate(new Date().getDate() + 7) });
             state.lastFreeRewardDate = new Date().toDateString();
             dom.freeRewardBtn.disabled = true;
             saveState();
@@ -1085,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial load sequence
     loadState();
     processExpiredQuests();
+    processExpiredInventory();
     renderAll();
     saveState(); 
 });
