@@ -159,6 +159,7 @@
         .btn:disabled { background-color: #555; cursor: not-allowed; }
         .btn-secondary { background-color: #555; }
         .btn-free { background: linear-gradient(45deg, #ff00ff, #00ffff); color: black; }
+        .btn-danger { background-color: #990000; }
         
         .day-streak-counter {
             background-color: rgba(0,0,0,0.2);
@@ -553,9 +554,18 @@
                 <input type="number" name="freeRewardCostLimit" min="0">
                 <label style="margin-top:15px; display:block;">Moving Banner Text:</label>
                 <input type="text" name="bannerText">
+
+                <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
+                <label>Data Management</label>
+                <button type="button" id="save-data-btn" class="btn btn-secondary" style="width:100%; margin-top: 10px;">Save Data to File</button>
+                <button type="button" id="load-data-btn" class="btn btn-secondary" style="width:100%; margin-top: 10px;">Load Data from File</button>
+                <button type="button" id="reset-data-btn" class="btn btn-danger" style="width:100%; margin-top: 10px;">Reset All Data</button>
+                <input type="file" id="load-data-input" class="hidden" accept=".json">
+
                 <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
                 <button type="button" id="check-desktop-btn" class="btn btn-secondary" style="width:100%; margin-bottom: 10px;">Check Desktop Mode</button>
                 <button type="button" id="more-sites-btn" class="btn btn-secondary" style="width:100%;">Visit More Sites</button>
+                
                 <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
                 <button type="submit" class="btn">Save Settings</button>
             </form>
@@ -693,6 +703,72 @@ document.addEventListener('DOMContentLoaded', () => {
             dialog.confirmBtn.onclick = () => { closeModal(); resolve(true); };
             dialog.cancelBtn.onclick = () => { closeModal(); resolve(false); };
         });
+    };
+
+    // --- DATA MANAGEMENT ---
+    const saveDataToFile = () => {
+        try {
+            const stateString = JSON.stringify(state, null, 2);
+            const blob = new Blob([stateString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gamefy-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showAlert("Data saved successfully!", "Success");
+        } catch (e) {
+            console.error("Failed to save data:", e);
+            showAlert("Could not save data. See console for details.", "Error");
+        }
+    };
+
+    const loadDataFromFile = (file) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const loadedState = JSON.parse(e.target.result);
+                if (loadedState.points === undefined || !Array.isArray(loadedState.quests)) {
+                    throw new Error("Invalid data file format.");
+                }
+                const confirmed = await showConfirm(
+                    "This will overwrite all current data, including settings. Are you sure?",
+                    "Confirm Load"
+                );
+                if (confirmed) {
+                    const freshState = {
+                        points: 0, quests: [], rewards: [], inventory: [], activeRewards: [], usedRewards: [],
+                        settings: { theme: 'dark', bannerText: 'Level up your life!', activeQuestFilter: 'Daily', freeRewardCostLimit: 20, startOfDay: '00:00', useAnimatedBackground: true },
+                        lastClaimTimestamp: null, consecutiveDays: 0,
+                    };
+                    state = deepMerge(freshState, loadedState);
+                    saveState();
+                    renderAll();
+                    closeModal();
+                    showAlert("Data loaded successfully!", "Success");
+                }
+            } catch (err) {
+                console.error("Failed to load or parse data:", err);
+                showAlert(`Error loading file: ${err.message}`, "Load Error");
+            }
+        };
+        reader.onerror = () => { showAlert("Failed to read the file.", "File Read Error"); };
+        reader.readAsText(file);
+    };
+
+    const resetAllData = async () => {
+        const confirmed = await showConfirm(
+            "This will permanently delete ALL data, including quests, points, and settings. This action cannot be undone. Are you sure?",
+            "⚠️ PERMANENT RESET ⚠️"
+        );
+        if (confirmed) {
+            localStorage.removeItem('gamefyState');
+            await showAlert("All data has been reset. The app will now reload.", "Reset Complete");
+            location.reload();
+        }
     };
     
     // --- DATE & CYCLE LOGIC ---
@@ -982,6 +1058,17 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal(); 
             openModal('more-sites-modal');
         });
+
+        // Data management listeners
+        document.getElementById('save-data-btn').addEventListener('click', saveDataToFile);
+        const loadDataInput = document.getElementById('load-data-input');
+        document.getElementById('load-data-btn').addEventListener('click', () => loadDataInput.click());
+        loadDataInput.addEventListener('change', (e) => {
+            loadDataFromFile(e.target.files[0]);
+            e.target.value = null; 
+        });
+        document.getElementById('reset-data-btn').addEventListener('click', resetAllData);
+
 
         dom.bottomNav.addEventListener('click', (e) => {
             const navLink = e.target.closest('.bottom-nav-link[data-tab]');
