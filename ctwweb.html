@@ -19,6 +19,9 @@
             --points-color: #00ffdd;
             --border-radius: 8px;
             --header-height: 70px;
+            --nav-width: 280px;
+            --anim-speed: 0.3s;
+            --anim-ease: cubic-bezier(0.4, 0, 0.2, 1);
             --font-primary: 'Roboto', sans-serif;
             --font-display: 'Orbitron', sans-serif;
         }
@@ -33,6 +36,7 @@
             margin: 0;
             padding-top: var(--header-height);
             transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
         }
         .dark-mode { 
             color: var(--text-color-dark);
@@ -64,6 +68,7 @@
             align-items: center;
             z-index: 1000;
             border-bottom: 1px solid;
+            transition: transform var(--anim-speed) var(--anim-ease);
         }
         .dark-mode header { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,0.1);}
         .light-mode header { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(0,0,0,0.1);}
@@ -98,12 +103,15 @@
             font-size: 1.8rem;
             line-height: 1;
             border-radius: 50%;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform var(--anim-speed) ease;
         }
         .dark-mode .icon-btn { color: var(--text-color-dark); }
         .light-mode .icon-btn { color: var(--text-color-light); }
         .icon-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
         .light-mode .icon-btn:hover { background-color: rgba(0, 0, 0, 0.1); }
+        body.nav-open #nav-toggle-btn {
+            transform: rotate(90deg);
+        }
 
         .theme-switch {
             position: relative;
@@ -144,18 +152,19 @@
             top: 0;
             left: 0;
             bottom: 0;
-            width: 280px;
+            width: var(--nav-width);
             padding: 20px;
-            padding-top: var(--header-height);
+            padding-top: calc(var(--header-height) + 20px);
             transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform var(--anim-speed) var(--anim-ease);
             z-index: 999;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            border-right: 1px solid;
         }
-        .dark-mode .main-nav { background-color: var(--surface-color-dark); }
-        .light-mode .main-nav { background-color: var(--surface-color-light); }
+        .dark-mode .main-nav { background-color: var(--surface-color-dark); border-color: rgba(255,255,255,0.1); }
+        .light-mode .main-nav { background-color: var(--surface-color-light); border-color: rgba(0,0,0,0.1); }
         body.nav-open .main-nav { transform: translateX(0); }
         
         .nav-link {
@@ -171,30 +180,27 @@
         .nav-link:not(.active):hover { background-color: rgba(255,255,255,0.1); }
         .light-mode .nav-link:not(.active):hover { background-color: rgba(0,0,0,0.1); }
 
-        #nav-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 998;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        body.nav-open #nav-overlay {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
         .sticky-settings-container {
             position: fixed;
             bottom: 30px;
             right: 30px;
             z-index: 900;
+            transition: transform var(--anim-speed) var(--anim-ease);
         }
         
         main { 
             padding: 40px;
+            transition: transform var(--anim-speed) var(--anim-ease);
         }
+
+        body.nav-open header,
+        body.nav-open main {
+            transform: translateX(var(--nav-width));
+        }
+        body.nav-open .sticky-settings-container {
+            transform: translateX(calc(var(--nav-width) * -1));
+        }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.5s ease; }
         
@@ -341,7 +347,6 @@
         </div>
     </header>
 
-    <div id="nav-overlay"></div>
     <nav id="main-nav" class="main-nav">
         <a href="#" class="nav-link active" data-tab="quests">🎯 Quests</a>
         <a href="#" class="nav-link" data-tab="rewards">🏆 Rewards</a>
@@ -890,13 +895,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const setupEventListeners = () => {
-        // Modal & Navigation Logic
+        // Modal Logic
         document.body.addEventListener('click', (e) => {
             if (e.target.closest('[data-modal-target]')) openModal(e.target.closest('[data-modal-target]').dataset.modalTarget);
             if (e.target.closest('[data-modal-close]') || e.target.classList.contains('modal')) closeModal();
         });
-        document.getElementById('nav-toggle-btn').addEventListener('click', () => document.body.classList.add('nav-open'));
-        document.getElementById('nav-overlay').addEventListener('click', () => document.body.classList.remove('nav-open'));
+        
+        // Navigation Logic
+        document.getElementById('nav-toggle-btn').addEventListener('click', () => {
+            document.body.classList.toggle('nav-open');
+        });
 
         dom.mainNav.addEventListener('click', (e) => {
             const navLink = e.target.closest('.nav-link[data-tab]');
