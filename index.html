@@ -110,6 +110,7 @@
         .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
         .item-card h3 { margin-top: 0; word-wrap: break-word; }
         .tracker { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
+        .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
         .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; }
 
@@ -406,7 +407,11 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                 <h3>${quest.name}</h3><p>+${quest.points} Points</p>
-                ${quest.hasTracker ? `<div class="tracker">...</div>` : ''}
+                ${quest.hasTracker ? `<div class="tracker">
+                    <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
+                    <span>${quest.currentProgress} / ${quest.target}</span>
+                    <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${index}">+</button>
+                </div>` : ''}
                 <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
             dom.questList.appendChild(card);
         }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one!</p>`);
@@ -443,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.id = item.id;
             const timeRemaining = item.endTime - Date.now();
             const timeString = timeRemaining > 0 ? new Date(timeRemaining).toISOString().substr(11, 8) : "Expired";
-            card.innerHTML = `<h3>${item.name}</h3><p>Time Left: ${timeString}</p>`;
+            card.innerHTML = `<h3>${item.name}</h3><p>Time Left: <span class="timer-countdown">${timeString}</span></p>`;
             dom.activeRewardsList.appendChild(card);
         }, '<h3>No active rewards.</h3>');
     };
@@ -562,6 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
     handleListClick(dom.questList, 'quests', {
         'delete-btn': async (item, index) => { if (await showConfirm(`Delete quest "${item.name}"?`)) state.quests.splice(index, 1); },
         'done-btn': (item, index) => { state.points += item.points; state.quests.splice(index, 1); },
+        'tracker-btn': (item, index, e) => { e.target.dataset.op === 'plus' ? item.currentProgress++ : item.currentProgress = Math.max(0, item.currentProgress - 1); }
     });
     handleListClick(dom.rewardList, 'rewards', {
         'delete-btn': async (item, index) => { if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1); },
@@ -576,6 +582,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'delete-btn': async (item, index) => { if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1); },
         'activate-btn': (item, index) => {
             const durationMs = ((item.timerHours * 60) + item.timerMinutes) * 60000;
+            if (durationMs <= 0) {
+                showAlert("This reward has no timer duration set.", "Cannot Activate");
+                return;
+            }
             state.activeRewards.push({ ...item, id: Date.now(), endTime: Date.now() + durationMs });
             state.inventory.splice(index, 1);
         }
@@ -617,20 +627,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     setInterval(() => {
+        if (state.activeRewards.length === 0) return;
         let changed = false;
         state.activeRewards = state.activeRewards.filter(item => {
-            const remaining = item.endTime - Date.now();
-            if (remaining <= 0) {
+            if (item.endTime - Date.now() < 0) {
                 changed = true;
                 return false;
             }
-            const card = dom.activeRewardsList.querySelector(`[data-id="${item.id}"]`);
-            if (card) {
-                card.querySelector('p').textContent = `Time Left: ${new Date(remaining).toISOString().substr(11, 8)}`;
-            }
             return true;
         });
+        
+        dom.activeRewardsList.querySelectorAll('.active-reward-card').forEach(card => {
+            const item = state.activeRewards.find(r => r.id == card.dataset.id);
+            if (item) {
+                const remaining = item.endTime - Date.now();
+                card.querySelector('.timer-countdown').textContent = new Date(remaining).toISOString().substr(11, 8);
+            }
+        });
+
         if (changed) {
+            showAlert("An active reward timer has expired!", "Timer Finished");
             saveState();
             renderAll();
         }
