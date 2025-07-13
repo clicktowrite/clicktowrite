@@ -18,6 +18,8 @@
             --accent-red: #c00000;
             --points-color: #00ffdd;
             --border-radius: 8px;
+            --sidebar-width-expanded: 250px;
+            --sidebar-width-collapsed: 90px;
             --font-primary: 'Roboto', sans-serif;
             --font-display: 'Orbitron', sans-serif;
         }
@@ -65,7 +67,7 @@
         }
         
         .sidebar {
-            width: 250px;
+            width: var(--sidebar-width-expanded);
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -73,6 +75,7 @@
             height: 100vh;
             box-sizing: border-box;
             position: fixed;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .dark-mode .sidebar { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,0.1);}
         .light-mode .sidebar { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(0,0,0,0.1);}
@@ -84,7 +87,16 @@
             color: var(--accent-red);
             text-shadow: 0 0 5px var(--accent-red);
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
+            transition: font-size 0.3s ease;
+        }
+        .points-display { 
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--points-color);
+            text-align: center;
+            margin-bottom: 25px;
+            transition: font-size 0.3s ease;
         }
         
         .side-nav-link {
@@ -98,23 +110,60 @@
             cursor: pointer;
             width: 100%;
             text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
         }
         .light-mode .side-nav-link { color: var(--text-color-light); }
         .dark-mode .side-nav-link { color: var(--text-color-dark); }
-        .side-nav-link.active { color: white; background-color: var(--accent-red); transform: translateX(5px); }
+        .side-nav-link.active { color: white; background-color: var(--accent-red); }
         .side-nav-link:not(.active):hover { background-color: rgba(255,255,255,0.1); }
         .light-mode .side-nav-link:not(.active):hover { background-color: rgba(0,0,0,0.1); }
 
+        .side-nav-link .text {
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+
         .sidebar-footer {
             margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
         }
-        .points-display { font-size: 1.2rem; font-weight: 700; color: var(--points-color); text-align: center; margin-bottom: 15px; }
+        .light-mode .sidebar-footer { border-color: rgba(0,0,0,0.1); }
 
         main { 
-            margin-left: 250px;
+            margin-left: var(--sidebar-width-expanded);
             padding: 40px;
-            width: calc(100% - 250px);
+            width: calc(100% - var(--sidebar-width-expanded));
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
+        /* --- Minimized Sidebar Styles --- */
+        body.sidebar-minimized .sidebar {
+            width: var(--sidebar-width-collapsed);
+        }
+        body.sidebar-minimized main {
+            margin-left: var(--sidebar-width-collapsed);
+            width: calc(100% - var(--sidebar-width-collapsed));
+        }
+        body.sidebar-minimized .logo {
+             font-size: 1.8rem;
+        }
+         body.sidebar-minimized .points-display {
+             font-size: 1rem;
+         }
+        body.sidebar-minimized .points-display .points-value {
+             display: none;
+        }
+        body.sidebar-minimized .side-nav-link {
+            justify-content: center;
+        }
+        body.sidebar-minimized .side-nav-link .text {
+            opacity: 0;
+            width: 0;
+            pointer-events: none;
+        }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.5s ease; }
         
@@ -417,14 +466,19 @@
 <body>
     <div class="sidebar">
         <div class="logo">Gamefy</div>
+        <div class="points-display">PTS: <span id="points-total" class="points-value">0</span></div>
         <nav class="side-nav">
-            <a href="#" class="side-nav-link active" data-tab="quests"><span class="icon">🎯</span><span>Quests</span></a>
-            <a href="#" class="side-nav-link" data-tab="rewards"><span class="icon">🏆</span><span>Rewards</span></a>
-            <a href="#" class="side-nav-link" data-tab="inventory"><span class="icon">🎒</span><span>Inventory</span></a>
+            <a href="#" class="side-nav-link active" data-tab="quests"><span class="icon">🎯</span><span class="text">Quests</span></a>
+            <a href="#" class="side-nav-link" data-tab="rewards"><span class="icon">🏆</span><span class="text">Rewards</span></a>
+            <a href="#" class="side-nav-link" data-tab="inventory"><span class="icon">🎒</span><span class="text">Inventory</span></a>
         </nav>
         <div class="sidebar-footer">
-            <div class="points-display">PTS: <span id="points-total">0</span></div>
-            <button class="side-nav-link" data-modal-target="settings-modal" aria-label="Settings"><span class="icon">⚙️</span><span>Settings</span></button>
+            <button id="toggle-sidebar-btn" class="side-nav-link" aria-label="Toggle Sidebar">
+                <span class="icon">«</span><span class="text">Collapse</span>
+            </button>
+            <button class="side-nav-link" data-modal-target="settings-modal" aria-label="Settings">
+                <span class="icon">⚙️</span><span class="text">Settings</span>
+            </button>
         </div>
     </div>
     
@@ -566,8 +620,6 @@
                 <input type="time" name="startOfDay">
                 <label style="margin-top:15px; display:block;">Max cost for Free Reward:</label>
                 <input type="number" name="freeRewardCostLimit" min="0">
-                <label style="margin-top:15px; display:block;">Moving Banner Text:</label>
-                <input type="text" name="bannerText">
                 <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
                 <button type="button" id="check-mobile-btn" class="btn btn-secondary" style="width:100%; margin-bottom: 10px;">Check Mobile Version</button>
                 <button type="button" id="more-sites-btn" class="btn btn-secondary" style="width:100%;">Visit More Sites</button>
@@ -623,11 +675,11 @@ document.addEventListener('DOMContentLoaded', () => {
         points: 0, quests: [], rewards: [], inventory: [], activeRewards: [], usedRewards: [],
         settings: { 
             theme: 'dark', 
-            bannerText: 'Level up your life!', 
             activeQuestFilter: 'Daily',
             freeRewardCostLimit: 20,
             startOfDay: '00:00',
             useAnimatedBackground: true,
+            sidebarCollapsed: false,
         },
         lastClaimTimestamp: null,
         consecutiveDays: 0,
@@ -854,6 +906,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- RENDERING ---
+    const updateSidebarToggleButton = () => {
+        const toggleBtn = document.getElementById('toggle-sidebar-btn');
+        if (!toggleBtn) return;
+        const icon = toggleBtn.querySelector('.icon');
+        const text = toggleBtn.querySelector('.text');
+        if (state.settings.sidebarCollapsed) {
+            icon.textContent = '»';
+            text.textContent = 'Expand';
+        } else {
+            icon.textContent = '«';
+            text.textContent = 'Collapse';
+        }
+    };
+    
     const renderAll = () => {
         applySettings();
         dom.points.textContent = state.points;
@@ -868,6 +934,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const applySettings = () => {
         document.body.className = state.settings.theme === 'dark' ? 'dark-mode' : 'light-mode';
         document.body.classList.toggle('animated-bg-on', !!state.settings.useAnimatedBackground);
+        document.body.classList.toggle('sidebar-minimized', !!state.settings.sidebarCollapsed);
+        updateSidebarToggleButton();
         const form = document.getElementById('settings-form');
         form.theme.value = state.settings.theme;
         form.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
@@ -993,6 +1061,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('more-sites-btn').addEventListener('click', () => {
             closeModal(); 
             openModal('more-sites-modal');
+        });
+        
+        document.getElementById('toggle-sidebar-btn').addEventListener('click', () => {
+            state.settings.sidebarCollapsed = !state.settings.sidebarCollapsed;
+            document.body.classList.toggle('sidebar-minimized', state.settings.sidebarCollapsed);
+            updateSidebarToggleButton();
+            saveState();
         });
 
         dom.sideNav.addEventListener('click', (e) => {
