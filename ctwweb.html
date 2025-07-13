@@ -19,7 +19,8 @@
             --points-color: #00ffdd;
             --border-radius: 8px;
             --header-height: 70px;
-            --nav-width: 280px;
+            --side-nav-expanded: 220px;
+            --side-nav-collapsed: 80px;
             --anim-speed: 0.3s;
             --anim-ease: cubic-bezier(0.4, 0, 0.2, 1);
             --font-primary: 'Roboto', sans-serif;
@@ -27,8 +28,8 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         body {
@@ -64,21 +65,21 @@
             height: var(--header-height);
             padding: 0 25px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             z-index: 1000;
             border-bottom: 1px solid;
         }
         .dark-mode header { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,0.1);}
         .light-mode header { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(0,0,0,0.1);}
-
-        .header-left, .header-right {
+        
+        .header-right {
+            position: absolute;
+            right: 25px;
             display: flex;
             align-items: center;
             gap: 20px;
-            flex: 1;
         }
-        .header-right { justify-content: flex-end; }
 
         .logo {
             font-family: var(--font-display);
@@ -95,90 +96,52 @@
         }
         
         .icon-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            font-size: 1.8rem;
-            line-height: 1;
-            border-radius: 50%;
-            transition: background-color 0.2s, transform var(--anim-speed) ease;
+            background: none; border: none; cursor: pointer; padding: 8px; font-size: 1.8rem;
+            line-height: 1; border-radius: 50%; transition: background-color 0.2s, transform var(--anim-speed) ease;
         }
         .dark-mode .icon-btn { color: var(--text-color-dark); }
         .light-mode .icon-btn { color: var(--text-color-light); }
         .icon-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
         .light-mode .icon-btn:hover { background-color: rgba(0, 0, 0, 0.1); }
-        body.nav-open #nav-toggle-btn {
-            transform: rotate(90deg);
-        }
-
-        .theme-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 28px;
-        }
-        .theme-switch input { opacity: 0; width: 0; height: 0; }
-        .theme-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #444;
-            transition: .4s;
-            border-radius: 28px;
-        }
-        .theme-slider:before {
-            position: absolute;
-            content: "🌙";
-            height: 20px;
-            width: 20px;
-            left: 5px;
-            bottom: 4px;
-            background-color: #12121a;
-            transition: .4s;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        .light-mode .theme-slider:before { content: "☀️"; background-color: #f0f2f5; }
-        input:checked + .theme-slider { background-color: #ccc; }
-        input:checked + .theme-slider:before { transform: translateX(21px); }
-
-        .main-nav {
+        
+        #side-nav-bar {
             position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: var(--nav-width);
-            padding: 20px;
-            padding-top: calc(var(--header-height) + 20px);
-            transform: translateX(-100%);
-            transition: transform var(--anim-speed) var(--anim-ease);
-            z-index: 999;
+            top: var(--header-height);
+            left: 0; bottom: 0;
+            width: var(--side-nav-expanded);
+            padding: 15px;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            z-index: 999;
             border-right: 1px solid;
+            transition: width var(--anim-speed) var(--anim-ease);
         }
-        .dark-mode .main-nav { background-color: var(--surface-color-dark); border-color: rgba(255,255,255,0.1); }
-        .light-mode .main-nav { background-color: var(--surface-color-light); border-color: rgba(0,0,0,0.1); }
-        body.nav-open .main-nav { transform: translateX(0); }
+        .dark-mode #side-nav-bar { background-color: var(--surface-color-dark); border-color: rgba(255,255,255,0.1); }
+        .light-mode #side-nav-bar { background-color: var(--surface-color-light); border-color: rgba(0,0,0,0.1); }
         
         .nav-link {
-            font-size: 1.2rem;
-            padding: 15px 20px;
-            border-radius: var(--border-radius);
-            text-decoration: none;
-            transition: all 0.2s ease;
+            font-size: 1.1rem; padding: 15px; border-radius: var(--border-radius);
+            text-decoration: none; transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 15px;
+            overflow: hidden; white-space: nowrap;
         }
         .dark-mode .nav-link { color: var(--text-color-dark); }
         .light-mode .nav-link { color: var(--text-color-light); }
         .nav-link.active { color: white; background-color: var(--accent-red); }
         .nav-link:not(.active):hover { background-color: rgba(255,255,255,0.1); }
         .light-mode .nav-link:not(.active):hover { background-color: rgba(0,0,0,0.1); }
-
+        .nav-link .text { transition: opacity 0.2s ease; }
+        
+        .nav-footer {
+            margin-top: auto;
+            border-top: 1px solid;
+            padding-top: 15px;
+        }
+        .dark-mode .nav-footer { border-color: rgba(255,255,255,0.1); }
+        .light-mode .nav-footer { border-color: rgba(0,0,0,0.1); }
+        .nav-footer .icon-btn { width: 100%; border-radius: var(--border-radius); }
+        
         .sticky-settings-container {
             position: fixed;
             bottom: 30px;
@@ -188,7 +151,20 @@
         
         main { 
             padding: 40px;
+            margin-left: var(--side-nav-expanded);
+            width: calc(100% - var(--side-nav-expanded) - 80px); /* 80px is 2x padding */
+            transition: margin-left var(--anim-speed) var(--anim-ease), width var(--anim-speed) var(--anim-ease);
         }
+        
+        /* Collapsed State for Side Nav */
+        body.side-nav-collapsed #side-nav-bar { width: var(--side-nav-collapsed); }
+        body.side-nav-collapsed main { 
+            margin-left: var(--side-nav-collapsed);
+            width: calc(100% - var(--side-nav-collapsed) - 80px);
+        }
+        body.side-nav-collapsed .nav-link { justify-content: center; }
+        body.side-nav-collapsed .nav-link .text { opacity: 0; width: 0; }
+        body.side-nav-collapsed #nav-toggle-btn { transform: rotate(180deg); }
 
         .tab-content { 
             display: none; 
@@ -203,154 +179,28 @@
             width: 100%;
             max-width: 1200px;
         }
-        
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        .page-header h1 {
-            font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 2.5rem;
-            margin: 0;
-        }
 
-        .quest-sub-nav { display: flex; gap: 10px; margin-bottom: 20px; }
-        
-        .empty-state { text-align: center; opacity: 0.8; padding: 60px 20px; border-radius: var(--border-radius); margin-top: 30px; }
-        .dark-mode .empty-state { background-color: rgba(30, 30, 40, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        .light-mode .empty-state { background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        
-        .sub-nav-btn {
-            background-color: #444; color: var(--text-color-dark); border: 1px solid #666; padding: 8px 16px;
-            border-radius: 20px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; font-size: 0.9rem;
-        }
-        .light-mode .sub-nav-btn { background-color: #e0e0e0; color: var(--text-color-light); border-color: #ccc; }
-        .sub-nav-btn.active { background-color: var(--accent-red); color: white; border-color: var(--accent-red); }
-
-        .tab-counter {
-            margin-left: 8px; background-color: #555; color: white; font-size: 0.8em; font-weight: bold;
-            padding: 3px 8px; border-radius: 6px; vertical-align: middle; transition: all 0.2s ease;
-        }
-        .sub-nav-btn.active .tab-counter { background-color: white; color: var(--accent-red); }
-        .light-mode .sub-nav-btn:not(.active) .tab-counter { background-color: #bbb; color: #1c1e21; }
-
-        .btn {
-            background-color: var(--accent-red); color: white; border: none; padding: 12px 25px;
-            border-radius: var(--border-radius); cursor: pointer; font-size: 1rem; font-weight: 700;
-            transition: background-color 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-        .btn:disabled { background-color: #555; cursor: not-allowed; }
-        .btn-secondary { background-color: #555; }
-        .btn-free { background: linear-gradient(45deg, #ff00ff, #00ffff); color: black; }
-        
-        .day-streak-counter { background-color: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 10px; font-weight: bold; }
-
-        input, select {
-            width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444;
-            border-radius: 5px; background-color: #333; color: white; box-sizing: border-box; font-size: 1rem;
-        }
-        .light-mode input, .light-mode select { background-color: #eee; color: #333; border-color: #ccc;}
-        
-        .item-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .item-card {
-            padding: 20px; border-radius: var(--border-radius); position: relative; display: flex; flex-direction: column;
-            justify-content: space-between; overflow: hidden; background-color: rgba(30, 30, 40, 0.65);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .light-mode .item-card { background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); }
-        .item-card h3 { margin-top: 0; margin-bottom: 5px; word-wrap: break-word; }
-        
-        .quest-cycle-date { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; font-style: italic; }
-        .light-mode .quest-cycle-date { color: #777; }
-        
-        .item-banner {
-            position: absolute; top: 10px; right: -30px; background-color: var(--accent-red); color: white;
-            padding: 4px 30px; font-size: 0.8rem; font-weight: bold; transform: rotate(45deg); z-index: 1;
-        }
-        .item-banner.used { background-color: #28a745; }
-        .item-banner.expired { background-color: var(--accent-red); }
-
-        .item-timestamp { font-size: 0.75rem; opacity: 0.7; margin-top: 10px; }
-        .tracker { display: flex; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;}
-        .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
-        .cost { color: var(--points-color); font-weight: bold; }
-        .delete-btn {
-            position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888;
-            cursor: pointer; font-size: 1.5rem; z-index: 2; padding: 5px; line-height: 1;
-        }
-        .delete-btn:hover { color: #ff4d4d; }
-        .quest-controls-right { margin-top: 15px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-        .repeat-counter {
-            background-color: rgba(0,0,0,0.5); color: #fff; padding: 2px 6px;
-            border-radius: 4px; font-size: 0.75rem; font-weight: bold;
-        }
-        .light-mode .repeat-counter { background-color: rgba(200, 200, 200, 0.8); color: #333; border: 1px solid #bbb; }
-        .motivational-message { font-size: 0.8em; color: #17a2b8; font-style: italic; margin-top: 10px; }
-
-        .modal {
-            display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%;
-            overflow: auto; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center;
-        }
-        .modal.active { display: flex; }
-        .modal-content { 
-            margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; position: relative;
-            animation: fadeIn 0.3s ease-out; background-color: rgba(30, 30, 40, 0.75);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .light-mode .modal-content { background-color: rgba(255, 255, 255, 0.75); border: 1px solid rgba(0, 0, 0, 0.1); }
-        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; font-weight: bold; cursor: pointer; }
-        
-        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .modal-buttons .btn { width: auto; min-width: 80px; }
-        
-        .accordion-btn {
-            color: var(--text-color-dark); cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left;
-            outline: none; font-size: 1.1rem; transition: background-color 0.4s ease; border-radius: var(--border-radius);
-            background-color: rgba(30, 30, 40, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;
-        }
-        .light-mode .accordion-btn {
-             background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); color: var(--text-color-light);
-        }
-        .accordion-btn:hover, .accordion-btn.active { background-color: #333; }
-        .light-mode .accordion-btn:hover, .light-mode .accordion-btn.active { background-color: #ccc; }
-        .indicator-box {
-            height: 10px; width: 10px; background-color: var(--points-color); border-radius: 2px;
-            box-shadow: 0 0 8px var(--points-color); animation: fadeIn 1s infinite alternate;
-        }
-        .accordion-panel {
-            padding: 0 20px; background-color: transparent; max-height: 0; overflow: hidden;
-            transition: max-height 0.3s ease-out, padding 0.3s ease-out; margin-top: 15px;
-        }
-        .accordion-btn.active + .accordion-panel {
-            padding: 20px;
-            border: 1px solid rgba(255,255,255,0.1); border-radius: var(--border-radius);
-        }
-        .hidden { display: none !important; }
+        /* --- Rest of the styles are identical to before --- */
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.page-header h1{font-family:var(--font-display);font-weight:700;font-size:2.5rem;margin:0}.quest-sub-nav{display:flex;gap:10px;margin-bottom:20px}.empty-state{text-align:center;opacity:.8;padding:60px 20px;border-radius:var(--border-radius);margin-top:30px}.dark-mode .empty-state{background-color:rgba(30,30,40,.65);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}.light-mode .empty-state{background-color:rgba(255,255,255,.65);border:1px solid rgba(0,0,0,.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}.sub-nav-btn{background-color:#444;color:var(--text-color-dark);border:1px solid #666;padding:8px 16px;border-radius:20px;cursor:pointer;transition:all .2s ease;white-space:nowrap;font-size:.9rem}.light-mode .sub-nav-btn{background-color:#e0e0e0;color:var(--text-color-light);border-color:#ccc}.sub-nav-btn.active{background-color:var(--accent-red);color:#fff;border-color:var(--accent-red)}.tab-counter{margin-left:8px;background-color:#555;color:#fff;font-size:.8em;font-weight:700;padding:3px 8px;border-radius:6px;vertical-align:middle;transition:all .2s ease}.sub-nav-btn.active .tab-counter{background-color:#fff;color:var(--accent-red)}.light-mode .sub-nav-btn:not(.active) .tab-counter{background-color:#bbb;color:#1c1e21}.btn{background-color:var(--accent-red);color:#fff;border:none;padding:12px 25px;border-radius:var(--border-radius);cursor:pointer;font-size:1rem;font-weight:700;transition:background-color .2s ease;display:flex;justify-content:center;align-items:center;gap:10px}.btn:disabled{background-color:#555;cursor:not-allowed}.btn-secondary{background-color:#555}.btn-free{background:linear-gradient(45deg,#ff00ff,#00ffff);color:#000}.day-streak-counter{background-color:rgba(0,0,0,.2);padding:2px 8px;border-radius:10px;font-weight:700}input,select{width:100%;padding:12px;margin-bottom:10px;border:1px solid #444;border-radius:5px;background-color:#333;color:#fff;box-sizing:border-box;font-size:1rem}.light-mode input,.light-mode select{background-color:#eee;color:#333;border-color:#ccc}.item-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}.item-card{padding:20px;border-radius:var(--border-radius);position:relative;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;background-color:rgba(30,30,40,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1)}.light-mode .item-card{background-color:rgba(255,255,255,.65);border:1px solid rgba(0,0,0,.1)}.item-card h3{margin-top:0;margin-bottom:5px;word-wrap:break-word}.quest-cycle-date{font-size:.8rem;color:#aaa;margin-bottom:10px;font-style:italic}.light-mode .quest-cycle-date{color:#777}.item-banner{position:absolute;top:10px;right:-30px;background-color:var(--accent-red);color:#fff;padding:4px 30px;font-size:.8rem;font-weight:700;transform:rotate(45deg);z-index:1}.item-banner.used{background-color:#28a745}.item-banner.expired{background-color:var(--accent-red)}.item-timestamp{font-size:.75rem;opacity:.7;margin-top:10px}.tracker{display:flex;align-items:center;gap:10px;margin-top:15px;flex-wrap:wrap}.tracker-btn{font-size:1.5rem;padding:0 10px;width:auto;background-color:#444}.cost{color:var(--points-color);font-weight:700}.delete-btn{position:absolute;top:10px;right:10px;background:none;border:none;color:#888;cursor:pointer;font-size:1.5rem;z-index:2;padding:5px;line-height:1}.delete-btn:hover{color:#ff4d4d}.quest-controls-right{margin-top:15px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}.repeat-counter{background-color:rgba(0,0,0,.5);color:#fff;padding:2px 6px;border-radius:4px;font-size:.75rem;font-weight:700}.light-mode .repeat-counter{background-color:rgba(200,200,200,.8);color:#333;border:1px solid #bbb}.motivational-message{font-size:.8em;color:#17a2b8;font-style:italic;margin-top:10px}.modal{display:none;position:fixed;z-index:1001;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,.7);align-items:center;justify-content:center}.modal.active{display:flex}.modal-content{margin:auto;padding:25px;border-radius:var(--border-radius);width:90%;max-width:500px;position:relative;animation:fadeIn .3s ease-out;background-color:rgba(30,30,40,.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}.light-mode .modal-content{background-color:rgba(255,255,255,.75);border:1px solid rgba(0,0,0,.1)}.close-btn{position:absolute;top:15px;right:20px;font-size:2rem;font-weight:700;cursor:pointer}.modal-buttons{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}.modal-buttons .btn{width:auto;min-width:80px}.accordion-btn{color:var(--text-color-dark);cursor:pointer;padding:18px;width:100%;border:none;text-align:left;outline:none;font-size:1.1rem;transition:background-color .4s ease;border-radius:var(--border-radius);background-color:rgba(30,30,40,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center}.light-mode .accordion-btn{background-color:rgba(255,255,255,.65);border:1px solid rgba(0,0,0,.1);color:var(--text-color-light)}.accordion-btn:hover,.accordion-btn.active{background-color:#333}.light-mode .accordion-btn:hover,.light-mode .accordion-btn.active{background-color:#ccc}.indicator-box{height:10px;width:10px;background-color:var(--points-color);border-radius:2px;box-shadow:0 0 8px var(--points-color);animation:fadeIn 1s infinite alternate}.accordion-panel{padding:0 20px;background-color:transparent;max-height:0;overflow:hidden;transition:max-height .3s ease-out,padding .3s ease-out;margin-top:15px}.accordion-btn.active+.accordion-panel{padding:20px;border:1px solid rgba(255,255,255,.1);border-radius:var(--border-radius)}.hidden{display:none!important}
     </style>
 </head>
 <body>
     <header>
-        <div class="header-left">
-            <button id="nav-toggle-btn" class="icon-btn" aria-label="Toggle Navigation">☰</button>
-            <label class="theme-switch">
-                <input type="checkbox" id="theme-toggle-checkbox">
-                <span class="theme-slider"></span>
-            </label>
-        </div>
         <div class="logo">Gamefy</div>
         <div class="header-right">
             <div class="points-display">PTS: <span id="points-total">0</span></div>
         </div>
     </header>
 
-    <nav id="main-nav" class="main-nav">
-        <a href="#" class="nav-link active" data-tab="quests">🎯 Quests</a>
-        <a href="#" class="nav-link" data-tab="rewards">🏆 Rewards</a>
-        <a href="#" class="nav-link" data-tab="inventory">🎒 Inventory</a>
+    <nav id="side-nav-bar">
+        <div class="nav-links">
+            <a href="#" class="nav-link active" data-tab="quests"><span class="icon">🎯</span><span class="text">Quests</span></a>
+            <a href="#" class="nav-link" data-tab="rewards"><span class="icon">🏆</span><span class="text">Rewards</span></a>
+            <a href="#" class="nav-link" data-tab="inventory"><span class="icon">🎒</span><span class="text">Inventory</span></a>
+        </div>
+        <div class="nav-footer">
+            <button id="nav-toggle-btn" class="icon-btn" aria-label="Toggle Navigation"><span class="icon">«</span></button>
+        </div>
     </nav>
     
     <main>
@@ -488,6 +338,8 @@
             <span class="close-btn" data-modal-close="true">&times;</span>
             <h2>Settings</h2>
             <form id="settings-form">
+                <label>Theme:</label>
+                <select name="theme"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
                 <div class="checkbox-label">
                     <span>Show Animated Background</span>
                     <label class="toggle-switch">
@@ -558,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
             freeRewardCostLimit: 20,
             startOfDay: '00:00',
             useAnimatedBackground: true,
+            sideNavCollapsed: false,
         },
         lastClaimTimestamp: null,
         consecutiveDays: 0,
@@ -570,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inventoryList: document.getElementById('inventory-list'),
         activeRewardsList: document.getElementById('active-rewards-list'),
         usedRewardsList: document.getElementById('used-rewards-list'),
-        mainNav: document.getElementById('main-nav'),
+        sideNavBar: document.getElementById('side-nav-bar'),
         questSubNav: document.querySelector('.quest-sub-nav'),
         activeRewardsBtn: document.getElementById('toggle-active-rewards-btn'),
         activeRewardsPanel: document.getElementById('active-rewards-panel'),
@@ -679,49 +532,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const getQuestCycleDisplayString = (quest) => {
         const now = new Date();
         const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
-
         const getStartOfWeek = (date) => {
             const d = new Date(date);
             const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
             return new Date(d.setDate(diff));
         };
-
         let startDate, endDate;
-
         switch (quest.frequency) {
-            case 'Daily':
-                return `For ${formatDate(getAdjustedDate(now))}`;
+            case 'Daily': return `For ${formatDate(getAdjustedDate(now))}`;
             case 'Weekly':
                 if (quest.customCycleAnchor) {
                     startDate = getCurrentCycleStartDate(quest, now);
                     endDate = new Date(startDate);
                     endDate.setDate(startDate.getDate() + 6);
                     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                } else {
-                    startDate = getStartOfWeek(getAdjustedDate(now));
-                    endDate = new Date(startDate);
-                    endDate.setDate(startDate.getDate() + 6);
-                    return `Monday[${startDate.getDate()}] - Sunday [${endDate.getDate()}]`;
                 }
+                startDate = getStartOfWeek(getAdjustedDate(now));
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+                return `Monday[${startDate.getDate()}] - Sunday [${endDate.getDate()}]`;
             case 'Monthly':
                 if (quest.customCycleAnchor) {
                     startDate = getCurrentCycleStartDate(quest, now);
                     endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
                     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                } else {
-                    return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(getAdjustedDate(now));
                 }
+                return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(getAdjustedDate(now));
             case 'Yearly':
                 if (quest.customCycleAnchor) {
                     startDate = getCurrentCycleStartDate(quest, now);
                     endDate = new Date(startDate.getFullYear(), 11, 31);
                     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                } else {
-                    return `Year ${getAdjustedDate(now).getFullYear()}`;
                 }
-            default:
-                return "";
+                return `Year ${getAdjustedDate(now).getFullYear()}`;
+            default: return "";
         }
     };
 
@@ -783,6 +628,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- RENDERING ---
+    const updateNavToggleButton = () => {
+        const toggleBtn = document.getElementById('nav-toggle-btn');
+        if(!toggleBtn) return;
+        const icon = toggleBtn.querySelector('.icon');
+        icon.textContent = state.settings.sideNavCollapsed ? '»' : '«';
+    };
+
     const renderAll = () => {
         applySettings();
         dom.points.textContent = state.points;
@@ -795,14 +647,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const applySettings = () => {
-        const isDark = state.settings.theme === 'dark';
-        document.body.className = isDark ? 'dark-mode' : 'light-mode';
+        document.body.className = state.settings.theme === 'dark' ? 'dark-mode' : 'light-mode';
         document.body.classList.toggle('animated-bg-on', !!state.settings.useAnimatedBackground);
+        document.body.classList.toggle('side-nav-collapsed', !!state.settings.sideNavCollapsed);
+        updateNavToggleButton();
         
-        const themeToggle = document.getElementById('theme-toggle-checkbox');
-        if (themeToggle) themeToggle.checked = !isDark;
-
         const form = document.getElementById('settings-form');
+        form.theme.value = state.settings.theme;
         form.useAnimatedBackground.checked = !!state.settings.useAnimatedBackground;
         form.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
         form.startOfDay.value = state.settings.startOfDay;
@@ -907,28 +758,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.closest('[data-modal-close]') || e.target.classList.contains('modal')) closeModal();
         });
         
-        // Navigation Logic
+        // Side Navigation Logic
         document.getElementById('nav-toggle-btn').addEventListener('click', () => {
-            document.body.classList.toggle('nav-open');
+            state.settings.sideNavCollapsed = !state.settings.sideNavCollapsed;
+            document.body.classList.toggle('side-nav-collapsed', state.settings.sideNavCollapsed);
+            updateNavToggleButton();
+            saveState();
         });
 
-        dom.mainNav.addEventListener('click', (e) => {
+        dom.sideNavBar.addEventListener('click', (e) => {
             const navLink = e.target.closest('.nav-link[data-tab]');
             if (!navLink) return;
             e.preventDefault();
             const tabId = navLink.dataset.tab;
-            dom.mainNav.querySelector('.active')?.classList.remove('active');
+            dom.sideNavBar.querySelector('.active')?.classList.remove('active');
             navLink.classList.add('active');
             document.querySelector('.tab-content.active')?.classList.remove('active');
             document.getElementById(`${tabId}-tab`)?.classList.add('active');
-            document.body.classList.remove('nav-open');
-        });
-
-        // Theme Toggle
-        document.getElementById('theme-toggle-checkbox').addEventListener('change', (e) => {
-            state.settings.theme = e.target.checked ? 'light' : 'dark';
-            saveState();
-            applySettings();
         });
 
         // Settings Buttons
@@ -939,6 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('settings-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(e.target));
+            state.settings.theme = data.theme;
             state.settings.useAnimatedBackground = !!data.useAnimatedBackground;
             state.settings.freeRewardCostLimit = parseInt(data.freeRewardCostLimit) || 20;
             state.settings.startOfDay = data.startOfDay || '00:00';
