@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gamefy - Level Up Your Habits (Desktop)</title>
+    <title>Gamefy - Level Up Your Habits</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
@@ -18,33 +18,21 @@
             --accent-red: #c00000;
             --points-color: #00ffdd;
             --border-radius: 8px;
-            --sidebar-width-expanded: 250px;
-            --sidebar-width-collapsed: 90px;
+            --header-height: 70px;
             --font-primary: 'Roboto', sans-serif;
             --font-display: 'Orbitron', sans-serif;
         }
 
-        @keyframes text-rgb {
-            0%{color:#ff0000} 17%{color:#ffff00} 33%{color:#00ff00} 50%{color:#00ffff} 67%{color:#0000ff} 83%{color:#ff00ff} 100%{color:#ff0000}
-        }
-        @keyframes marquee {
-            0% {transform:translateX(100%)} 100% {transform:translateX(-100%)}
-        }
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         body {
             font-family: var(--font-primary);
             margin: 0;
+            padding-top: var(--header-height);
             transition: background-color 0.3s, color 0.3s;
-            background-size: 400% 400%;
-            animation: fadeIn 1s ease-out;
-            display: flex;
         }
         .dark-mode { 
             color: var(--text-color-dark);
@@ -66,20 +54,28 @@
             z-index: -1;
         }
         
-        .sidebar {
-            width: var(--sidebar-width-expanded);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid rgba(255,255,255,0.1);
-            height: 100vh;
-            box-sizing: border-box;
+        header {
             position: fixed;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            top: 0; left: 0; right: 0;
+            height: var(--header-height);
+            padding: 0 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid;
         }
-        .dark-mode .sidebar { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,0.1);}
-        .light-mode .sidebar { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(0,0,0,0.1);}
-        
+        .dark-mode header { background-color: rgba(30, 30, 40, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,0.1);}
+        .light-mode header { background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(0,0,0,0.1);}
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+        }
+        .header-right { justify-content: flex-end; }
+
         .logo {
             font-family: var(--font-display);
             font-weight: 900;
@@ -87,83 +83,118 @@
             color: var(--accent-red);
             text-shadow: 0 0 5px var(--accent-red);
             text-align: center;
-            margin-bottom: 15px;
-            transition: font-size 0.3s ease;
         }
         .points-display { 
             font-size: 1.2rem;
             font-weight: 700;
             color: var(--points-color);
-            text-align: center;
-            margin-bottom: 25px;
-            transition: font-size 0.3s ease;
         }
         
-        .side-nav-link {
-            background: none; border: none; text-decoration: none;
-            display: flex; align-items: center; gap: 15px; 
-            font-size: 1.1rem;
-            padding: 15px;
-            margin: 5px 0;
-            border-radius: var(--border-radius);
-            transition: all 0.2s ease;
+        .icon-btn {
+            background: none;
+            border: none;
             cursor: pointer;
-            width: 100%;
-            text-align: left;
-            overflow: hidden;
-            white-space: nowrap;
+            padding: 8px;
+            font-size: 1.8rem;
+            line-height: 1;
+            border-radius: 50%;
+            transition: background-color 0.2s;
         }
-        .light-mode .side-nav-link { color: var(--text-color-light); }
-        .dark-mode .side-nav-link { color: var(--text-color-dark); }
-        .side-nav-link.active { color: white; background-color: var(--accent-red); }
-        .side-nav-link:not(.active):hover { background-color: rgba(255,255,255,0.1); }
-        .light-mode .side-nav-link:not(.active):hover { background-color: rgba(0,0,0,0.1); }
+        .dark-mode .icon-btn { color: var(--text-color-dark); }
+        .light-mode .icon-btn { color: var(--text-color-light); }
+        .icon-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .light-mode .icon-btn:hover { background-color: rgba(0, 0, 0, 0.1); }
 
-        .side-nav-link .text {
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .theme-slider:before {
+            position: absolute;
+            content: "🌙";
+            height: 20px;
+            width: 20px;
+            left: 5px;
+            bottom: 4px;
+            background-color: #12121a;
+            transition: .4s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .light-mode .theme-slider:before { content: "☀️"; background-color: #f0f2f5; }
+        input:checked + .theme-slider { background-color: #ccc; }
+        input:checked + .theme-slider:before { transform: translateX(21px); }
+
+        .main-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            padding: 20px;
+            padding-top: var(--header-height);
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .dark-mode .main-nav { background-color: var(--surface-color-dark); }
+        .light-mode .main-nav { background-color: var(--surface-color-light); }
+        body.nav-open .main-nav { transform: translateX(0); }
+        
+        .nav-link {
+            font-size: 1.2rem;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .dark-mode .nav-link { color: var(--text-color-dark); }
+        .light-mode .nav-link { color: var(--text-color-light); }
+        .nav-link.active { color: white; background-color: var(--accent-red); }
+        .nav-link:not(.active):hover { background-color: rgba(255,255,255,0.1); }
+        .light-mode .nav-link:not(.active):hover { background-color: rgba(0,0,0,0.1); }
+
+        #nav-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        body.nav-open #nav-overlay {
             opacity: 1;
-            transition: opacity 0.2s ease;
+            pointer-events: auto;
         }
 
-        .sidebar-footer {
-            margin-top: auto;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 15px;
-        }
-        .light-mode .sidebar-footer { border-color: rgba(0,0,0,0.1); }
-
-        main { 
-            margin-left: var(--sidebar-width-expanded);
-            padding: 40px;
-            width: calc(100% - var(--sidebar-width-expanded));
-            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .sticky-settings-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 900;
         }
         
-        /* --- Minimized Sidebar Styles --- */
-        body.sidebar-minimized .sidebar {
-            width: var(--sidebar-width-collapsed);
+        main { 
+            padding: 40px;
         }
-        body.sidebar-minimized main {
-            margin-left: var(--sidebar-width-collapsed);
-            width: calc(100% - var(--sidebar-width-collapsed));
-        }
-        body.sidebar-minimized .logo {
-             font-size: 1.8rem;
-        }
-         body.sidebar-minimized .points-display {
-             font-size: 1rem;
-         }
-        body.sidebar-minimized .points-display .points-value {
-             display: none;
-        }
-        body.sidebar-minimized .side-nav-link {
-            justify-content: center;
-        }
-        body.sidebar-minimized .side-nav-link .text {
-            opacity: 0;
-            width: 0;
-            pointer-events: none;
-        }
-
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.5s ease; }
         
@@ -180,158 +211,78 @@
             margin: 0;
         }
 
-        .quest-sub-nav {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+        .quest-sub-nav { display: flex; gap: 10px; margin-bottom: 20px; }
         
         .empty-state { text-align: center; opacity: 0.8; padding: 60px 20px; border-radius: var(--border-radius); margin-top: 30px; }
         .dark-mode .empty-state { background-color: rgba(30, 30, 40, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
         .light-mode .empty-state { background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
         
         .sub-nav-btn {
-            background-color: #444;
-            color: var(--text-color-dark);
-            border: 1px solid #666;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            font-size: 0.9rem;
+            background-color: #444; color: var(--text-color-dark); border: 1px solid #666; padding: 8px 16px;
+            border-radius: 20px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; font-size: 0.9rem;
         }
         .light-mode .sub-nav-btn { background-color: #e0e0e0; color: var(--text-color-light); border-color: #ccc; }
         .sub-nav-btn.active { background-color: var(--accent-red); color: white; border-color: var(--accent-red); }
 
         .tab-counter {
-            margin-left: 8px;
-            background-color: #555;
-            color: white;
-            font-size: 0.8em;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 6px;
-            vertical-align: middle;
-            transition: all 0.2s ease;
+            margin-left: 8px; background-color: #555; color: white; font-size: 0.8em; font-weight: bold;
+            padding: 3px 8px; border-radius: 6px; vertical-align: middle; transition: all 0.2s ease;
         }
-        .sub-nav-btn.active .tab-counter {
-            background-color: white;
-            color: var(--accent-red);
-        }
-        .light-mode .sub-nav-btn:not(.active) .tab-counter {
-            background-color: #bbb;
-            color: #1c1e21;
-        }
+        .sub-nav-btn.active .tab-counter { background-color: white; color: var(--accent-red); }
+        .light-mode .sub-nav-btn:not(.active) .tab-counter { background-color: #bbb; color: #1c1e21; }
 
         .btn {
             background-color: var(--accent-red); color: white; border: none; padding: 12px 25px;
             border-radius: var(--border-radius); cursor: pointer; font-size: 1rem; font-weight: 700;
-            transition: background-color 0.2s ease; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
+            transition: background-color 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px;
         }
         .btn:disabled { background-color: #555; cursor: not-allowed; }
         .btn-secondary { background-color: #555; }
         .btn-free { background: linear-gradient(45deg, #ff00ff, #00ffff); color: black; }
         
-        .day-streak-counter {
-            background-color: rgba(0,0,0,0.2);
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: bold;
-        }
+        .day-streak-counter { background-color: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 10px; font-weight: bold; }
 
         input, select {
             width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #444;
-            border-radius: 5px; background-color: #333; color: white;
-            box-sizing: border-box; font-size: 1rem;
+            border-radius: 5px; background-color: #333; color: white; box-sizing: border-box; font-size: 1rem;
         }
         .light-mode input, .light-mode select { background-color: #eee; color: #333; border-color: #ccc;}
         
         .item-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         .item-card {
-            padding: 20px;
-            border-radius: var(--border-radius);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            overflow: hidden;
-            background-color: rgba(30, 30, 40, 0.65);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px; border-radius: var(--border-radius); position: relative; display: flex; flex-direction: column;
+            justify-content: space-between; overflow: hidden; background-color: rgba(30, 30, 40, 0.65);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .light-mode .item-card {
-            background-color: rgba(255, 255, 255, 0.65);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
+        .light-mode .item-card { background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); }
         .item-card h3 { margin-top: 0; margin-bottom: 5px; word-wrap: break-word; }
         
-        .quest-cycle-date {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-bottom: 10px;
-            font-style: italic;
-        }
+        .quest-cycle-date { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; font-style: italic; }
         .light-mode .quest-cycle-date { color: #777; }
         
         .item-banner {
-            position: absolute;
-            top: 10px;
-            right: -30px;
-            background-color: var(--accent-red);
-            color: white;
-            padding: 4px 30px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            transform: rotate(45deg);
-            z-index: 1;
+            position: absolute; top: 10px; right: -30px; background-color: var(--accent-red); color: white;
+            padding: 4px 30px; font-size: 0.8rem; font-weight: bold; transform: rotate(45deg); z-index: 1;
         }
         .item-banner.used { background-color: #28a745; }
         .item-banner.expired { background-color: var(--accent-red); }
 
-        .item-timestamp {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 10px;
-        }
-
+        .item-timestamp { font-size: 0.75rem; opacity: 0.7; margin-top: 10px; }
         .tracker { display: flex; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;}
         .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
-        .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; z-index: 2; padding: 5px; line-height: 1;}
+        .delete-btn {
+            position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888;
+            cursor: pointer; font-size: 1.5rem; z-index: 2; padding: 5px; line-height: 1;
+        }
         .delete-btn:hover { color: #ff4d4d; }
-        .quest-controls-right {
-            margin-top: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 8px;
-        }
+        .quest-controls-right { margin-top: 15px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
         .repeat-counter {
-            background-color: rgba(0,0,0,0.5);
-            color: #fff;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
+            background-color: rgba(0,0,0,0.5); color: #fff; padding: 2px 6px;
+            border-radius: 4px; font-size: 0.75rem; font-weight: bold;
         }
-        .light-mode .repeat-counter {
-            background-color: rgba(200, 200, 200, 0.8);
-            color: #333;
-            border: 1px solid #bbb;
-        }
-
-        .motivational-message {
-            font-size: 0.8em;
-            color: #17a2b8;
-            font-style: italic;
-            margin-top: 10px;
-        }
+        .light-mode .repeat-counter { background-color: rgba(200, 200, 200, 0.8); color: #333; border: 1px solid #bbb; }
+        .motivational-message { font-size: 0.8em; color: #17a2b8; font-style: italic; margin-top: 10px; }
 
         .modal {
             display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%;
@@ -340,147 +291,62 @@
         .modal.active { display: flex; }
         .modal-content { 
             margin: auto; padding: 25px; border-radius: var(--border-radius); width: 90%; max-width: 500px; position: relative;
-            animation: fadeIn 0.3s ease-out;
-            background-color: rgba(30, 30, 40, 0.75);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.3s ease-out; background-color: rgba(30, 30, 40, 0.75);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .light-mode .modal-content {
-             background-color: rgba(255, 255, 255, 0.75);
-             border: 1px solid rgba(0, 0, 0, 0.1);
-        }
+        .light-mode .modal-content { background-color: rgba(255, 255, 255, 0.75); border: 1px solid rgba(0, 0, 0, 0.1); }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; font-weight: bold; cursor: pointer; }
         
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 20px 0;
-        }
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 28px;
-            flex-shrink: 0;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #444;
-            transition: .4s;
-            border-radius: 28px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: #28a745;
-        }
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-        .light-mode .slider {
-            background-color: #ccc;
-        }
-
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .modal-buttons .btn { width: auto; min-width: 80px; }
-        .timer-inputs { display: flex; gap: 10px; }
         
-        #choice-reward-list .btn {
-            width: 100%;
-            margin-bottom: 10px;
-            justify-content: space-between;
-        }
-        #choice-reward-list .cost { color: var(--points-color); }
-
-        #free-reward-spinner { text-align: center; }
-        #spinner-arrow { font-size: 3rem; color: var(--accent-red); margin-bottom: 20px; }
-        .spinner-container { height: 100px; overflow: hidden; position: relative; mask-image: linear-gradient(transparent, black 25%, black 75%, transparent); }
-        #spinner-words { font-size: 1.5rem; font-weight: bold; animation: spin 1s cubic-bezier(0.7, 0, 0.3, 1) infinite; }
-
         .accordion-btn {
-            color: var(--text-color-dark);
-            cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left;
-            outline: none; font-size: 1.1rem; transition: background-color 0.4s ease;
-            border-radius: var(--border-radius);
-            background-color: rgba(30, 30, 40, 0.65);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            color: var(--text-color-dark); cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left;
+            outline: none; font-size: 1.1rem; transition: background-color 0.4s ease; border-radius: var(--border-radius);
+            background-color: rgba(30, 30, 40, 0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;
         }
         .light-mode .accordion-btn {
-             background-color: rgba(255, 255, 255, 0.65);
-             border: 1px solid rgba(0, 0, 0, 0.1);
-             color: var(--text-color-light);
+             background-color: rgba(255, 255, 255, 0.65); border: 1px solid rgba(0, 0, 0, 0.1); color: var(--text-color-light);
         }
         .accordion-btn:hover, .accordion-btn.active { background-color: #333; }
         .light-mode .accordion-btn:hover, .light-mode .accordion-btn.active { background-color: #ccc; }
-
         .indicator-box {
-            height: 10px;
-            width: 10px;
-            background-color: var(--points-color);
-            border-radius: 2px;
-            box-shadow: 0 0 8px var(--points-color);
-            animation: fadeIn 1s infinite alternate;
+            height: 10px; width: 10px; background-color: var(--points-color); border-radius: 2px;
+            box-shadow: 0 0 8px var(--points-color); animation: fadeIn 1s infinite alternate;
         }
-        
         .accordion-panel {
-            padding: 20px;
-            background-color: transparent;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-            margin-top: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: var(--border-radius);
+            padding: 0 20px; background-color: transparent; max-height: 0; overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out; margin-top: 15px;
         }
         .accordion-btn.active + .accordion-panel {
-             padding-top: 20px; padding-bottom: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: var(--border-radius);
         }
-        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">Gamefy</div>
-        <div class="points-display">PTS: <span id="points-total" class="points-value">0</span></div>
-        <nav class="side-nav">
-            <a href="#" class="side-nav-link active" data-tab="quests"><span class="icon">🎯</span><span class="text">Quests</span></a>
-            <a href="#" class="side-nav-link" data-tab="rewards"><span class="icon">🏆</span><span class="text">Rewards</span></a>
-            <a href="#" class="side-nav-link" data-tab="inventory"><span class="icon">🎒</span><span class="text">Inventory</span></a>
-        </nav>
-        <div class="sidebar-footer">
-            <button id="toggle-sidebar-btn" class="side-nav-link" aria-label="Toggle Sidebar">
-                <span class="icon">«</span><span class="text">Collapse</span>
-            </button>
-            <button class="side-nav-link" data-modal-target="settings-modal" aria-label="Settings">
-                <span class="icon">⚙️</span><span class="text">Settings</span>
-            </button>
+    <header>
+        <div class="header-left">
+            <button id="nav-toggle-btn" class="icon-btn" aria-label="Toggle Navigation">☰</button>
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle-checkbox">
+                <span class="theme-slider"></span>
+            </label>
         </div>
-    </div>
+        <div class="logo">Gamefy</div>
+        <div class="header-right">
+            <div class="points-display">PTS: <span id="points-total">0</span></div>
+        </div>
+    </header>
+
+    <div id="nav-overlay"></div>
+    <nav id="main-nav" class="main-nav">
+        <a href="#" class="nav-link active" data-tab="quests">🎯 Quests</a>
+        <a href="#" class="nav-link" data-tab="rewards">🏆 Rewards</a>
+        <a href="#" class="nav-link" data-tab="inventory">🎒 Inventory</a>
+    </nav>
     
     <main>
         <div id="quests-tab" class="tab-content active">
@@ -533,6 +399,10 @@
         </div>
     </main>
     
+    <div class="sticky-settings-container">
+        <button class="btn" data-modal-target="settings-modal">⚙️ Settings</button>
+    </div>
+
     <div id="add-quest-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" data-modal-close="true">&times;</span>
@@ -594,7 +464,7 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <div class="hidden timer-inputs" id="reward-timer-setup">
+                <div class="hidden" id="reward-timer-setup">
                     <input type="number" name="timerHours" placeholder="Hours" min="0">
                     <input type="number" name="timerMinutes" placeholder="Minutes" min="0">
                 </div>
@@ -607,8 +477,6 @@
             <span class="close-btn" data-modal-close="true">&times;</span>
             <h2>Settings</h2>
             <form id="settings-form">
-                <label>Theme:</label>
-                <select name="theme"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
                 <div class="checkbox-label">
                     <span>Show Animated Background</span>
                     <label class="toggle-switch">
@@ -679,7 +547,6 @@ document.addEventListener('DOMContentLoaded', () => {
             freeRewardCostLimit: 20,
             startOfDay: '00:00',
             useAnimatedBackground: true,
-            sidebarCollapsed: false,
         },
         lastClaimTimestamp: null,
         consecutiveDays: 0,
@@ -692,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inventoryList: document.getElementById('inventory-list'),
         activeRewardsList: document.getElementById('active-rewards-list'),
         usedRewardsList: document.getElementById('used-rewards-list'),
-        sideNav: document.querySelector('.side-nav'),
+        mainNav: document.getElementById('main-nav'),
         questSubNav: document.querySelector('.quest-sub-nav'),
         activeRewardsBtn: document.getElementById('toggle-active-rewards-btn'),
         activeRewardsPanel: document.getElementById('active-rewards-panel'),
@@ -711,28 +578,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- HELPERS ---
-    const isObject = (item) => (item && typeof item === 'object' && !Array.isArray(item));
-    const deepMerge = (target, ...sources) => {
-        if (!sources.length) return target;
-        const source = sources.shift();
-        if (isObject(target) && isObject(source)) {
-            for (const key in source) {
-                if (isObject(source[key])) {
-                    if (!target[key]) Object.assign(target, { [key]: {} });
-                    deepMerge(target[key], source[key]);
-                } else {
-                    Object.assign(target, { [key]: source[key] });
-                }
-            }
-        }
-        return deepMerge(target, ...sources);
-    };
-
     const saveState = () => localStorage.setItem('gamefyStateDesktop', JSON.stringify(state));
     const loadState = () => {
         const saved = localStorage.getItem('gamefyStateDesktop');
         if (saved) {
-            try { state = deepMerge(state, JSON.parse(saved)); } 
+            try { state = deepMerge({}, state, JSON.parse(saved)); } 
             catch (e) { console.error("Error loading state, using defaults.", e); }
         }
     };
@@ -762,164 +612,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- DATE & CYCLE LOGIC ---
-    const getAdjustedDate = (date) => {
-        const [hours, minutes] = state.settings.startOfDay.split(':').map(Number);
-        const adjustedDate = new Date(date);
-        adjustedDate.setHours(adjustedDate.getHours() - hours, adjustedDate.getMinutes() - minutes);
-        return adjustedDate;
-    };
-    
-    const getCurrentCycleStartDate = (quest, date) => {
-        if (!quest.customCycleAnchor) return null; // Important for reset logic
-        const anchor = new Date(quest.customCycleAnchor);
-        const targetDate = new Date(date);
-        switch(quest.frequency) {
-            case 'Weekly': {
-                const daysSince = Math.floor((targetDate - anchor) / 86400000);
-                return new Date(anchor.getTime() + Math.floor(daysSince / 7) * 7 * 86400000);
-            }
-            case 'Monthly': {
-                let months = (targetDate.getFullYear() - anchor.getFullYear()) * 12 + targetDate.getMonth() - anchor.getMonth();
-                if (targetDate.getDate() < anchor.getDate()) months--;
-                const cycleStart = new Date(anchor);
-                cycleStart.setMonth(cycleStart.getMonth() + months);
-                return cycleStart;
-            }
-            case 'Yearly': {
-                let years = targetDate.getFullYear() - anchor.getFullYear();
-                if (targetDate.getMonth() < anchor.getMonth() || (targetDate.getMonth() === anchor.getMonth() && targetDate.getDate() < anchor.getDate())) {
-                    years--;
-                }
-                const cycleStart = new Date(anchor);
-                cycleStart.setFullYear(cycleStart.getFullYear() + years);
-                return cycleStart;
-            }
-            default: return null;
-        }
-    };
-
-    const getQuestCycleDisplayString = (quest) => {
-        const now = new Date();
-        const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
-
-        const getStartOfWeek = (date) => {
-            const d = new Date(date);
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-            return new Date(d.setDate(diff));
-        };
-
-        let startDate, endDate;
-
-        switch (quest.frequency) {
-            case 'Daily':
-                return `For ${formatDate(getAdjustedDate(now))}`;
-            case 'Weekly':
-                if (quest.customCycleAnchor) {
-                    startDate = getCurrentCycleStartDate(quest, now);
-                    endDate = new Date(startDate);
-                    endDate.setDate(startDate.getDate() + 6);
-                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                } else {
-                    startDate = getStartOfWeek(getAdjustedDate(now));
-                    endDate = new Date(startDate);
-                    endDate.setDate(startDate.getDate() + 6);
-                    return `Monday[${startDate.getDate()}] - Sunday [${endDate.getDate()}]`;
-                }
-            case 'Monthly':
-                if (quest.customCycleAnchor) {
-                    startDate = getCurrentCycleStartDate(quest, now);
-                    endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
-                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                } else {
-                    return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(getAdjustedDate(now));
-                }
-            case 'Yearly':
-                if (quest.customCycleAnchor) {
-                    startDate = getCurrentCycleStartDate(quest, now);
-                    endDate = new Date(startDate.getFullYear(), 11, 31);
-                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                } else {
-                    return `Year ${getAdjustedDate(now).getFullYear()}`;
-                }
-            default:
-                return "";
-        }
-    };
-
-    const hasNewCycleBegun = (quest, dateToCheck) => {
-        if (!dateToCheck) return false; 
-        if (quest.customCycleAnchor) {
-            const currentCycleStart = getCurrentCycleStartDate(quest, Date.now());
-            // This can happen if the anchor is in the future.
-            if (!currentCycleStart) return false; 
-            return currentCycleStart.getTime() > getCurrentCycleStartDate(quest, dateToCheck).getTime();
-        }
-        const now = getAdjustedDate(new Date()), last = getAdjustedDate(new Date(dateToCheck));
-        switch(quest.frequency) {
-            case 'Daily': return now.toDateString() !== last.toDateString();
-            case 'Weekly': return now.getFullYear() !== last.getFullYear() || Math.floor(now.getTime() / 604800000) !== Math.floor(last.getTime() / 604800000);
-            case 'Monthly': return now.getFullYear() !== last.getFullYear() || now.getMonth() !== last.getMonth();
-            case 'Yearly': return now.getFullYear() !== last.getFullYear();
-            default: return false;
-        }
-    };
-    
-    const isQuestReadyForReset = (quest) => !quest.isRepeatable || !quest.lastCompleted || hasNewCycleBegun(quest, quest.lastCompleted);
+    // ... (All date functions are the same as before) ...
+    const getAdjustedDate=(t)=>{const[e,a]=state.settings.startOfDay.split(":").map(Number),d=new Date(t);return d.setHours(d.getHours()-e,d.getMinutes()-a),d};const getCurrentCycleStartDate=(t,e)=>{if(!t.customCycleAnchor)return null;const a=new Date(t.customCycleAnchor),d=new Date(e);switch(t.frequency){case"Weekly":{const n=(new Date(a.getTime()+36e5*24*Math.floor((d-a)/864e5/7)*7));return n}case"Monthly":{let s=(12*(d.getFullYear()-a.getFullYear())+d.getMonth()-a.getMonth());d.getDate()<a.getDate()&&s--;const r=new Date(a);return r.setMonth(r.getMonth()+s),r}case"Yearly":{let o=d.getFullYear()-a.getFullYear();(d.getMonth()<a.getMonth()||d.getMonth()===a.getMonth()&&d.getDate()<a.getDate())&&o--;const i=new Date(a);return i.setFullYear(i.getFullYear()+o),i}default:return null}};const getQuestCycleDisplayString=(t)=>{const e=new Date,a=t=>new Intl.DateTimeFormat("en-US",{month:"long",day:"numeric",year:"numeric"}).format(t),d=t=>{const e=new Date(t),a=e.getDay();return new Date(e.setDate(e.getDate()-a+(0===a?-6:1)))};let n,s;switch(t.frequency){case"Daily":return`For ${a(getAdjustedDate(e))}`;case"Weekly":return t.customCycleAnchor?(n=getCurrentCycleStartDate(t,e),s=new Date(n),s.setDate(n.getDate()+6),`${a(n)} - ${a(s)}`):(n=d(getAdjustedDate(e)),s=new Date(n),s.setDate(n.getDate()+6),`Monday[${n.getDate()}] - Sunday [${s.getDate()}]`);case"Monthly":return t.customCycleAnchor?(n=getCurrentCycleStartDate(t,e),s=new Date(n.getFullYear(),n.getMonth()+1,0),`${a(n)} - ${a(s)}`):new Intl.DateTimeFormat("en-US",{month:"long",year:"numeric"}).format(getAdjustedDate(e));case"Yearly":return t.customCycleAnchor?(n=getCurrentCycleStartDate(t,e),s=new Date(n.getFullYear(),11,31),`${a(n)} - ${a(s)}`):`Year ${getAdjustedDate(e).getFullYear()}`;default:""}};const hasNewCycleBegun=(t,e)=>{if(!e)return!1;if(t.customCycleAnchor){const a=getCurrentCycleStartDate(t,Date.now());return!a?!1:a.getTime()>getCurrentCycleStartDate(t,e).getTime()}const d=getAdjustedDate(new Date),n=getAdjustedDate(new Date(e));switch(t.frequency){case"Daily":return d.toDateString()!==n.toDateString();case"Weekly":return d.getFullYear()!==n.getFullYear()||Math.floor(d.getTime()/6048e5)!==Math.floor(n.getTime()/6048e5);case"Monthly":return d.getFullYear()!==n.getFullYear()||d.getMonth()!==n.getMonth();case"Yearly":return d.getFullYear()!==n.getFullYear();default:return!1}};const isQuestReadyForReset=t=>!t.isRepeatable||!t.lastCompleted||hasNewCycleBegun(t,t.lastCompleted);
 
     // --- DATA PROCESSING ---
-    const processExpiredQuests = () => {
-        const expiredMessages = [];
-        state.quests = state.quests.filter(quest => {
-            const hasExpired = hasNewCycleBegun(quest, quest.cycleStart) && !quest.lastCompleted;
-            if (hasExpired) {
-                if (quest.penalty > 0) {
-                    state.points -= quest.penalty;
-                    expiredMessages.push(`'${quest.name}' (-${quest.penalty} PTS)`);
-                }
-                if (!quest.isRepeatable) return false; // Non-repeatable expired quests are removed
-            }
-            return true;
-        });
-        state.quests.forEach(q => {
-             if (hasNewCycleBegun(q, q.cycleStart)) {
-                 q.cycleStart = Date.now();
-                 q.lastCompleted = null;
-                 if(q.hasTracker) q.currentProgress = 0;
-             }
-        });
-        if (expiredMessages.length > 0) showAlert(`Penalties applied for expired quests: ${expiredMessages.join(', ')}`, "Quests Expired");
-    };
-
-    const processExpiredInventory = () => {
-        const now = Date.now();
-        state.inventory = state.inventory.filter(item => {
-            if (item.hasExpiry) {
-                const expiryDate = new Date(item.dateAcquired).setDate(new Date(item.dateAcquired).getDate() + item.expiryDays);
-                if (now > expiryDate) {
-                    state.usedRewards.push({ ...item, status: 'Expired', dateUsed: expiryDate });
-                    return false;
-                }
-            }
-            return true;
-        });
-    };
+    // ... (All data processing functions are the same as before) ...
+    const processExpiredQuests=()=>{const t=[];state.quests=state.quests.filter((e=>{const a=hasNewCycleBegun(e,e.cycleStart)&&!e.lastCompleted;return a&&(e.penalty>0&&(state.points-=e.penalty,t.push(`'${e.name}' (-${e.penalty} PTS)`)),!e.isRepeatable)?!1:!0})),state.quests.forEach((t=>{hasNewCycleBegun(t,t.cycleStart)&&(t.cycleStart=Date.now(),t.lastCompleted=null,t.hasTracker&&(t.currentProgress=0))})),t.length>0&&showAlert(`Penalties applied for expired quests: ${t.join(", ")}`,"Quests Expired")};const processExpiredInventory=()=>{const t=Date.now();state.inventory=state.inventory.filter((e=>{if(e.hasExpiry){const a=new Date(e.dateAcquired).setDate(new Date(e.dateAcquired).getDate()+e.expiryDays);if(t>a)return state.usedRewards.push({...e,status:"Expired",dateUsed:a}),!1}return!0}))};
     
     // --- RENDERING ---
-    const updateSidebarToggleButton = () => {
-        const toggleBtn = document.getElementById('toggle-sidebar-btn');
-        if (!toggleBtn) return;
-        const icon = toggleBtn.querySelector('.icon');
-        const text = toggleBtn.querySelector('.text');
-        if (state.settings.sidebarCollapsed) {
-            icon.textContent = '»';
-            text.textContent = 'Expand';
-        } else {
-            icon.textContent = '«';
-            text.textContent = 'Collapse';
-        }
-    };
-    
     const renderAll = () => {
         applySettings();
         dom.points.textContent = state.points;
@@ -932,15 +632,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const applySettings = () => {
-        document.body.className = state.settings.theme === 'dark' ? 'dark-mode' : 'light-mode';
+        const isDark = state.settings.theme === 'dark';
+        document.body.className = isDark ? 'dark-mode' : 'light-mode';
         document.body.classList.toggle('animated-bg-on', !!state.settings.useAnimatedBackground);
-        document.body.classList.toggle('sidebar-minimized', !!state.settings.sidebarCollapsed);
-        updateSidebarToggleButton();
+        
+        const themeToggle = document.getElementById('theme-toggle-checkbox');
+        if (themeToggle) themeToggle.checked = !isDark;
+
         const form = document.getElementById('settings-form');
-        form.theme.value = state.settings.theme;
+        form.useAnimatedBackground.checked = !!state.settings.useAnimatedBackground;
         form.freeRewardCostLimit.value = state.settings.freeRewardCostLimit;
         form.startOfDay.value = state.settings.startOfDay;
-        form.useAnimatedBackground.checked = !!state.settings.useAnimatedBackground;
     };
     
     const renderList = (element, items, renderFunc, emptyMsg) => {
@@ -955,16 +657,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.innerHTML = `${freq}<span class="tab-counter">${questCounts[freq] || 0}</span>`;
             btn.classList.toggle('active', freq === state.settings.activeQuestFilter);
         });
-
-        const filteredQuests = state.quests
-            .map((quest, index) => ({ ...quest, originalIndex: index }))
-            .filter(q => q.frequency === state.settings.activeQuestFilter);
-            
+        const filteredQuests = state.quests.map((q, i) => ({...q, originalIndex: i})).filter(q => q.frequency === state.settings.activeQuestFilter);
         renderList(dom.questList, filteredQuests, (quest) => {
             const card = document.createElement('div');
             card.className = 'item-card';
-            const showMessage = quest.hasTracker && quest.currentProgress > quest.target;
-            const canComplete = quest.hasTracker ? quest.currentProgress >= quest.target : true;
             card.innerHTML = `
                 <div> 
                     <button class="delete-btn" data-index="${quest.originalIndex}">🗑️</button>
@@ -976,10 +672,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span>${quest.currentProgress} / ${quest.target}</span>
                         <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${quest.originalIndex}">+</button>
                     </div>` : ''}
-                    <div class="motivational-message ${!showMessage ? 'hidden' : ''}">Keep moving forward! you're doing great!</div>
                 </div>
                 <div class="quest-controls-right"> ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
-                    <button class="btn done-btn" data-index="${quest.originalIndex}" ${!canComplete || !isQuestReadyForReset(quest) ? 'disabled' : ''}>Done</button>
+                    <button class="btn done-btn" data-index="${quest.originalIndex}" ${(quest.hasTracker ? quest.currentProgress >= quest.target : true) && isQuestReadyForReset(quest) ? '' : 'disabled'}>Done</button>
                 </div>`;
             dom.questList.appendChild(card);
         }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one!</p>`);
@@ -1006,16 +701,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderActiveRewards = () => {
         renderList(dom.activeRewardsList, state.activeRewards, (item) => {
             const timeString = (item.endTime - Date.now() > 0) ? new Date(item.endTime - Date.now()).toISOString().substr(11, 8) : "Expired";
-            dom.activeRewardsList.insertAdjacentHTML('beforeend', `
-                <div class="item-card active-reward-card" data-id="${item.id}">
-                    <h3>${item.name}</h3><p>Time Left: <span class="timer-countdown">${timeString}</span></p>
-                </div>`);
+            dom.activeRewardsList.insertAdjacentHTML('beforeend', `<div class="item-card active-reward-card" data-id="${item.id}"><h3>${item.name}</h3><p>Time Left: <span class="timer-countdown">${timeString}</span></p></div>`);
         }, '<h3>No active rewards.</h3>');
-
         const indicator = dom.activeRewardsBtn.querySelector('.indicator-box');
-        if (indicator) {
-            indicator.classList.toggle('hidden', state.activeRewards.length === 0);
-        }
+        if (indicator) indicator.classList.toggle('hidden', state.activeRewards.length === 0);
     };
     
     const renderUsedRewards = () => renderList(dom.usedRewardsList, state.usedRewards, (item) => {
@@ -1049,199 +738,81 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const setupEventListeners = () => {
+        // Modal & Navigation Logic
         document.body.addEventListener('click', (e) => {
             if (e.target.closest('[data-modal-target]')) openModal(e.target.closest('[data-modal-target]').dataset.modalTarget);
             if (e.target.closest('[data-modal-close]') || e.target.classList.contains('modal')) closeModal();
         });
-        
-        document.getElementById('check-mobile-btn').addEventListener('click', () => {
-            window.location.href = 'index.html';
-        });
+        document.getElementById('nav-toggle-btn').addEventListener('click', () => document.body.classList.add('nav-open'));
+        document.getElementById('nav-overlay').addEventListener('click', () => document.body.classList.remove('nav-open'));
 
-        document.getElementById('more-sites-btn').addEventListener('click', () => {
-            closeModal(); 
-            openModal('more-sites-modal');
-        });
-        
-        document.getElementById('toggle-sidebar-btn').addEventListener('click', () => {
-            state.settings.sidebarCollapsed = !state.settings.sidebarCollapsed;
-            document.body.classList.toggle('sidebar-minimized', state.settings.sidebarCollapsed);
-            updateSidebarToggleButton();
-            saveState();
-        });
-
-        dom.sideNav.addEventListener('click', (e) => {
-            const navLink = e.target.closest('.side-nav-link[data-tab]');
+        dom.mainNav.addEventListener('click', (e) => {
+            const navLink = e.target.closest('.nav-link[data-tab]');
             if (!navLink) return;
             e.preventDefault();
             const tabId = navLink.dataset.tab;
-            dom.sideNav.querySelector('.active')?.classList.remove('active');
+            dom.mainNav.querySelector('.active')?.classList.remove('active');
             navLink.classList.add('active');
             document.querySelector('.tab-content.active')?.classList.remove('active');
             document.getElementById(`${tabId}-tab`)?.classList.add('active');
+            document.body.classList.remove('nav-open');
         });
 
-        dom.questSubNav.addEventListener('click', (e) => {
-            const subNavBtn = e.target.closest('.sub-nav-btn[data-frequency]');
-            if (subNavBtn) {
-                state.settings.activeQuestFilter = subNavBtn.dataset.frequency;
-                renderQuests();
-            }
+        // Theme Toggle
+        document.getElementById('theme-toggle-checkbox').addEventListener('change', (e) => {
+            state.settings.theme = e.target.checked ? 'light' : 'dark';
+            saveState();
+            applySettings();
         });
 
-        [dom.activeRewardsBtn, dom.usedRewardsBtn].forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.classList.toggle('active');
-                const panel = this.nextElementSibling;
-                panel.style.maxHeight = panel.style.maxHeight ? null : `${panel.scrollHeight}px`;
-            });
-        });
-
+        // Settings Buttons
+        document.getElementById('check-mobile-btn').addEventListener('click', () => { window.location.href = 'index.html'; });
+        document.getElementById('more-sites-btn').addEventListener('click', () => { closeModal(); openModal('more-sites-modal'); });
+        
+        // Form Submissions
         document.getElementById('settings-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(e.target));
-            state.settings.theme = data.theme;
+            state.settings.useAnimatedBackground = !!data.useAnimatedBackground;
             state.settings.freeRewardCostLimit = parseInt(data.freeRewardCostLimit) || 20;
             state.settings.startOfDay = data.startOfDay || '00:00';
-            state.settings.useAnimatedBackground = !!data.useAnimatedBackground;
             saveState(); renderAll(); closeModal();
         });
-
-        document.getElementById('add-quest-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target));
-            state.quests.push({
-                name: data.name, points: +data.points || 0, frequency: data.frequency, 
-                hasTracker: !!data.hasTracker, target: data.hasTracker ? (+data.target || 1) : 1, 
-                isRepeatable: !!data.isRepeatable, penalty: +data.penalty || 0,
-                customCycleAnchor: data.customCycleAnchor ? new Date(data.customCycleAnchor + 'T00:00:00').getTime() : null,
-                currentProgress: 0, repeatCount: 0, lastCompleted: null, cycleStart: Date.now(),
-            });
-            saveState(); renderAll(); closeModal(); e.target.reset();
-            document.getElementById('quest-tracker-setup').classList.add('hidden');
-            document.getElementById('custom-cycle-setup').classList.add('hidden');
-        });
-
-        document.getElementById('add-reward-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target));
-            state.rewards.push({
-                name: data.name, cost: +data.cost || 0, redeemOnce: !!data.redeemOnce, hasExpiry: !!data.hasExpiry,
-                expiryDays: data.hasExpiry ? (+data.expiryDays || 7) : null, hasTimer: !!data.hasTimer,
-                timerHours: data.hasTimer ? (+data.timerHours || 0) : 0, timerMinutes: data.hasTimer ? (+data.timerMinutes || 0) : 0,
-            });
-            saveState(); renderAll(); closeModal(); e.target.reset();
-            document.getElementById('reward-expiry-setup').classList.add('hidden');
-            document.getElementById('reward-timer-setup').classList.add('hidden');
-        });
         
-        const setupFormToggles = () => {
-            const setup = (formId, checkName, targetId) => document.querySelector(`#${formId} [name="${checkName}"]`)?.addEventListener('change', e => document.getElementById(targetId).classList.toggle('hidden', !e.target.checked));
-            setup('add-quest-form', 'hasTracker', 'quest-tracker-setup');
-            setup('add-reward-form', 'hasExpiry', 'reward-expiry-setup');
-            setup('add-reward-form', 'hasTimer', 'reward-timer-setup');
-            document.querySelector('#add-quest-form [name="frequency"]').addEventListener('change', e => document.getElementById('custom-cycle-setup').classList.toggle('hidden', !['Weekly', 'Monthly', 'Yearly'].includes(e.target.value)));
-        };
-        setupFormToggles();
+        // ... Other event listeners ...
+        dom.questSubNav.addEventListener('click', e => {
+            const btn = e.target.closest('.sub-nav-btn');
+            if(btn) { state.settings.activeQuestFilter = btn.dataset.frequency; renderQuests(); }
+        });
+        [dom.activeRewardsBtn, dom.usedRewardsBtn].forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                this.nextElementSibling.style.maxHeight = this.nextElementSibling.style.maxHeight ? null : `${this.nextElementSibling.scrollHeight}px`;
+            });
+        });
+        document.getElementById('add-quest-form').addEventListener('submit',e=>{e.preventDefault();const t=Object.fromEntries(new FormData(e.target));state.quests.push({name:t.name,points:+t.points||0,frequency:t.frequency,hasTracker:!!t.hasTracker,target:t.hasTracker?+t.target||1:1,isRepeatable:!!t.isRepeatable,penalty:+t.penalty||0,customCycleAnchor:t.customCycleAnchor?new Date(t.customCycleAnchor+"T00:00:00").getTime():null,currentProgress:0,repeatCount:0,lastCompleted:null,cycleStart:Date.now()}),saveState(),renderAll(),closeModal(),e.target.reset(),document.getElementById("quest-tracker-setup").classList.add("hidden"),document.getElementById("custom-cycle-setup").classList.add("hidden")});
+        document.getElementById('add-reward-form').addEventListener('submit',e=>{e.preventDefault();const t=Object.fromEntries(new FormData(e.target));state.rewards.push({name:t.name,cost:+t.cost||0,redeemOnce:!!t.redeemOnce,hasExpiry:!!t.hasExpiry,expiryDays:t.hasExpiry?+t.expiryDays||7:null,hasTimer:!!t.hasTimer,timerHours:t.hasTimer?+t.timerHours||0:0,timerMinutes:t.hasTimer?+t.timerMinutes||0:0}),saveState(),renderAll(),closeModal(),e.target.reset(),document.getElementById("reward-expiry-setup").classList.add("hidden"),document.getElementById("reward-timer-setup").classList.add("hidden")});
+        const setupFormToggles=()=>{const e=(e,t,a)=>{document.querySelector(`#${e} [name="${t}"]`)?.addEventListener("change",(e=>{document.getElementById(a).classList.toggle("hidden",!e.target.checked)}))};e("add-quest-form","hasTracker","quest-tracker-setup"),e("add-reward-form","hasExpiry","reward-expiry-setup"),e("add-reward-form","hasTimer","reward-timer-setup"),document.querySelector('#add-quest-form [name="frequency"]').addEventListener("change",(e=>{document.getElementById("custom-cycle-setup").classList.toggle("hidden",!["Weekly","Monthly","Yearly"].includes(e.target.value))}))};setupFormToggles();
 
+        // List Click Handlers
         handleListClick(dom.questList, 'quests', {
             'delete-btn': async (item, index) => { if (await showConfirm(`Delete quest "${item.name}"?`)) state.quests.splice(index, 1); },
-            'done-btn': (item, index) => { 
-                state.points += item.points;
-                item.isRepeatable ? (item.repeatCount++, item.currentProgress = 0, item.lastCompleted = Date.now()) : state.quests.splice(index, 1);
-            },
+            'done-btn': (item, index) => { state.points += item.points; item.isRepeatable ? (item.repeatCount++, item.currentProgress = 0, item.lastCompleted = Date.now()) : state.quests.splice(index, 1); },
             'tracker-btn': (item, _, e) => { e.target.dataset.op === 'plus' ? item.currentProgress++ : item.currentProgress = Math.max(0, item.currentProgress - 1); }
         });
         handleListClick(dom.rewardList, 'rewards', {
             'delete-btn': async (item, index) => { if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1); },
-            'redeem-btn': (item, index) => {
-                if (state.points < item.cost) {
-                    showAlert("Not enough points!");
-                    return;
-                }
-                state.points -= item.cost;
-                state.inventory.push({ ...item, dateAcquired: Date.now() });
-                if (item.redeemOnce) state.rewards.splice(index, 1);
-                showAlert(`You have successfully redeemed "${item.name}"! It's now in your inventory.`, "Reward Redeemed");
-            }
+            'redeem-btn': (item, index) => { if(state.points < item.cost) return showAlert("Not enough points!"); state.points -= item.cost; state.inventory.push({ ...item, dateAcquired: Date.now() }); if (item.redeemOnce) state.rewards.splice(index, 1); showAlert(`Redeemed "${item.name}"!`, "Reward Redeemed"); }
         });
         handleListClick(dom.inventoryList, 'inventory', {
             'delete-btn': async (item, index) => { if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1); },
-            'activate-btn': (item, index) => {
-                const durationMs = ((item.timerHours * 60) + item.timerMinutes) * 60000;
-                if (durationMs <= 0) {
-                    showAlert("This reward has no timer duration.", "Cannot Activate");
-                    return;
-                }
-                state.activeRewards.push({ ...item, id: Date.now(), endTime: Date.now() + durationMs });
-                state.inventory.splice(index, 1);
-                showAlert(`"${item.name}" has been activated! The timer has started.`, "Reward Activated");
-            },
-            'redeem-item-btn': (item, index) => {
-                state.usedRewards.push({ ...item, status: 'Used', dateUsed: Date.now() });
-                state.inventory.splice(index, 1);
-                showAlert(`You have used "${item.name}"!`, "Reward Used");
-            }
+            'activate-btn': (item, index) => { const d = ((item.timerHours * 60) + item.timerMinutes) * 60000; if(d <= 0) return showAlert("No timer duration.", "Cannot Activate"); state.activeRewards.push({ ...item, id: Date.now(), endTime: Date.now() + d }); state.inventory.splice(index, 1); showAlert(`"${item.name}" activated!`, "Reward Activated"); },
+            'redeem-item-btn': (item, index) => { state.usedRewards.push({ ...item, status: 'Used', dateUsed: Date.now() }); state.inventory.splice(index, 1); showAlert(`Used "${item.name}"!`, "Reward Used"); }
         });
     };
     
     // --- FREE REWARD & STREAK ---
-    const updateFreeRewardButton = () => {
-        const canClaim = !state.lastClaimTimestamp || hasNewCycleBegun({ frequency: 'Daily' }, state.lastClaimTimestamp);
-        if(!dom.freeRewardBtn) return;
-        dom.freeRewardBtn.disabled = !canClaim;
-        const yesterday = getAdjustedDate(new Date());
-        yesterday.setDate(yesterday.getDate() - 1);
-        if (canClaim && state.lastClaimTimestamp && getAdjustedDate(new Date(state.lastClaimTimestamp)).toDateString() !== yesterday.toDateString()) {
-            state.consecutiveDays = 0;
-        }
-        dom.freeRewardBtn.querySelector('.day-streak-counter').textContent = `🔥 ${state.consecutiveDays}`;
-    };
-
-    if(dom.freeRewardBtn) {
-        dom.freeRewardBtn.addEventListener('click', () => {
-            const eligibleRewards = state.rewards.filter(r => r.cost <= state.settings.freeRewardCostLimit);
-            if (eligibleRewards.length === 0) return showAlert(`You need rewards costing ${state.settings.freeRewardCostLimit} PTS or less!`, "Cannot Claim");
-
-            state.lastClaimTimestamp = Date.now();
-            state.consecutiveDays++;
-
-            if (state.consecutiveDays >= 7) {
-                dom.choiceRewardList.innerHTML = '';
-                eligibleRewards.forEach(reward => {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn btn-secondary';
-                    btn.innerHTML = `<span>${reward.name}</span> <span class="cost">${reward.cost} PTS</span>`;
-                    btn.onclick = () => {
-                        state.inventory.push({ ...reward, dateAcquired: Date.now() });
-                        state.consecutiveDays = 0;
-                        saveState(); renderAll(); closeModal();
-                    };
-                    dom.choiceRewardList.appendChild(btn);
-                });
-                openModal('choose-reward-modal');
-            } else {
-                openModal('free-reward-modal');
-                const spinnerWords = document.getElementById('spinner-words'), result = document.getElementById('spinner-result'), claimBtn = document.getElementById('claim-reward-btn');
-                result.classList.add('hidden'); claimBtn.classList.add('hidden');
-                let i = 0;
-                const spinInterval = setInterval(() => { spinnerWords.textContent = eligibleRewards[i++ % eligibleRewards.length].name; }, 100);
-                setTimeout(() => {
-                    clearInterval(spinInterval);
-                    const winner = eligibleRewards[Math.floor(Math.random() * eligibleRewards.length)];
-                    spinnerWords.textContent = winner.name;
-                    result.innerHTML = `You won: <span style="color: var(--accent-red);">${winner.name}</span>!`;
-                    result.classList.remove('hidden'); claimBtn.classList.remove('hidden');
-                    claimBtn.onclick = () => {
-                        state.inventory.push({ ...winner, dateAcquired: Date.now() });
-                        saveState(); renderAll(); closeModal();
-                    }
-                }, 3000);
-            }
-            updateFreeRewardButton();
-            saveState();
-        });
-    }
+    const updateFreeRewardButton=()=>{const e=!state.lastClaimTimestamp||hasNewCycleBegun({frequency:"Daily"},state.lastClaimTimestamp);if(!dom.freeRewardBtn)return;dom.freeRewardBtn.disabled=!e;const t=getAdjustedDate(new Date);t.setDate(t.getDate()-1),e&&state.lastClaimTimestamp&&getAdjustedDate(new Date(state.lastClaimTimestamp)).toDateString()!==t.toDateString()&&(state.consecutiveDays=0),dom.freeRewardBtn.querySelector(".day-streak-counter").textContent=`🔥 ${state.consecutiveDays}`};if(dom.freeRewardBtn){dom.freeRewardBtn.addEventListener("click",(()=>{const e=state.rewards.filter((e=>e.cost<=state.settings.freeRewardCostLimit));if(0===e.length)return showAlert(`You need rewards costing ${state.settings.freeRewardCostLimit} PTS or less!`,"Cannot Claim");if(state.lastClaimTimestamp=Date.now(),state.consecutiveDays++,state.consecutiveDays>=7){dom.choiceRewardList.innerHTML="",e.forEach((e=>{const t=document.createElement("button");t.className="btn btn-secondary",t.innerHTML=`<span>${e.name}</span> <span class="cost">${e.cost} PTS</span>`,t.onclick=()=>{state.inventory.push({...e,dateAcquired:Date.now()}),state.consecutiveDays=0,saveState(),renderAll(),closeModal()},dom.choiceRewardList.appendChild(t)})),openModal("choose-reward-modal")}else{openModal("free-reward-modal");const t=document.getElementById("spinner-words"),a=document.getElementById("spinner-result"),d=document.getElementById("claim-reward-btn");a.classList.add("hidden"),d.classList.add("hidden");let n=0;const s=setInterval((()=>{t.textContent=e[n++%e.length].name}),100);setTimeout((()=>{clearInterval(s);const n=e[Math.floor(Math.random()*e.length)];t.textContent=n.name,a.innerHTML=`You won: <span style="color: var(--accent-red);">${n.name}</span>!`,a.classList.remove("hidden"),d.classList.remove("hidden"),d.onclick=()=>{state.inventory.push({...n,dateAcquired:Date.now()}),saveState(),renderAll(),closeModal()}}),3e3)}updateFreeRewardButton(),saveState()}))}
 
     // --- TIMERS & INITIALIZATION ---
     const init = () => {
@@ -1251,30 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         renderAll();
         saveState();
-
-        setInterval(() => {
-            if (state.activeRewards.length === 0) return;
-            const now = Date.now();
-            let changed = false;
-            let expiredItems = [];
-            state.activeRewards = state.activeRewards.filter(item => {
-                if (item.endTime - now > 0) return true;
-                expiredItems.push(item.name)
-                changed = true; return false;
-            });
-
-            if (changed) { 
-                showAlert(`Timer for "${expiredItems.join(', ')}" has expired!`, "Timer Finished"); 
-                saveState(); 
-                renderAll(); 
-            } else {
-                 dom.activeRewardsList.querySelectorAll('.active-reward-card').forEach(card => {
-                    const item = state.activeRewards.find(r => r.id == card.dataset.id);
-                    if (item) card.querySelector('.timer-countdown').textContent = new Date(item.endTime - now).toISOString().substr(11, 8);
-                });
-            }
-        }, 1000);
-
+        setInterval(()=>{if(0===state.activeRewards.length)return;const e=Date.now();let t=!1;state.activeRewards=state.activeRewards.filter((a=>(a.endTime-e>0?t=!0:state.usedRewards.push({...a,status:"Expired",dateUsed:a.endTime}),t))),dom.activeRewardsList.querySelectorAll(".active-reward-card").forEach((t=>{const a=state.activeRewards.find((e=>e.id==t.dataset.id));a&&t.querySelector(".timer-countdown").textContent=new Date(a.endTime-e).toISOString().substr(11,8)})),!t&&state.activeRewards.length>0&&(showAlert("An active reward timer has expired!","Timer Finished"),saveState(),renderAll())},1e3);
         setInterval(updateFreeRewardButton, 60000);
     };
 
