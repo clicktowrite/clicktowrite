@@ -868,7 +868,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const actionKey = Object.keys(actions).find(key => target.classList.contains(key));
             if (actionKey) {
-                await actions[actionKey](item, index, e);
+                // The alert is now part of the action itself, so we don't need to await it here
+                // before rendering. The rendering will happen, and the modal will appear on top.
+                actions[actionKey](item, index, e); 
                 saveState();
                 renderAll();
             }
@@ -967,23 +969,32 @@ document.addEventListener('DOMContentLoaded', () => {
         handleListClick(dom.rewardList, 'rewards', {
             'delete-btn': async (item, index) => { if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1); },
             'redeem-btn': (item, index) => {
-                if (state.points < item.cost) return showAlert("Not enough points!");
+                if (state.points < item.cost) {
+                    showAlert("Not enough points!");
+                    return;
+                }
                 state.points -= item.cost;
                 state.inventory.push({ ...item, dateAcquired: Date.now() });
                 if (item.redeemOnce) state.rewards.splice(index, 1);
+                showAlert(`You have successfully redeemed "${item.name}"! It's now in your inventory.`, "Reward Redeemed");
             }
         });
         handleListClick(dom.inventoryList, 'inventory', {
             'delete-btn': async (item, index) => { if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1); },
             'activate-btn': (item, index) => {
                 const durationMs = ((item.timerHours * 60) + item.timerMinutes) * 60000;
-                if (durationMs <= 0) return showAlert("This reward has no timer duration.", "Cannot Activate");
+                if (durationMs <= 0) {
+                    showAlert("This reward has no timer duration.", "Cannot Activate");
+                    return;
+                }
                 state.activeRewards.push({ ...item, id: Date.now(), endTime: Date.now() + durationMs });
                 state.inventory.splice(index, 1);
+                showAlert(`"${item.name}" has been activated! The timer has started.`, "Reward Activated");
             },
             'redeem-item-btn': (item, index) => {
                 state.usedRewards.push({ ...item, status: 'Used', dateUsed: Date.now() });
                 state.inventory.splice(index, 1);
+                showAlert(`You have used "${item.name}"!`, "Reward Used");
             }
         });
     };
