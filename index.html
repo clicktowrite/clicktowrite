@@ -673,6 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const getCurrentCycleStartDate = (quest, date) => {
+        if (!quest.customCycleAnchor) return null; // Important for reset logic
         const anchor = new Date(quest.customCycleAnchor);
         const targetDate = new Date(date);
         switch(quest.frequency) {
@@ -700,10 +701,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const getQuestCycleDisplayString = (quest) => {
+        const now = Date.now();
+        const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
+        
+        const getStartOfWeek = (date) => {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            return new Date(d.setDate(diff));
+        };
+
+        let startDate, endDate;
+
+        switch (quest.frequency) {
+            case 'Daily':
+                return `For ${formatDate(getAdjustedDate(new Date(now)))}`;
+            case 'Weekly':
+                startDate = quest.customCycleAnchor ? getCurrentCycleStartDate(quest, now) : getStartOfWeek(getAdjustedDate(new Date(now)));
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+            case 'Monthly':
+                startDate = quest.customCycleAnchor ? getCurrentCycleStartDate(quest, now) : new Date(getAdjustedDate(new Date(now)).getFullYear(), getAdjustedDate(new Date(now)).getMonth(), 1);
+                endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+            case 'Yearly':
+                startDate = quest.customCycleAnchor ? getCurrentCycleStartDate(quest, now) : new Date(getAdjustedDate(new Date(now)).getFullYear(), 0, 1);
+                endDate = new Date(startDate.getFullYear(), 11, 31);
+                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+            default:
+                return "";
+        }
+    };
+
     const hasNewCycleBegun = (quest, dateToCheck) => {
         if (!dateToCheck) return false; 
         if (quest.customCycleAnchor) {
-            return getCurrentCycleStartDate(quest, Date.now()).getTime() > getCurrentCycleStartDate(quest, dateToCheck).getTime();
+            const currentCycleStart = getCurrentCycleStartDate(quest, Date.now());
+            // This can happen if the anchor is in the future.
+            if (!currentCycleStart) return false; 
+            return currentCycleStart.getTime() > getCurrentCycleStartDate(quest, dateToCheck).getTime();
         }
         const now = getAdjustedDate(new Date()), last = getAdjustedDate(new Date(dateToCheck));
         switch(quest.frequency) {
@@ -802,8 +840,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const showMessage = quest.hasTracker && quest.currentProgress > quest.target;
             const canComplete = quest.hasTracker ? quest.currentProgress >= quest.target : true;
             card.innerHTML = `
-                <div> <button class="delete-btn" data-index="${quest.originalIndex}">&times;</button>
+                <div> 
+                    <button class="delete-btn" data-index="${quest.originalIndex}">&times;</button>
                     <h3>${quest.name}</h3>
+                    <div class="quest-cycle-date">${getQuestCycleDisplayString(quest)}</div>
                     <p>+${quest.points} Points / -${quest.penalty} Points</p>
                     ${quest.hasTracker ? `<div class="tracker">
                         <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${quest.originalIndex}">-</button>
