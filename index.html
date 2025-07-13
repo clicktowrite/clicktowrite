@@ -273,6 +273,7 @@
                 <input type="text" name="name" placeholder="Quest Name" required>
                 <select name="frequency"><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Yearly</option></select>
                 <input type="number" name="points" placeholder="Points Reward" min="0" required>
+                <input type="number" name="penalty" placeholder="Points Penalty on Failure" min="0">
                 <label class="checkbox-label"><span>Add number tracker?</span><input type="checkbox" name="hasTracker"></label>
                 <div class="hidden" id="quest-tracker-setup"><input type="number" name="target" placeholder="Target number" min="1"></div>
                 <label class="checkbox-label"><span>Make quest repeatable?</span><input type="checkbox" name="isRepeatable"></label>
@@ -422,27 +423,67 @@ document.addEventListener('DOMContentLoaded', () => {
         adjustedDate.setMinutes(adjustedDate.getMinutes() - minutes);
         return adjustedDate;
     };
-    
-    const isQuestReadyForReset = (quest) => {
-        if (!quest.isRepeatable) return true; 
-        if (!quest.lastCompleted) return true;
+
+    const hasNewCycleBegun = (quest, dateToCheck) => {
+        if (!dateToCheck) return false; 
 
         const now = getAdjustedDate(new Date());
-        const last = getAdjustedDate(new Date(quest.lastCompleted));
+        const last = getAdjustedDate(new Date(dateToCheck));
 
         switch(quest.frequency) {
             case 'Daily':
                 return now.toDateString() !== last.toDateString();
-            case 'Weekly':
-                const weekStartNow = new Date(now.setDate(now.getDate() - now.getDay()));
-                const weekStartLast = new Date(last.setDate(last.getDate() - last.getDay()));
+            case 'Weekly': {
+                const msInDay = 86400000;
+                const nowDay = (now.getDay() + 6) % 7; // Monday is 0
+                const lastDay = (last.getDay() + 6) % 7;
+                const weekStartNow = new Date(now.getTime() - nowDay * msInDay);
+                const weekStartLast = new Date(last.getTime() - lastDay * msInDay);
                 return weekStartNow.toDateString() !== weekStartLast.toDateString();
+            }
             case 'Monthly':
                 return now.getMonth() !== last.getMonth() || now.getFullYear() !== last.getFullYear();
             case 'Yearly':
                 return now.getFullYear() !== last.getFullYear();
             default:
                 return false;
+        }
+    };
+    
+    const isQuestReadyForReset = (quest) => {
+        if (!quest.isRepeatable) return true;
+        return !quest.lastCompleted || hasNewCycleBegun(quest, quest.lastCompleted);
+    };
+
+    const processExpiredQuests = () => {
+        const questsToKeep = [];
+        const expiredQuestMessages = [];
+        const now = Date.now();
+
+        state.quests.forEach(quest => {
+            const hasExpired = hasNewCycleBegun(quest, quest.cycleStart) && !isQuestReadyForReset(quest);
+
+            if (hasExpired) {
+                if (quest.penalty > 0) {
+                    state.points -= quest.penalty;
+                    expiredQuestMessages.push(`'${quest.name}' (-${quest.penalty} PTS)`);
+                }
+
+                if (quest.isRepeatable) {
+                    quest.cycleStart = now;
+                    quest.currentProgress = 0;
+                    quest.lastCompleted = null;
+                    questsToKeep.push(quest);
+                }
+            } else {
+                questsToKeep.push(quest);
+            }
+        });
+
+        state.quests = questsToKeep;
+
+        if (expiredQuestMessages.length > 0) {
+            showAlert(`The following quests expired and penalties were applied: ${expiredQuestMessages.join(', ')}`, "Quests Expired");
         }
     };
 
@@ -479,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div> <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                     <h3>${quest.name}</h3>
-                    <p>+${quest.points} Points</p>
+                    <p>+${quest.points} Points / -${quest.penalty} Points</p>
                     ${quest.hasTracker ? `<div class="tracker">
                         <button class="btn btn-secondary tracker-btn" data-op="minus" data-index="${index}">-</button>
                         <span>${quest.currentProgress} / ${quest.target}</span>
@@ -614,7 +655,9 @@ document.addEventListener('DOMContentLoaded', () => {
             target: data.hasTracker ? (parseInt(data.target) || 1) : 1, currentProgress: 0,
             isRepeatable: !!data.isRepeatable,
             repeatCount: 0,
-            lastCompleted: null
+            lastCompleted: null,
+            penalty: parseInt(data.penalty) || 0,
+            cycleStart: Date.now()
         });
         saveState(); renderAll(); closeModal(); form.reset();
         document.getElementById('quest-tracker-setup').classList.add('hidden');
@@ -750,8 +793,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 1000);
 
+    // Initial load sequence
     loadState();
+    processExpiredQuests();
     renderAll();
+    saveState(); // Save state after processing expired quests
 });
 </script>
 
