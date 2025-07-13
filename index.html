@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const renderActiveRewards = () => {
-        renderList(dom.activeRewardsList, state.activeRewards, (item, index) => {
+        renderList(dom.activeRewardsList, state.activeRewards, (item) => {
             const card = document.createElement('div');
             card.className = 'item-card active-reward-card';
             card.dataset.id = item.id;
