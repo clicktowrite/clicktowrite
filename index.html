@@ -319,6 +319,10 @@
             <form id="add-quest-form">
                 <input type="text" name="name" placeholder="Quest Name" required>
                 <select name="frequency"><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Yearly</option></select>
+                <div id="custom-cycle-setup" class="hidden">
+                    <label>Cycle Start Date:</label>
+                    <input type="date" name="customCycleAnchor">
+                </div>
                 <input type="number" name="points" placeholder="Points Reward" min="0" required>
                 <input type="number" name="penalty" placeholder="Points Penalty on Failure" min="0">
                 <label class="checkbox-label"><span>Add number tracker?</span><input type="checkbox" name="hasTracker"></label>
@@ -413,7 +417,11 @@ document.addEventListener('DOMContentLoaded', () => {
         activeRewardsPanel: document.getElementById('active-rewards-panel'),
         usedRewardsBtn: document.getElementById('toggle-used-rewards-btn'),
         usedRewardsPanel: document.getElementById('used-rewards-panel'),
-        freeRewardBtn: document.getElementById('free-reward-btn')
+        freeRewardBtn: document.getElementById('free-reward-btn'),
+        addQuestModal: {
+            frequencySelect: document.querySelector('#add-quest-form [name="frequency"]'),
+            customCycleSetup: document.getElementById('custom-cycle-setup'),
+        }
     };
 
     const saveState = () => localStorage.setItem('gamefyState', JSON.stringify(state));
@@ -474,19 +482,59 @@ document.addEventListener('DOMContentLoaded', () => {
         adjustedDate.setMinutes(adjustedDate.getMinutes() - minutes);
         return adjustedDate;
     };
+    
+    const getCurrentCycleStartDate = (quest, date) => {
+        const anchor = new Date(quest.customCycleAnchor);
+        const targetDate = new Date(date);
+
+        switch(quest.frequency) {
+            case 'Weekly': {
+                const msInDay = 86400000;
+                const daysSinceAnchor = Math.floor((targetDate - anchor) / msInDay);
+                const cyclesPassed = Math.floor(daysSinceAnchor / 7);
+                return new Date(anchor.getTime() + cyclesPassed * 7 * msInDay);
+            }
+            case 'Monthly': {
+                let monthsPassed = (targetDate.getFullYear() - anchor.getFullYear()) * 12 + (targetDate.getMonth() - anchor.getMonth());
+                if (targetDate.getDate() < anchor.getDate()) {
+                    monthsPassed--;
+                }
+                const cycleStartDate = new Date(anchor);
+                cycleStartDate.setMonth(cycleStartDate.getMonth() + monthsPassed);
+                return cycleStartDate;
+            }
+            case 'Yearly': {
+                let yearsPassed = targetDate.getFullYear() - anchor.getFullYear();
+                if (targetDate.getMonth() < anchor.getMonth() || (targetDate.getMonth() === anchor.getMonth() && targetDate.getDate() < anchor.getDate())) {
+                    yearsPassed--;
+                }
+                const cycleStartDate = new Date(anchor);
+                cycleStartDate.setFullYear(cycleStartDate.getFullYear() + yearsPassed);
+                return cycleStartDate;
+            }
+            default: return null;
+        }
+    };
 
     const hasNewCycleBegun = (quest, dateToCheck) => {
         if (!dateToCheck) return false; 
+        
+        // Handle custom anchor date logic
+        if (quest.customCycleAnchor) {
+            const lastCycleStart = getCurrentCycleStartDate(quest, dateToCheck);
+            const currentCycleStart = getCurrentCycleStartDate(quest, Date.now());
+            return currentCycleStart.getTime() > lastCycleStart.getTime();
+        }
 
+        // Fallback to original logic
         const now = getAdjustedDate(new Date());
         const last = getAdjustedDate(new Date(dateToCheck));
-
         switch(quest.frequency) {
             case 'Daily':
                 return now.toDateString() !== last.toDateString();
             case 'Weekly': {
                 const msInDay = 86400000;
-                const nowDay = (now.getDay() + 6) % 7; // Monday is 0
+                const nowDay = (now.getDay() + 6) % 7;
                 const lastDay = (last.getDay() + 6) % 7;
                 const weekStartNow = new Date(now.getTime() - nowDay * msInDay);
                 const weekStartLast = new Date(last.getTime() - lastDay * msInDay);
@@ -543,6 +591,31 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const getCycleDateString = (quest) => {
+        const formatDate = (date) => date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        
+        // Handle custom anchor quests
+        if (quest.customCycleAnchor) {
+            const cycleStart = getCurrentCycleStartDate(quest, Date.now());
+            let cycleEnd;
+            switch(quest.frequency) {
+                case 'Weekly':
+                    cycleEnd = new Date(cycleStart.getTime() + 6 * 86400000);
+                    break;
+                case 'Monthly':
+                    cycleEnd = new Date(cycleStart);
+                    cycleEnd.setMonth(cycleEnd.getMonth() + 1);
+                    cycleEnd.setDate(cycleEnd.getDate() - 1);
+                    break;
+                case 'Yearly':
+                    cycleEnd = new Date(cycleStart);
+                    cycleEnd.setFullYear(cycleEnd.getFullYear() + 1);
+                    cycleEnd.setDate(cycleEnd.getDate() - 1);
+                    break;
+            }
+            return `Cycle: ${formatDate(cycleStart)} - ${formatDate(cycleEnd)}`;
+        }
+
+        // Fallback to original logic
         const cycleDate = new Date(quest.cycleStart);
         switch(quest.frequency) {
             case 'Weekly': {
@@ -736,6 +809,11 @@ document.addEventListener('DOMContentLoaded', () => {
         state.settings.startOfDay = formData.get('startOfDay') || '00:00';
         saveState(); renderAll(); closeModal();
     });
+    
+    dom.addQuestModal.frequencySelect.addEventListener('change', (e) => {
+        const showCustom = ['Weekly', 'Monthly', 'Yearly'].includes(e.target.value);
+        dom.addQuestModal.customCycleSetup.classList.toggle('hidden', !showCustom);
+    });
 
     ['add-quest-form', 'add-reward-form'].forEach(formId => {
         const form = document.getElementById(formId);
@@ -753,17 +831,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-quest-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const form = e.target; const data = Object.fromEntries(new FormData(form));
+        const anchorDate = data.customCycleAnchor ? new Date(data.customCycleAnchor + 'T00:00:00').getTime() : null;
+
         state.quests.push({
-            name: data.name, points: parseInt(data.points), frequency: data.frequency, hasTracker: !!data.hasTracker,
+            name: data.name, points: parseInt(data.points) || 0, frequency: data.frequency, hasTracker: !!data.hasTracker,
             target: data.hasTracker ? (parseInt(data.target) || 1) : 1, currentProgress: 0,
             isRepeatable: !!data.isRepeatable,
             repeatCount: 0,
             lastCompleted: null,
             penalty: parseInt(data.penalty) || 0,
-            cycleStart: Date.now()
+            cycleStart: Date.now(),
+            customCycleAnchor: anchorDate,
         });
         saveState(); renderAll(); closeModal(); form.reset();
         document.getElementById('quest-tracker-setup').classList.add('hidden');
+        document.getElementById('custom-cycle-setup').classList.add('hidden');
     });
 
     document.getElementById('add-reward-form').addEventListener('submit', (e) => {
@@ -915,7 +997,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadState();
     processExpiredQuests();
     renderAll();
-    saveState(); // Save state after processing expired quests
+    saveState(); 
 });
 </script>
 
