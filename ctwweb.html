@@ -578,6 +578,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- HELPERS ---
+    const deepMerge = (target, ...sources) => {
+        if (!sources.length) return target;
+        const source = sources.shift();
+        const isObject = (item) => (item && typeof item === 'object' && !Array.isArray(item));
+        if (isObject(target) && isObject(source)) {
+            for (const key in source) {
+                if (isObject(source[key])) {
+                    if (!target[key]) Object.assign(target, { [key]: {} });
+                    deepMerge(target[key], source[key]);
+                } else {
+                    Object.assign(target, { [key]: source[key] });
+                }
+            }
+        }
+        return deepMerge(target, ...sources);
+    };
+
     const saveState = () => localStorage.setItem('gamefyStateDesktop', JSON.stringify(state));
     const loadState = () => {
         const saved = localStorage.getItem('gamefyStateDesktop');
@@ -612,12 +629,147 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- DATE & CYCLE LOGIC ---
-    // ... (All date functions are the same as before) ...
-    const getAdjustedDate=(t)=>{const[e,a]=state.settings.startOfDay.split(":").map(Number),d=new Date(t);return d.setHours(d.getHours()-e,d.getMinutes()-a),d};const getCurrentCycleStartDate=(t,e)=>{if(!t.customCycleAnchor)return null;const a=new Date(t.customCycleAnchor),d=new Date(e);switch(t.frequency){case"Weekly":{const n=(new Date(a.getTime()+36e5*24*Math.floor((d-a)/864e5/7)*7));return n}case"Monthly":{let s=(12*(d.getFullYear()-a.getFullYear())+d.getMonth()-a.getMonth());d.getDate()<a.getDate()&&s--;const r=new Date(a);return r.setMonth(r.getMonth()+s),r}case"Yearly":{let o=d.getFullYear()-a.getFullYear();(d.getMonth()<a.getMonth()||d.getMonth()===a.getMonth()&&d.getDate()<a.getDate())&&o--;const i=new Date(a);return i.setFullYear(i.getFullYear()+o),i}default:return null}};const getQuestCycleDisplayString=(t)=>{const e=new Date,a=t=>new Intl.DateTimeFormat("en-US",{month:"long",day:"numeric",year:"numeric"}).format(t),d=t=>{const e=new Date(t),a=e.getDay();return new Date(e.setDate(e.getDate()-a+(0===a?-6:1)))};let n,s;switch(t.frequency){case"Daily":return`For ${a(getAdjustedDate(e))}`;case"Weekly":return t.customCycleAnchor?(n=getCurrentCycleStartDate(t,e),s=new Date(n),s.setDate(n.getDate()+6),`${a(n)} - ${a(s)}`):(n=d(getAdjustedDate(e)),s=new Date(n),s.setDate(n.getDate()+6),`Monday[${n.getDate()}] - Sunday [${s.getDate()}]`);case"Monthly":return t.customCycleAnchor?(n=getCurrentCycleStartDate(t,e),s=new Date(n.getFullYear(),n.getMonth()+1,0),`${a(n)} - ${a(s)}`):new Intl.DateTimeFormat("en-US",{month:"long",year:"numeric"}).format(getAdjustedDate(e));case"Yearly":return t.customCycleAnchor?(n=getCurrentCycleStartDate(t,e),s=new Date(n.getFullYear(),11,31),`${a(n)} - ${a(s)}`):`Year ${getAdjustedDate(e).getFullYear()}`;default:""}};const hasNewCycleBegun=(t,e)=>{if(!e)return!1;if(t.customCycleAnchor){const a=getCurrentCycleStartDate(t,Date.now());return!a?!1:a.getTime()>getCurrentCycleStartDate(t,e).getTime()}const d=getAdjustedDate(new Date),n=getAdjustedDate(new Date(e));switch(t.frequency){case"Daily":return d.toDateString()!==n.toDateString();case"Weekly":return d.getFullYear()!==n.getFullYear()||Math.floor(d.getTime()/6048e5)!==Math.floor(n.getTime()/6048e5);case"Monthly":return d.getFullYear()!==n.getFullYear()||d.getMonth()!==n.getMonth();case"Yearly":return d.getFullYear()!==n.getFullYear();default:return!1}};const isQuestReadyForReset=t=>!t.isRepeatable||!t.lastCompleted||hasNewCycleBegun(t,t.lastCompleted);
+    const getAdjustedDate = (date) => {
+        const [hours, minutes] = state.settings.startOfDay.split(':').map(Number);
+        const adjustedDate = new Date(date);
+        adjustedDate.setHours(adjustedDate.getHours() - hours, adjustedDate.getMinutes() - minutes);
+        return adjustedDate;
+    };
+    
+    const getCurrentCycleStartDate = (quest, date) => {
+        if (!quest.customCycleAnchor) return null;
+        const anchor = new Date(quest.customCycleAnchor);
+        const targetDate = new Date(date);
+        switch(quest.frequency) {
+            case 'Weekly': {
+                const daysSince = Math.floor((targetDate - anchor) / 86400000);
+                return new Date(anchor.getTime() + Math.floor(daysSince / 7) * 7 * 86400000);
+            }
+            case 'Monthly': {
+                let months = (targetDate.getFullYear() - anchor.getFullYear()) * 12 + targetDate.getMonth() - anchor.getMonth();
+                if (targetDate.getDate() < anchor.getDate()) months--;
+                const cycleStart = new Date(anchor);
+                cycleStart.setMonth(cycleStart.getMonth() + months);
+                return cycleStart;
+            }
+            case 'Yearly': {
+                let years = targetDate.getFullYear() - anchor.getFullYear();
+                if (targetDate.getMonth() < anchor.getMonth() || (targetDate.getMonth() === anchor.getMonth() && targetDate.getDate() < anchor.getDate())) {
+                    years--;
+                }
+                const cycleStart = new Date(anchor);
+                cycleStart.setFullYear(cycleStart.getFullYear() + years);
+                return cycleStart;
+            }
+            default: return null;
+        }
+    };
+
+    const getQuestCycleDisplayString = (quest) => {
+        const now = new Date();
+        const formatDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date);
+
+        const getStartOfWeek = (date) => {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            return new Date(d.setDate(diff));
+        };
+
+        let startDate, endDate;
+
+        switch (quest.frequency) {
+            case 'Daily':
+                return `For ${formatDate(getAdjustedDate(now))}`;
+            case 'Weekly':
+                if (quest.customCycleAnchor) {
+                    startDate = getCurrentCycleStartDate(quest, now);
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                } else {
+                    startDate = getStartOfWeek(getAdjustedDate(now));
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    return `Monday[${startDate.getDate()}] - Sunday [${endDate.getDate()}]`;
+                }
+            case 'Monthly':
+                if (quest.customCycleAnchor) {
+                    startDate = getCurrentCycleStartDate(quest, now);
+                    endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                } else {
+                    return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(getAdjustedDate(now));
+                }
+            case 'Yearly':
+                if (quest.customCycleAnchor) {
+                    startDate = getCurrentCycleStartDate(quest, now);
+                    endDate = new Date(startDate.getFullYear(), 11, 31);
+                    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                } else {
+                    return `Year ${getAdjustedDate(now).getFullYear()}`;
+                }
+            default:
+                return "";
+        }
+    };
+
+    const hasNewCycleBegun = (quest, dateToCheck) => {
+        if (!dateToCheck) return false; 
+        if (quest.customCycleAnchor) {
+            const currentCycleStart = getCurrentCycleStartDate(quest, Date.now());
+            if (!currentCycleStart) return false; 
+            return currentCycleStart.getTime() > getCurrentCycleStartDate(quest, dateToCheck).getTime();
+        }
+        const now = getAdjustedDate(new Date()), last = getAdjustedDate(new Date(dateToCheck));
+        switch(quest.frequency) {
+            case 'Daily': return now.toDateString() !== last.toDateString();
+            case 'Weekly': return now.getFullYear() !== last.getFullYear() || Math.floor(now.getTime() / 604800000) !== Math.floor(last.getTime() / 604800000);
+            case 'Monthly': return now.getFullYear() !== last.getFullYear() || now.getMonth() !== last.getMonth();
+            case 'Yearly': return now.getFullYear() !== last.getFullYear();
+            default: return false;
+        }
+    };
+    
+    const isQuestReadyForReset = (quest) => !quest.isRepeatable || !quest.lastCompleted || hasNewCycleBegun(quest, quest.lastCompleted);
 
     // --- DATA PROCESSING ---
-    // ... (All data processing functions are the same as before) ...
-    const processExpiredQuests=()=>{const t=[];state.quests=state.quests.filter((e=>{const a=hasNewCycleBegun(e,e.cycleStart)&&!e.lastCompleted;return a&&(e.penalty>0&&(state.points-=e.penalty,t.push(`'${e.name}' (-${e.penalty} PTS)`)),!e.isRepeatable)?!1:!0})),state.quests.forEach((t=>{hasNewCycleBegun(t,t.cycleStart)&&(t.cycleStart=Date.now(),t.lastCompleted=null,t.hasTracker&&(t.currentProgress=0))})),t.length>0&&showAlert(`Penalties applied for expired quests: ${t.join(", ")}`,"Quests Expired")};const processExpiredInventory=()=>{const t=Date.now();state.inventory=state.inventory.filter((e=>{if(e.hasExpiry){const a=new Date(e.dateAcquired).setDate(new Date(e.dateAcquired).getDate()+e.expiryDays);if(t>a)return state.usedRewards.push({...e,status:"Expired",dateUsed:a}),!1}return!0}))};
+    const processExpiredQuests = () => {
+        const expiredMessages = [];
+        state.quests = state.quests.filter(quest => {
+            const hasExpired = hasNewCycleBegun(quest, quest.cycleStart) && !quest.lastCompleted;
+            if (hasExpired) {
+                if (quest.penalty > 0) {
+                    state.points -= quest.penalty;
+                    expiredMessages.push(`'${quest.name}' (-${quest.penalty} PTS)`);
+                }
+                if (!quest.isRepeatable) return false;
+            }
+            return true;
+        });
+        state.quests.forEach(q => {
+             if (hasNewCycleBegun(q, q.cycleStart)) {
+                 q.cycleStart = Date.now();
+                 q.lastCompleted = null;
+                 if(q.hasTracker) q.currentProgress = 0;
+             }
+        });
+        if (expiredMessages.length > 0) showAlert(`Penalties applied for expired quests: ${expiredMessages.join(', ')}`, "Quests Expired");
+    };
+
+    const processExpiredInventory = () => {
+        const now = Date.now();
+        state.inventory = state.inventory.filter(item => {
+            if (item.hasExpiry) {
+                const expiryDate = new Date(item.dateAcquired).setDate(new Date(item.dateAcquired).getDate() + item.expiryDays);
+                if (now > expiryDate) {
+                    state.usedRewards.push({ ...item, status: 'Expired', dateUsed: expiryDate });
+                    return false;
+                }
+            }
+            return true;
+        });
+    };
     
     // --- RENDERING ---
     const renderAll = () => {
@@ -661,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderList(dom.questList, filteredQuests, (quest) => {
             const card = document.createElement('div');
             card.className = 'item-card';
+            const canComplete = (quest.hasTracker ? quest.currentProgress >= quest.target : true) && isQuestReadyForReset(quest);
             card.innerHTML = `
                 <div> 
                     <button class="delete-btn" data-index="${quest.originalIndex}">🗑️</button>
@@ -674,7 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>` : ''}
                 </div>
                 <div class="quest-controls-right"> ${quest.isRepeatable ? `<span class="repeat-counter">🔁 ${quest.repeatCount}</span>` : ''}
-                    <button class="btn done-btn" data-index="${quest.originalIndex}" ${(quest.hasTracker ? quest.currentProgress >= quest.target : true) && isQuestReadyForReset(quest) ? '' : 'disabled'}>Done</button>
+                    <button class="btn done-btn" data-index="${quest.originalIndex}" ${canComplete ? '' : 'disabled'}>Done</button>
                 </div>`;
             dom.questList.appendChild(card);
         }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one!</p>`);
@@ -727,7 +880,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const index = parseInt(target.dataset.index);
             const item = state[listName][index];
             if (!item) return;
-
             const actionKey = Object.keys(actions).find(key => target.classList.contains(key));
             if (actionKey) {
                 await actions[actionKey](item, index, e); 
@@ -779,20 +931,63 @@ document.addEventListener('DOMContentLoaded', () => {
             saveState(); renderAll(); closeModal();
         });
         
-        // ... Other event listeners ...
+        document.getElementById('add-quest-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            state.quests.push({
+                name: data.name, points: +data.points || 0, frequency: data.frequency, 
+                hasTracker: !!data.hasTracker, target: data.hasTracker ? (+data.target || 1) : 1, 
+                isRepeatable: !!data.isRepeatable, penalty: +data.penalty || 0,
+                customCycleAnchor: data.customCycleAnchor ? new Date(data.customCycleAnchor + 'T00:00:00').getTime() : null,
+                currentProgress: 0, repeatCount: 0, lastCompleted: null, cycleStart: Date.now(),
+            });
+            saveState(); renderAll(); closeModal(); e.target.reset();
+        });
+        
+        document.getElementById('add-reward-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target));
+            state.rewards.push({
+                name: data.name, cost: +data.cost || 0, redeemOnce: !!data.redeemOnce, hasExpiry: !!data.hasExpiry,
+                expiryDays: data.hasExpiry ? (+data.expiryDays || 7) : null, hasTimer: !!data.hasTimer,
+                timerHours: data.hasTimer ? (+data.timerHours || 0) : 0, timerMinutes: data.hasTimer ? (+data.timerMinutes || 0) : 0,
+            });
+            saveState(); renderAll(); closeModal(); e.target.reset();
+        });
+
+        // Form Toggles
+        const setupFormToggles = () => {
+            const setup = (formId, checkName, targetId) => {
+                document.querySelector(`#${formId} [name="${checkName}"]`)?.addEventListener('change', e => {
+                    document.getElementById(targetId).classList.toggle('hidden', !e.target.checked);
+                });
+            };
+            setup('add-quest-form', 'hasTracker', 'quest-tracker-setup');
+            setup('add-reward-form', 'hasExpiry', 'reward-expiry-setup');
+            setup('add-reward-form', 'hasTimer', 'reward-timer-setup');
+            document.querySelector('#add-quest-form [name="frequency"]').addEventListener('change', e => {
+                document.getElementById('custom-cycle-setup').classList.toggle('hidden', !['Weekly', 'Monthly', 'Yearly'].includes(e.target.value));
+            });
+        };
+        setupFormToggles();
+
+        // Quest Sub-Navigation
         dom.questSubNav.addEventListener('click', e => {
             const btn = e.target.closest('.sub-nav-btn');
-            if(btn) { state.settings.activeQuestFilter = btn.dataset.frequency; renderQuests(); }
+            if (btn) {
+                state.settings.activeQuestFilter = btn.dataset.frequency;
+                renderQuests();
+            }
         });
+
+        // Accordion Buttons
         [dom.activeRewardsBtn, dom.usedRewardsBtn].forEach(btn => {
             btn.addEventListener('click', function() {
                 this.classList.toggle('active');
-                this.nextElementSibling.style.maxHeight = this.nextElementSibling.style.maxHeight ? null : `${this.nextElementSibling.scrollHeight}px`;
+                const panel = this.nextElementSibling;
+                panel.style.maxHeight = panel.style.maxHeight ? null : `${panel.scrollHeight}px`;
             });
         });
-        document.getElementById('add-quest-form').addEventListener('submit',e=>{e.preventDefault();const t=Object.fromEntries(new FormData(e.target));state.quests.push({name:t.name,points:+t.points||0,frequency:t.frequency,hasTracker:!!t.hasTracker,target:t.hasTracker?+t.target||1:1,isRepeatable:!!t.isRepeatable,penalty:+t.penalty||0,customCycleAnchor:t.customCycleAnchor?new Date(t.customCycleAnchor+"T00:00:00").getTime():null,currentProgress:0,repeatCount:0,lastCompleted:null,cycleStart:Date.now()}),saveState(),renderAll(),closeModal(),e.target.reset(),document.getElementById("quest-tracker-setup").classList.add("hidden"),document.getElementById("custom-cycle-setup").classList.add("hidden")});
-        document.getElementById('add-reward-form').addEventListener('submit',e=>{e.preventDefault();const t=Object.fromEntries(new FormData(e.target));state.rewards.push({name:t.name,cost:+t.cost||0,redeemOnce:!!t.redeemOnce,hasExpiry:!!t.hasExpiry,expiryDays:t.hasExpiry?+t.expiryDays||7:null,hasTimer:!!t.hasTimer,timerHours:t.hasTimer?+t.timerHours||0:0,timerMinutes:t.hasTimer?+t.timerMinutes||0:0}),saveState(),renderAll(),closeModal(),e.target.reset(),document.getElementById("reward-expiry-setup").classList.add("hidden"),document.getElementById("reward-timer-setup").classList.add("hidden")});
-        const setupFormToggles=()=>{const e=(e,t,a)=>{document.querySelector(`#${e} [name="${t}"]`)?.addEventListener("change",(e=>{document.getElementById(a).classList.toggle("hidden",!e.target.checked)}))};e("add-quest-form","hasTracker","quest-tracker-setup"),e("add-reward-form","hasExpiry","reward-expiry-setup"),e("add-reward-form","hasTimer","reward-timer-setup"),document.querySelector('#add-quest-form [name="frequency"]').addEventListener("change",(e=>{document.getElementById("custom-cycle-setup").classList.toggle("hidden",!["Weekly","Monthly","Yearly"].includes(e.target.value))}))};setupFormToggles();
 
         // List Click Handlers
         handleListClick(dom.questList, 'quests', {
@@ -802,7 +997,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         handleListClick(dom.rewardList, 'rewards', {
             'delete-btn': async (item, index) => { if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1); },
-            'redeem-btn': (item, index) => { if(state.points < item.cost) return showAlert("Not enough points!"); state.points -= item.cost; state.inventory.push({ ...item, dateAcquired: Date.now() }); if (item.redeemOnce) state.rewards.splice(index, 1); showAlert(`Redeemed "${item.name}"!`, "Reward Redeemed"); }
+            'redeem-btn': (item, index) => { if (state.points < item.cost) return showAlert("Not enough points!"); state.points -= item.cost; state.inventory.push({ ...item, dateAcquired: Date.now() }); if (item.redeemOnce) state.rewards.splice(index, 1); showAlert(`Redeemed "${item.name}"!`, "Reward Redeemed"); }
         });
         handleListClick(dom.inventoryList, 'inventory', {
             'delete-btn': async (item, index) => { if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1); },
@@ -812,7 +1007,55 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // --- FREE REWARD & STREAK ---
-    const updateFreeRewardButton=()=>{const e=!state.lastClaimTimestamp||hasNewCycleBegun({frequency:"Daily"},state.lastClaimTimestamp);if(!dom.freeRewardBtn)return;dom.freeRewardBtn.disabled=!e;const t=getAdjustedDate(new Date);t.setDate(t.getDate()-1),e&&state.lastClaimTimestamp&&getAdjustedDate(new Date(state.lastClaimTimestamp)).toDateString()!==t.toDateString()&&(state.consecutiveDays=0),dom.freeRewardBtn.querySelector(".day-streak-counter").textContent=`🔥 ${state.consecutiveDays}`};if(dom.freeRewardBtn){dom.freeRewardBtn.addEventListener("click",(()=>{const e=state.rewards.filter((e=>e.cost<=state.settings.freeRewardCostLimit));if(0===e.length)return showAlert(`You need rewards costing ${state.settings.freeRewardCostLimit} PTS or less!`,"Cannot Claim");if(state.lastClaimTimestamp=Date.now(),state.consecutiveDays++,state.consecutiveDays>=7){dom.choiceRewardList.innerHTML="",e.forEach((e=>{const t=document.createElement("button");t.className="btn btn-secondary",t.innerHTML=`<span>${e.name}</span> <span class="cost">${e.cost} PTS</span>`,t.onclick=()=>{state.inventory.push({...e,dateAcquired:Date.now()}),state.consecutiveDays=0,saveState(),renderAll(),closeModal()},dom.choiceRewardList.appendChild(t)})),openModal("choose-reward-modal")}else{openModal("free-reward-modal");const t=document.getElementById("spinner-words"),a=document.getElementById("spinner-result"),d=document.getElementById("claim-reward-btn");a.classList.add("hidden"),d.classList.add("hidden");let n=0;const s=setInterval((()=>{t.textContent=e[n++%e.length].name}),100);setTimeout((()=>{clearInterval(s);const n=e[Math.floor(Math.random()*e.length)];t.textContent=n.name,a.innerHTML=`You won: <span style="color: var(--accent-red);">${n.name}</span>!`,a.classList.remove("hidden"),d.classList.remove("hidden"),d.onclick=()=>{state.inventory.push({...n,dateAcquired:Date.now()}),saveState(),renderAll(),closeModal()}}),3e3)}updateFreeRewardButton(),saveState()}))}
+    const updateFreeRewardButton = () => {
+        if (!dom.freeRewardBtn) return;
+        const canClaim = !state.lastClaimTimestamp || hasNewCycleBegun({ frequency: "Daily" }, state.lastClaimTimestamp);
+        dom.freeRewardBtn.disabled = !canClaim;
+        const yesterday = getAdjustedDate(new Date());
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (canClaim && state.lastClaimTimestamp && getAdjustedDate(new Date(state.lastClaimTimestamp)).toDateString() !== yesterday.toDateString()) {
+            state.consecutiveDays = 0;
+        }
+        dom.freeRewardBtn.querySelector('.day-streak-counter').textContent = `🔥 ${state.consecutiveDays}`;
+    };
+
+    if (dom.freeRewardBtn) {
+        dom.freeRewardBtn.addEventListener('click', () => {
+            const eligibleRewards = state.rewards.filter(r => r.cost <= state.settings.freeRewardCostLimit);
+            if (eligibleRewards.length === 0) return showAlert(`You need rewards costing ${state.settings.freeRewardCostLimit} PTS or less!`, "Cannot Claim");
+            state.lastClaimTimestamp = Date.now();
+            state.consecutiveDays++;
+            if (state.consecutiveDays >= 7) {
+                dom.choiceRewardList.innerHTML = "";
+                eligibleRewards.forEach(reward => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-secondary';
+                    btn.innerHTML = `<span>${reward.name}</span> <span class="cost">${reward.cost} PTS</span>`;
+                    btn.onclick = () => { state.inventory.push({ ...reward, dateAcquired: Date.now() }); state.consecutiveDays = 0; saveState(); renderAll(); closeModal(); };
+                    dom.choiceRewardList.appendChild(btn);
+                });
+                openModal('choose-reward-modal');
+            } else {
+                openModal('free-reward-modal');
+                const spinnerWords = document.getElementById('spinner-words'), result = document.getElementById('spinner-result'), claimBtn = document.getElementById('claim-reward-btn');
+                result.classList.add('hidden');
+                claimBtn.classList.add('hidden');
+                let i = 0;
+                const spinInterval = setInterval(() => { spinnerWords.textContent = eligibleRewards[i++ % eligibleRewards.length].name; }, 100);
+                setTimeout(() => {
+                    clearInterval(spinInterval);
+                    const winner = eligibleRewards[Math.floor(Math.random() * eligibleRewards.length)];
+                    spinnerWords.textContent = winner.name;
+                    result.innerHTML = `You won: <span style="color: var(--accent-red);">${winner.name}</span>!`;
+                    result.classList.remove('hidden');
+                    claimBtn.classList.remove('hidden');
+                    claimBtn.onclick = () => { state.inventory.push({ ...winner, dateAcquired: Date.now() }); saveState(); renderAll(); closeModal(); };
+                }, 3000);
+            }
+            updateFreeRewardButton();
+            saveState();
+        });
+    }
 
     // --- TIMERS & INITIALIZATION ---
     const init = () => {
@@ -822,7 +1065,30 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
         renderAll();
         saveState();
-        setInterval(()=>{if(0===state.activeRewards.length)return;const e=Date.now();let t=!1;state.activeRewards=state.activeRewards.filter((a=>(a.endTime-e>0?t=!0:state.usedRewards.push({...a,status:"Expired",dateUsed:a.endTime}),t))),dom.activeRewardsList.querySelectorAll(".active-reward-card").forEach((t=>{const a=state.activeRewards.find((e=>e.id==t.dataset.id));a&&t.querySelector(".timer-countdown").textContent=new Date(a.endTime-e).toISOString().substr(11,8)})),!t&&state.activeRewards.length>0&&(showAlert("An active reward timer has expired!","Timer Finished"),saveState(),renderAll())},1e3);
+
+        setInterval(() => {
+            if (state.activeRewards.length === 0) return;
+            const now = Date.now();
+            let changed = false;
+            state.activeRewards = state.activeRewards.filter(item => {
+                if (item.endTime - now > 0) return true;
+                state.usedRewards.push({ ...item, status: "Expired", dateUsed: item.endTime });
+                changed = true; 
+                return false;
+            });
+            
+            if (changed) {
+                showAlert("An active reward timer has expired!", "Timer Finished");
+                saveState();
+                renderAll();
+            } else {
+                dom.activeRewardsList.querySelectorAll('.active-reward-card').forEach(card => {
+                    const item = state.activeRewards.find(r => r.id == card.dataset.id);
+                    if (item) card.querySelector('.timer-countdown').textContent = new Date(item.endTime - now).toISOString().substr(11, 8);
+                });
+            }
+        }, 1000);
+
         setInterval(updateFreeRewardButton, 60000);
     };
 
