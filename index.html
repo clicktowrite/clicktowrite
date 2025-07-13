@@ -371,6 +371,9 @@
             background-color: rgba(30, 30, 40, 0.65);
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .light-mode .accordion-btn {
              background-color: rgba(255, 255, 255, 0.65);
@@ -379,6 +382,15 @@
         }
         .accordion-btn:hover, .accordion-btn.active { background-color: #333; }
         .light-mode .accordion-btn:hover, .light-mode .accordion-btn.active { background-color: #ccc; }
+
+        .indicator-box {
+            height: 10px;
+            width: 10px;
+            background-color: var(--points-color);
+            border-radius: 2px;
+            box-shadow: 0 0 8px var(--points-color);
+            animation: fadeIn 1s infinite alternate;
+        }
         
         .accordion-panel {
             padding: 0 18px; background-color: transparent;
@@ -429,7 +441,10 @@
             <h2 style="text-align:center;">My Inventory</h2>
             <div id="inventory-list" class="item-list"></div>
             <hr style="margin: 30px 0;">
-            <button id="toggle-active-rewards-btn" class="accordion-btn">Active Rewards</button>
+            <button id="toggle-active-rewards-btn" class="accordion-btn">
+                Active Rewards
+                <span class="indicator-box hidden"></span>
+            </button>
             <div id="active-rewards-panel" class="accordion-panel">
                 <div id="active-rewards-list" class="item-list"></div>
             </div>
@@ -538,6 +553,10 @@
                 <input type="number" name="freeRewardCostLimit" min="0">
                 <label style="margin-top:15px; display:block;">Moving Banner Text:</label>
                 <input type="text" name="bannerText">
+                <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
+                <button type="button" id="check-desktop-btn" class="btn btn-secondary" style="width:100%; margin-bottom: 10px;">Check Desktop Mode</button>
+                <button type="button" id="more-sites-btn" class="btn btn-secondary" style="width:100%;">Visit More Sites</button>
+                <div style="border-top: 1px solid #444; margin: 20px 0;"></div>
                 <button type="submit" class="btn">Save Settings</button>
             </form>
         </div>
@@ -567,6 +586,17 @@
             <div class="modal-buttons">
                 <button id="dialog-cancel-btn" class="btn btn-secondary">Cancel</button>
                 <button id="dialog-confirm-btn" class="btn">OK</button>
+            </div>
+        </div>
+    </div>
+    <div id="more-sites-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal-close="true">&times;</span>
+            <h2>Choose a Site to Test</h2>
+            <div class="item-list" style="margin-top: 20px;">
+                <button class="btn btn-secondary">Reserved</button>
+                <button class="btn btn-secondary">Reserved</button>
+                <button class="btn btn-secondary">Reserved</button>
             </div>
         </div>
     </div>
@@ -893,13 +923,20 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`);
     }, '<h3>Inventory is empty.</h3><p>Redeem rewards to fill it up.</p>');
     
-    const renderActiveRewards = () => renderList(dom.activeRewardsList, state.activeRewards, (item) => {
-        const timeString = (item.endTime - Date.now() > 0) ? new Date(item.endTime - Date.now()).toISOString().substr(11, 8) : "Expired";
-        dom.activeRewardsList.insertAdjacentHTML('beforeend', `
-            <div class="item-card active-reward-card" data-id="${item.id}">
-                <h3>${item.name}</h3><p>Time Left: <span class="timer-countdown">${timeString}</span></p>
-            </div>`);
-    }, '<h3>No active rewards.</h3>');
+    const renderActiveRewards = () => {
+        renderList(dom.activeRewardsList, state.activeRewards, (item) => {
+            const timeString = (item.endTime - Date.now() > 0) ? new Date(item.endTime - Date.now()).toISOString().substr(11, 8) : "Expired";
+            dom.activeRewardsList.insertAdjacentHTML('beforeend', `
+                <div class="item-card active-reward-card" data-id="${item.id}">
+                    <h3>${item.name}</h3><p>Time Left: <span class="timer-countdown">${timeString}</span></p>
+                </div>`);
+        }, '<h3>No active rewards.</h3>');
+
+        const indicator = dom.activeRewardsBtn.querySelector('.indicator-box');
+        if (indicator) {
+            indicator.classList.toggle('hidden', state.activeRewards.length === 0);
+        }
+    };
     
     const renderUsedRewards = () => renderList(dom.usedRewardsList, state.usedRewards, (item) => {
         dom.usedRewardsList.insertAdjacentHTML('beforeend', `
@@ -935,6 +972,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.addEventListener('click', (e) => {
             if (e.target.closest('[data-modal-target]')) openModal(e.target.closest('[data-modal-target]').dataset.modalTarget);
             if (e.target.closest('[data-modal-close]') || e.target.classList.contains('modal')) closeModal();
+        });
+
+        document.getElementById('check-desktop-btn').addEventListener('click', () => {
+            window.location.href = 'ctwweb.html';
+        });
+
+        document.getElementById('more-sites-btn').addEventListener('click', () => {
+            closeModal(); 
+            openModal('more-sites-modal');
         });
 
         dom.bottomNav.addEventListener('click', (e) => {
@@ -1129,7 +1175,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const item = state.activeRewards.find(r => r.id == card.dataset.id);
                 if (item) card.querySelector('.timer-countdown').textContent = new Date(item.endTime - now).toISOString().substr(11, 8);
             });
-            if (changed) { showAlert("An active reward timer has expired!", "Timer Finished"); saveState(); renderAll(); }
+            if (changed) { 
+                showAlert("An active reward timer has expired!", "Timer Finished"); 
+                saveState(); 
+                renderAll(); 
+            }
         }, 1000);
 
         setInterval(updateFreeRewardButton, 60000);
