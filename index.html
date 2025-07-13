@@ -109,10 +109,16 @@
         .dark-mode .item-card { background-color: var(--surface-color-dark); border: 1px solid #333; }
         .light-mode .item-card { background-color: var(--surface-color-light); border: 1px solid #ddd; }
         .item-card h3 { margin-top: 0; word-wrap: break-word; }
-        .tracker { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
+        .tracker { display: flex; align-items: center; gap: 10px; margin: 15px 0; flex-wrap: wrap;}
         .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
         .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; }
+
+        .motivational-message {
+            font-size: 0.8em;
+            color: #17a2b8;
+            font-style: italic;
+        }
 
         .modal {
             display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%;
@@ -400,10 +406,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.toggle('active', btn.dataset.frequency === state.settings.activeQuestFilter)
         );
         const filteredQuests = state.quests.filter(q => q.frequency === state.settings.activeQuestFilter);
-        renderList(dom.questList, filteredQuests, (quest) => {
-            const index = state.quests.findIndex(q => q === quest);
+        renderList(dom.questList, filteredQuests, (quest, index) => {
             const card = document.createElement('div');
             card.className = 'item-card';
+            const showMessage = quest.hasTracker && quest.currentProgress > quest.target;
             card.innerHTML = `
                 <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                 <h3>${quest.name}</h3><p>+${quest.points} Points</p>
@@ -412,6 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>${quest.currentProgress} / ${quest.target}</span>
                     <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${index}">+</button>
                 </div>` : ''}
+                <span class="motivational-message" style="display: ${showMessage ? 'inline-block' : 'none'}; margin-top: 10px;">Keep moving forward! you're doing great!</span>
+                <br>
                 <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
             dom.questList.appendChild(card);
         }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one!</p>`);
