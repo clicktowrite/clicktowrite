@@ -113,6 +113,13 @@
         .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
         .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; }
+        .completion-message {
+            color: var(--points-color);
+            font-weight: bold;
+            text-align: center;
+            display: block;
+            margin-bottom: 10px;
+        }
 
         .modal {
             display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%;
@@ -133,6 +140,7 @@
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .modal-buttons .btn { width: auto; min-width: 80px; }
         .timer-inputs { display: flex; gap: 10px; }
+        .timer-inputs input { width: auto; flex-grow: 1; }
         
         #free-reward-spinner { text-align: center; }
         #spinner-arrow { font-size: 3rem; color: var(--accent-red); margin-bottom: 20px; }
@@ -404,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const index = state.quests.findIndex(q => q === quest);
             const card = document.createElement('div');
             card.className = 'item-card';
+            const isComplete = quest.hasTracker && quest.currentProgress >= quest.target;
             card.innerHTML = `
                 <button class="delete-btn" data-index="${index}" aria-label="Delete quest">&times;</button>
                 <h3>${quest.name}</h3><p>+${quest.points} Points</p>
@@ -412,7 +421,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>${quest.currentProgress} / ${quest.target}</span>
                     <button class="btn btn-secondary tracker-btn" data-op="plus" data-index="${index}">+</button>
                 </div>` : ''}
-                <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && quest.currentProgress < quest.target ? 'disabled' : ''}>Done</button>`;
+                ${isComplete ? `<div class="completion-message">You've reached your goal!</div>` : ''}
+                <button class="btn done-btn" data-index="${index}" ${quest.hasTracker && !isComplete ? 'disabled' : ''}>Done</button>`;
             dom.questList.appendChild(card);
         }, `<h3>No ${state.settings.activeQuestFilter} quests.</h3><p>Add one!</p>`);
     };
@@ -426,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3>${reward.name}</h3><p>Cost: <span class="cost">${reward.cost} Points</span></p>
                 <button class="btn redeem-btn" data-index="${index}" ${state.points < reward.cost ? 'disabled' : ''}>Redeem</button>`;
             dom.rewardList.appendChild(card);
-        }, '<h3>No rewards available.</h3><p>Add one!</p>');
+        }, '<h3>No rewards available.</h3><p>Add one!</p>`);
     };
 
     const renderInventory = () => {
@@ -438,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3>${item.name}</h3>
                 ${item.hasTimer ? `<button class="btn activate-btn" data-index="${index}">Activate</button>` : `<p>Standard Item</p>`}`;
             dom.inventoryList.appendChild(card);
-        }, '<h3>Inventory is empty.</h3><p>Redeem rewards to fill it up.</p>');
+        }, '<h3>Inventory is empty.</h3><p>Redeem rewards to fill it up.</p>`);
     };
     
     const renderActiveRewards = () => {
@@ -467,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('click', (e) => {
         if (e.target.dataset.modalTarget) openModal(e.target.dataset.modalTarget);
-        if (e.target.dataset.modalClose || e.target.classList.contains('modal')) closeModal();
+        if (e.target.hasAttribute('data-modal-close') || e.target.classList.contains('modal')) closeModal();
     });
 
     dom.bottomNav.addEventListener('click', (e) => {
@@ -565,12 +575,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     handleListClick(dom.questList, 'quests', {
-        'delete-btn': async (item, index) => { if (await showConfirm(`Delete quest "${item.name}"?`)) state.quests.splice(index, 1); },
-        'done-btn': (item, index) => { state.points += item.points; state.quests.splice(index, 1); },
+        'delete-btn': async (item, index) => { 
+            if (await showConfirm(`Delete quest "${item.name}"?`)) state.quests.splice(index, 1);
+        },
+        'done-btn': (item, index) => { 
+            state.points += item.points; 
+            state.quests.splice(index, 1);
+        },
         'tracker-btn': (item, index, e) => { e.target.dataset.op === 'plus' ? item.currentProgress++ : item.currentProgress = Math.max(0, item.currentProgress - 1); }
     });
     handleListClick(dom.rewardList, 'rewards', {
-        'delete-btn': async (item, index) => { if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1); },
+        'delete-btn': async (item, index) => {
+            if (await showConfirm(`Delete reward "${item.name}"?`)) state.rewards.splice(index, 1);
+        },
         'redeem-btn': (item, index) => {
             if (state.points >= item.cost) {
                 state.points -= item.cost;
@@ -579,7 +596,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     handleListClick(dom.inventoryList, 'inventory', {
-        'delete-btn': async (item, index) => { if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1); },
+        'delete-btn': async (item, index) => { 
+            if (await showConfirm(`Delete item "${item.name}"?`)) state.inventory.splice(index, 1);
+        },
         'activate-btn': (item, index) => {
             const durationMs = ((item.timerHours * 60) + item.timerMinutes) * 60000;
             if (durationMs <= 0) {
