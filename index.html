@@ -226,7 +226,8 @@
         .tracker { display: flex; align-items: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;}
         .tracker-btn { font-size: 1.5rem; padding: 0 10px; width: auto; background-color: #444; }
         .cost { color: var(--points-color); font-weight: bold; }
-        .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; z-index: 2;}
+        .delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 1.5rem; z-index: 2; padding: 5px; line-height: 1;}
+        .delete-btn:hover { color: #ff4d4d; }
         .quest-controls-right {
             margin-top: 15px;
             display: flex;
@@ -856,7 +857,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const canComplete = quest.hasTracker ? quest.currentProgress >= quest.target : true;
             card.innerHTML = `
                 <div> 
-                    <button class="delete-btn" data-index="${quest.originalIndex}">&times;</button>
+                    <button class="delete-btn" data-index="${quest.originalIndex}">🗑️</button>
                     <h3>${quest.name}</h3>
                     <div class="quest-cycle-date">${getQuestCycleDisplayString(quest)}</div>
                     <p>+${quest.points} Points / -${quest.penalty} Points</p>
@@ -877,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderRewards = () => renderList(dom.rewardList, state.rewards, (reward, index) => {
         dom.rewardList.insertAdjacentHTML('beforeend', `
             <div class="item-card">
-                <button class="delete-btn" data-index="${index}">&times;</button>
+                <button class="delete-btn" data-index="${index}">🗑️</button>
                 <h3>${reward.name}</h3><p>Cost: <span class="cost">${reward.cost} Points</span></p>
                 <button class="btn redeem-btn" data-index="${index}" ${state.points < reward.cost ? 'disabled' : ''}>Redeem</button>
             </div>`);
@@ -886,7 +887,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderInventory = () => renderList(dom.inventoryList, state.inventory, (item, index) => {
         dom.inventoryList.insertAdjacentHTML('beforeend', `
             <div class="item-card">
-                <button class="delete-btn" data-index="${index}">&times;</button>
+                <button class="delete-btn" data-index="${index}">🗑️</button>
                 <h3>${item.name}</h3>
                 <button class="btn ${item.hasTimer ? 'activate-btn' : 'redeem-item-btn'}" data-index="${index}">${item.hasTimer ? 'Activate' : 'Redeem'}</button>
             </div>`);
@@ -923,9 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const actionKey = Object.keys(actions).find(key => target.classList.contains(key));
             if (actionKey) {
-                // The alert is now part of the action itself, so we don't need to await it here
-                // before rendering. The rendering will happen, and the modal will appear on top.
-                actions[actionKey](item, index, e); 
+                await actions[actionKey](item, index, e); 
                 saveState();
                 renderAll();
             }
