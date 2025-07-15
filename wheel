@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spinning Wheel</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #canvas {
+            transition: transform 4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .pointer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 50px solid #c0392b; /* Pointer color */
+            transform: translate(-50%, -100%) rotate(180deg);
+            z-index: 10;
+        }
+
+        #spinButton {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background-color: #2980b9;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        
+        #spinButton:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        #spinButton:not(:disabled):hover {
+            background-color: #3498db;
+        }
+        
+        #spinButton:not(:disabled):active {
+            transform: scale(0.98);
+        }
+        
+        #result {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            padding: 10px 20px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            min-height: 1.5em;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas id="canvas" width="500" height="500"></canvas>
+    </div>
+    <button id="spinButton">Spin</button>
+    <div id="result"></div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const spinButton = document.getElementById('spinButton');
+        const resultDiv = document.getElementById('result');
+
+        // You can easily change the options here
+        const options = ["$100", "$500", "Try Again", "$200", "$1000", "Free Spin", "$50", "$300"];
+        const colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#1abc9c", "#e67e22", "#34495e"];
+        const numOptions = options.length;
+        const arcSize = (2 * Math.PI) / numOptions;
+        const radius = canvas.width / 2 - 10;
+        
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            
+            options.forEach((option, i) => {
+                const angle = i * arcSize;
+                
+                // Draw segment
+                ctx.fillStyle = colors[i];
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, radius, angle, angle + arcSize);
+                ctx.lineTo(canvas.width / 2, canvas.height / 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw text
+                ctx.save();
+                ctx.fillStyle = "white";
+                ctx.font = "bold 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+                ctx.translate(
+                    canvas.width / 2 + Math.cos(angle + arcSize / 2) * (radius * 0.65),
+                    canvas.height / 2 + Math.sin(angle + arcSize / 2) * (radius * 0.65)
+                );
+                ctx.rotate(angle + arcSize / 2 + Math.PI / 2);
+                const text = options[i];
+                ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+                ctx.restore();
+            });
+        }
+
+        function getWinner(stopAngle) {
+            // Adjust angle to be between 0 and 2*PI
+            const normalizedAngle = stopAngle % (2 * Math.PI);
+            // The pointer is at the top (3*PI/2), so we need to adjust for it
+            const winningIndex = Math.floor(numOptions - (normalizedAngle / arcSize) - 0.5) % numOptions;
+            
+            // Handle negative index case
+            return winningIndex >= 0 ? options[winningIndex] : options[numOptions + winningIndex];
+        }
+
+        function spin() {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinButton.disabled = true;
+            resultDiv.textContent = '';
+            
+            // Random extra rotations + random stop position
+            const randomExtraRotations = Math.floor(Math.random() * 5) + 5; // 5 to 9 full rotations
+            const randomStopAngle = Math.random() * 2 * Math.PI;
+            const totalRotation = (randomExtraRotations * 2 * Math.PI) + randomStopAngle;
+
+            currentRotation += totalRotation;
+            canvas.style.transform = `rotate(${currentRotation}rad)`;
+            
+            setTimeout(() => {
+                isSpinning = false;
+                spinButton.disabled = false;
+                const finalRotation = currentRotation % (2 * Math.PI);
+                const winner = getWinner(finalRotation);
+                resultDiv.textContent = `You won: ${winner}`;
+            }, 4000); // Must match the CSS transition duration
+        }
+
+        spinButton.addEventListener('click', spin);
+        drawWheel();
+
+    </script>
+</body>
+</html>
