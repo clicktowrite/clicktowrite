@@ -401,65 +401,6 @@
         
         .hidden { display: none !important; }
 
-        #wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 0 auto;
-        }
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 5px solid #333;
-            position: relative;
-            overflow: hidden;
-            transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        #pointer {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 20px solid red;
-        }
-        #spin-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-            border-radius: 50%;
-            border: none;
-            background-color: #fff;
-            color: #333;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        }
-        #prize-input {
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 1em;
-        }
-        #add-prize-button {
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-        }
-        #prize-list {
-            margin-top: 20px;
-            list-style: none;
-            padding: 0;
-        }
-        #prize-list li {
-            margin-bottom: 5px;
-        }
-
         @media (min-width: 768px) {
             .section-header { flex-direction: row; justify-content: center; }
             .btn { width: auto; }
@@ -663,26 +604,9 @@
             <span class="close-btn" data-modal-close="true">&times;</span>
             <h2>Choose a Site to Test</h2>
             <div class="item-list" style="margin-top: 20px;">
-                <button class="btn btn-secondary" data-modal-target="wheel-modal">Random wheel</button>
+                <a href="Wheel.html" class="btn btn-secondary">Spin the Wheel</a>
                 <button class="btn btn-secondary">Reserved</button>
                 <button class="btn btn-secondary">Reserved</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="wheel-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" data-modal-close="true">&times;</span>
-            <h2>Spin the Wheel</h2>
-            <div id="wheel-container">
-                <div id="wheel"></div>
-                <div id="pointer"></div>
-                <button id="spin-button">Spin</button>
-            </div>
-            <div>
-                <input type="text" id="prize-input" placeholder="Enter prize">
-                <button id="add-prize-button">Add Prize</button>
-                <ul id="prize-list"></ul>
             </div>
         </div>
     </div>
@@ -1122,14 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const setupEventListeners = () => {
         document.body.addEventListener('click', (e) => {
-            const targetModal = e.target.closest('[data-modal-target]');
-            if (targetModal) {
-                const modalId = targetModal.dataset.modalTarget;
-                openModal(modalId);
-                if (modalId === 'wheel-modal') {
-                    initWheel();
-                }
-            }
+            if (e.target.closest('[data-modal-target]')) openModal(e.target.closest('[data-modal-target]').dataset.modalTarget);
             if (e.target.closest('[data-modal-close]') || e.target.classList.contains('modal')) closeModal();
         });
 
@@ -1325,109 +1242,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- TIMERS & INITIALIZATION ---
-    const initWheel = () => {
-        const wheel = document.getElementById('wheel');
-        if (!wheel) return;
-
-        const spinButton = document.getElementById('spin-button');
-        const prizeInput = document.getElementById('prize-input');
-        const addPrizeButton = document.getElementById('add-prize-button');
-        const prizeList = document.getElementById('prize-list');
-
-        let prizes = [];
-        let rotation = 0;
-
-        function drawWheel() {
-            if (!wheel) return;
-            const numPrizes = prizes.length;
-            const angle = 360 / numPrizes;
-
-            wheel.innerHTML = '';
-            for (let i = 0; i < numPrizes; i++) {
-                const prize = prizes[i];
-                const segment = document.createElement('div');
-                segment.style.position = 'absolute';
-                segment.style.width = '50%';
-                segment.style.height = '50%';
-                segment.style.backgroundColor = `hsl(${(i * angle)}, 70%, 80%)`;
-                segment.style.transformOrigin = '100% 100%';
-                segment.style.transform = `rotate(${i * angle}deg) skewX(${90 - angle}deg)`;
-                segment.style.clipPath = 'polygon(0 0, 100% 0, 100% 100%)';
-
-                const prizeText = document.createElement('div');
-                prizeText.textContent = prize;
-                prizeText.style.position = 'absolute';
-                prizeText.style.top = '20%';
-                prizeText.style.left = '50%';
-                prizeText.style.transform = 'translate(-50%, -50%) rotate(45deg)';
-                prizeText.style.textAlign = 'center';
-                prizeText.style.color = '#000';
-                prizeText.style.fontSize = '12px';
-
-
-                segment.appendChild(prizeText);
-                wheel.appendChild(segment);
-            }
-        }
-
-        function updatePrizeList() {
-            if (!prizeList) return;
-            prizeList.innerHTML = '';
-            prizes.forEach((prize, index) => {
-                const li = document.createElement('li');
-                li.textContent = prize;
-                const removeButton = document.createElement('button');
-                removeButton.textContent = 'Remove';
-                removeButton.onclick = () => {
-                    prizes.splice(index, 1);
-                    drawWheel();
-                    updatePrizeList();
-                };
-                li.appendChild(removeButton);
-                prizeList.appendChild(li);
-            });
-        }
-
-        addPrizeButton.addEventListener('click', () => {
-            const newPrize = prizeInput.value.trim();
-            if (newPrize) {
-                prizes.push(newPrize);
-                prizeInput.value = '';
-                drawWheel();
-                updatePrizeList();
-            }
-        });
-
-        spinButton.addEventListener('click', () => {
-            if (prizes.length === 0) {
-                alert('Please add some prizes first!');
-                return;
-            }
-
-            const randomDegree = Math.floor(Math.random() * 360);
-            const totalRotation = rotation + 360 * 5 + randomDegree;
-            rotation = totalRotation;
-
-            wheel.style.transform = `rotate(${totalRotation}deg)`;
-
-            setTimeout(() => {
-                const numPrizes = prizes.length;
-                const angle = 360 / numPrizes;
-                const winningPrizeIndex = Math.floor(((360 - (totalRotation % 360)) + (angle/2)) % 360 / angle);
-                alert(`You won: ${prizes[winningPrizeIndex]}`);
-            }, 4000);
-        });
-
-        drawWheel();
-    }
-
     const init = () => {
         loadState();
         processExpiredQuests();
         processExpiredInventory();
         setupEventListeners();
         renderAll();
-        initWheel();
         saveState();
 
         setInterval(() => {
