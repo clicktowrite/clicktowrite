@@ -82,7 +82,10 @@
             list-style: none;
             padding: 0;
             width: 100%;
-            max-width: 400px;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
         }
         #prize-list li {
             display: flex;
@@ -175,14 +178,37 @@
         }
 
         .dark-mode {
-            background-color: #333;
+            background-color: #1a1a1a;
             color: white;
         }
 
+        .light-mode {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #1a1a1a;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 2.5rem;
+            color: #c00000;
+            text-shadow: 0 0 5px #c00000;
+        }
+
         .settings-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            position: relative;
         }
 
         #hamburger-button {
@@ -211,16 +237,21 @@
     </style>
 </head>
 <body class="light-mode">
-    <div class="settings-container">
-        <button id="hamburger-button">☰</button>
-        <div id="settings-panel"></div>
-    </div>
-    <div class="theme-toggle-container">
-        <label class="theme-switch">
-            <input type="checkbox" id="theme-toggle">
-            <span class="slider"></span>
-        </label>
-    </div>
+    <header>
+        <div class="settings-container">
+            <button id="hamburger-button">☰</button>
+            <div id="settings-panel">
+                <a href="index.html" class="btn-secondary">View More Sites</a>
+            </div>
+        </div>
+        <h1 class="logo">Wheel of Choices</h1>
+        <div class="theme-toggle-container">
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </header>
     <div>
         <div id="wheel-container">
             <div id="wheel"></div>
