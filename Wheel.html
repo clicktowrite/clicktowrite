@@ -251,36 +251,39 @@
 
         function drawWheel() {
             const numPrizes = prizes.length;
-            const angle = 360 / numPrizes;
+            if (numPrizes === 0) {
+                wheel.style.background = 'none';
+                return;
+            }
+
+            const colors = prizes.map((_, i) => `hsl(${(i * 360 / numPrizes)}, 70%, 80%)`);
+            let gradient = 'conic-gradient(';
+            let currentAngle = 0;
+            for (let i = 0; i < numPrizes; i++) {
+                const angle = 360 / numPrizes;
+                gradient += `${colors[i]} ${currentAngle}deg ${currentAngle + angle}deg`;
+                if (i < numPrizes - 1) {
+                    gradient += ', ';
+                }
+                currentAngle += angle;
+            }
+            gradient += ')';
+            wheel.style.background = gradient;
 
             wheel.innerHTML = '';
             for (let i = 0; i < numPrizes; i++) {
                 const prize = prizes[i];
-                const segment = document.createElement('div');
-                segment.style.position = 'absolute';
-                segment.style.width = '50%';
-                segment.style.height = '50%';
-                segment.style.backgroundColor = `hsl(${(i * angle)}, 70%, 80%)`;
-                segment.style.transformOrigin = '100% 100%';
-                if (numPrizes > 1) {
-                    segment.style.transform = `rotate(${i * angle}deg) skewX(${90 - angle}deg)`;
-                } else {
-                    segment.style.transform = `rotate(${i * angle}deg)`;
-                }
-                segment.style.clipPath = 'polygon(0 0, 100% 0, 100% 100%)';
-
+                const angle = 360 / numPrizes;
                 const prizeText = document.createElement('div');
                 prizeText.textContent = prize.name;
                 prizeText.style.position = 'absolute';
-                prizeText.style.top = '20%';
+                prizeText.style.top = '50%';
                 prizeText.style.left = '50%';
-                prizeText.style.transform = 'translate(-50%, -50%) rotate(45deg)';
+                prizeText.style.transform = `translate(-50%, -50%) rotate(${i * angle + angle / 2}deg) translate(100px) rotate(-${i * angle + angle / 2}deg)`;
                 prizeText.style.textAlign = 'center';
                 prizeText.style.color = '#000';
                 prizeText.style.fontSize = '12px';
-
-                segment.appendChild(prizeText);
-                wheel.appendChild(segment);
+                wheel.appendChild(prizeText);
             }
         }
 
