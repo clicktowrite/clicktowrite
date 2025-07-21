@@ -9,12 +9,14 @@
         body {
             font-family: 'Poppins', sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             background-color: #1a1a1a;
             color: white;
+            padding: 20px;
         }
         #wheel-container {
             position: relative;
@@ -287,7 +289,7 @@
                 prizeText.style.position = 'absolute';
                 prizeText.style.top = '50%';
                 prizeText.style.left = '50%';
-                prizeText.style.transform = `translate(-50%, -50%) rotate(${i * angle + angle / 2}deg) translate(120px) rotate(-90deg)`;
+                prizeText.style.transform = `translate(-50%, -50%) rotate(${i * angle + angle / 2}deg) translateY(-120px) rotate(-90deg)`;
                 prizeText.style.textAlign = 'center';
                 prizeText.style.color = '#000';
                 prizeText.style.fontSize = '16px';
