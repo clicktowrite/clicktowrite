@@ -79,9 +79,17 @@
             margin-top: 20px;
             list-style: none;
             padding: 0;
+            width: 100%;
+            max-width: 400px;
         }
         #prize-list li {
-            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
 
         @keyframes rgb-border {
@@ -279,10 +287,11 @@
                 prizeText.style.position = 'absolute';
                 prizeText.style.top = '50%';
                 prizeText.style.left = '50%';
-                prizeText.style.transform = `translate(-50%, -50%) rotate(${i * angle + angle / 2}deg) translate(100px) rotate(-${i * angle + angle / 2}deg)`;
+                prizeText.style.transform = `translate(-50%, -50%) rotate(${i * angle + angle / 2}deg) translate(120px) rotate(-90deg)`;
                 prizeText.style.textAlign = 'center';
                 prizeText.style.color = '#000';
-                prizeText.style.fontSize = '12px';
+                prizeText.style.fontSize = '16px';
+                prizeText.style.fontWeight = '600';
                 wheel.appendChild(prizeText);
             }
         }
