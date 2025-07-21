@@ -71,6 +71,21 @@
         #prize-list li {
             margin-bottom: 5px;
         }
+
+        @keyframes rgb-border {
+            0% { border-color: red; }
+            14% { border-color: orange; }
+            28% { border-color: yellow; }
+            42% { border-color: green; }
+            57% { border-color: blue; }
+            71% { border-color: indigo; }
+            85% { border-color: violet; }
+            100% { border-color: red; }
+        }
+
+        .spinning {
+            animation: rgb-border 2s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -160,6 +175,12 @@
                 return;
             }
 
+            if (prizes.length === 1) {
+                alert(`You won: ${prizes[0]}`);
+                return;
+            }
+
+            wheel.classList.add('spinning');
             const randomDegree = Math.floor(Math.random() * 360);
             const totalRotation = rotation + 360 * 5 + randomDegree;
             rotation = totalRotation;
@@ -171,6 +192,7 @@
                 const angle = 360 / numPrizes;
                 const winningPrizeIndex = Math.floor(((360 - (totalRotation % 360)) + (angle/2)) % 360 / angle);
                 alert(`You won: ${prizes[winningPrizeIndex]}`);
+                wheel.classList.remove('spinning');
             }, 4000);
         });
 
