@@ -78,6 +78,54 @@
             background-color: #f0f0f0;
             color: #333;
         }
+
+        .tab-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid #555;
+        }
+
+        .tab-link {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .light-mode .tab-link {
+            color: #333;
+        }
+
+        .tab-link.active {
+            border-bottom: 2px solid #2196F3;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .spiel-item {
+            margin-bottom: 20px;
+        }
+
+        .spiel-text-item {
+            background-color: #555;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -88,11 +136,80 @@
             <span class="slider"></span>
         </label>
     </header>
+    <div class="tab-container">
+        <div class="tab-nav">
+            <button class="tab-link active" data-tab="spiel">Spiel</button>
+            <button class="tab-link" data-tab="link">Link</button>
+            <button class="tab-link" data-tab="info">Information</button>
+            <button class="tab-link" data-tab="contact">Contact</button>
+        </div>
+        <div id="spiel" class="tab-content active">
+            <button id="add-spiel-title-button">Add Spiel Title</button>
+            <div id="spiel-list"></div>
+        </div>
+        <div id="link" class="tab-content">
+            <h2>Link</h2>
+            <p>This is the Link tab.</p>
+        </div>
+        <div id="info" class="tab-content">
+            <h2>Information</h2>
+            <p>This is the Information tab.</p>
+        </div>
+        <div id="contact" class="tab-content">
+            <h2>Contact</h2>
+            <p>This is the Contact tab.</p>
+        </div>
+    </div>
     <script>
         const themeToggle = document.getElementById('theme-toggle');
         themeToggle.addEventListener('change', () => {
             document.body.classList.toggle('dark-mode');
             document.body.classList.toggle('light-mode');
+        });
+
+        const tabLinks = document.querySelectorAll('.tab-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                const tab = link.dataset.tab;
+
+                tabLinks.forEach(link => link.classList.remove('active'));
+                link.classList.add('active');
+
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(tab).classList.add('active');
+            });
+        });
+
+        const addSpielTitleButton = document.getElementById('add-spiel-title-button');
+        const spielList = document.getElementById('spiel-list');
+
+        addSpielTitleButton.addEventListener('click', () => {
+            const spielTitle = prompt('Enter the spiel title:');
+            if (spielTitle) {
+                const spielItem = document.createElement('div');
+                spielItem.classList.add('spiel-item');
+                spielItem.innerHTML = `
+                    <h3>${spielTitle}</h3>
+                    <button class="add-spiel-text-button">Add Spiel Text</button>
+                    <div class="spiel-text-list"></div>
+                `;
+                spielList.appendChild(spielItem);
+
+                const addSpielTextButton = spielItem.querySelector('.add-spiel-text-button');
+                const spielTextList = spielItem.querySelector('.spiel-text-list');
+
+                addSpielTextButton.addEventListener('click', () => {
+                    const spielText = prompt('Enter the spiel text:');
+                    if (spielText) {
+                        const spielTextItem = document.createElement('div');
+                        spielTextItem.classList.add('spiel-text-item');
+                        spielTextItem.textContent = spielText;
+                        spielTextList.appendChild(spielTextItem);
+                    }
+                });
+            }
         });
     </script>
 </body>
