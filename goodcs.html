@@ -120,7 +120,10 @@
             margin-bottom: 20px;
         }
 
-        .spiel-text-item {
+        .spiel-text-item, .link-item, .contact-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             background-color: #555;
             padding: 10px;
             border-radius: 5px;
@@ -148,16 +151,16 @@
             <div id="spiel-list"></div>
         </div>
         <div id="link" class="tab-content">
-            <h2>Link</h2>
-            <p>This is the Link tab.</p>
+            <button id="add-link-button">Add Link</button>
+            <div id="link-list"></div>
         </div>
         <div id="info" class="tab-content">
             <h2>Information</h2>
             <p>This is the Information tab.</p>
         </div>
         <div id="contact" class="tab-content">
-            <h2>Contact</h2>
-            <p>This is the Contact tab.</p>
+            <button id="add-contact-button">Add Contact</button>
+            <div id="contact-list"></div>
         </div>
     </div>
     <script>
@@ -205,9 +208,68 @@
                     if (spielText) {
                         const spielTextItem = document.createElement('div');
                         spielTextItem.classList.add('spiel-text-item');
-                        spielTextItem.textContent = spielText;
+                        spielTextItem.innerHTML = `
+                            <span>${spielText}</span>
+                            <button class="copy-button">Copy</button>
+                        `;
                         spielTextList.appendChild(spielTextItem);
+
+                        const copyButton = spielTextItem.querySelector('.copy-button');
+                        copyButton.addEventListener('click', () => {
+                            navigator.clipboard.writeText(spielText);
+                            alert('Copied to clipboard!');
+                        });
                     }
+                });
+            }
+        });
+
+        const addLinkButton = document.getElementById('add-link-button');
+        const linkList = document.getElementById('link-list');
+
+        addLinkButton.addEventListener('click', () => {
+            const linkTitle = prompt('Enter the link title:');
+            const linkUrl = prompt('Enter the link URL:');
+            if (linkTitle && linkUrl) {
+                const linkItem = document.createElement('div');
+                linkItem.classList.add('link-item');
+                linkItem.innerHTML = `
+                    <a href="${linkUrl}" target="_blank">${linkTitle}</a>
+                    <button class="copy-button">Copy Link</button>
+                `;
+                linkList.appendChild(linkItem);
+
+                const copyButton = linkItem.querySelector('.copy-button');
+                copyButton.addEventListener('click', () => {
+                    navigator.clipboard.writeText(linkUrl);
+                    alert('Link copied to clipboard!');
+                });
+            }
+        });
+
+        const addContactButton = document.getElementById('add-contact-button');
+        const contactList = document.getElementById('contact-list');
+
+        addContactButton.addEventListener('click', () => {
+            const contactName = prompt('Enter the contact name:');
+            const contactNumber = prompt('Enter the contact number:');
+            if (contactName && contactNumber) {
+                const contactItem = document.createElement('div');
+                contactItem.classList.add('contact-item');
+                contactItem.innerHTML = `
+                    <div>
+                        <div>${contactName}</div>
+                        <div>${contactNumber}</div>
+                    </div>
+                    <button class="copy-button">Copy</button>
+                `;
+                contactList.appendChild(contactItem);
+
+                const copyButton = contactItem.querySelector('.copy-button');
+                copyButton.addEventListener('click', () => {
+                    const contactInfo = `${contactName}\n${contactNumber}`;
+                    navigator.clipboard.writeText(contactInfo);
+                    alert('Contact info copied to clipboard!');
                 });
             }
         });
