@@ -120,7 +120,7 @@
             margin-bottom: 20px;
         }
 
-        .spiel-text-item, .link-item, .contact-item {
+        .spiel-text-item, .link-item, .contact-item, .info-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -155,8 +155,8 @@
             <div id="link-list"></div>
         </div>
         <div id="info" class="tab-content">
-            <h2>Information</h2>
-            <p>This is the Information tab.</p>
+            <button id="add-info-button">Add Information</button>
+            <div id="info-list"></div>
         </div>
         <div id="contact" class="tab-content">
             <button id="add-contact-button">Add Contact</button>
@@ -196,9 +196,15 @@
                 spielItem.innerHTML = `
                     <h3>${spielTitle}</h3>
                     <button class="add-spiel-text-button">Add Spiel Text</button>
+                    <button class="delete-button">Delete</button>
                     <div class="spiel-text-list"></div>
                 `;
                 spielList.appendChild(spielItem);
+
+                const deleteButton = spielItem.querySelector('.delete-button');
+                deleteButton.addEventListener('click', () => {
+                    spielItem.remove();
+                });
 
                 const addSpielTextButton = spielItem.querySelector('.add-spiel-text-button');
                 const spielTextList = spielItem.querySelector('.spiel-text-list');
@@ -210,7 +216,10 @@
                         spielTextItem.classList.add('spiel-text-item');
                         spielTextItem.innerHTML = `
                             <span>${spielText}</span>
-                            <button class="copy-button">Copy</button>
+                            <div>
+                                <button class="copy-button">Copy</button>
+                                <button class="delete-button">Delete</button>
+                            </div>
                         `;
                         spielTextList.appendChild(spielTextItem);
 
@@ -218,6 +227,11 @@
                         copyButton.addEventListener('click', () => {
                             navigator.clipboard.writeText(spielText);
                             alert('Copied to clipboard!');
+                        });
+
+                        const deleteButton = spielTextItem.querySelector('.delete-button');
+                        deleteButton.addEventListener('click', () => {
+                            spielTextItem.remove();
                         });
                     }
                 });
@@ -235,7 +249,10 @@
                 linkItem.classList.add('link-item');
                 linkItem.innerHTML = `
                     <a href="${linkUrl}" target="_blank">${linkTitle}</a>
-                    <button class="copy-button">Copy Link</button>
+                    <div>
+                        <button class="copy-button">Copy Link</button>
+                        <button class="delete-button">Delete</button>
+                    </div>
                 `;
                 linkList.appendChild(linkItem);
 
@@ -243,6 +260,11 @@
                 copyButton.addEventListener('click', () => {
                     navigator.clipboard.writeText(linkUrl);
                     alert('Link copied to clipboard!');
+                });
+
+                const deleteButton = linkItem.querySelector('.delete-button');
+                deleteButton.addEventListener('click', () => {
+                    linkItem.remove();
                 });
             }
         });
@@ -261,7 +283,10 @@
                         <div>${contactName}</div>
                         <div>${contactNumber}</div>
                     </div>
-                    <button class="copy-button">Copy</button>
+                    <div>
+                        <button class="copy-button">Copy</button>
+                        <button class="delete-button">Delete</button>
+                    </div>
                 `;
                 contactList.appendChild(contactItem);
 
@@ -270,6 +295,38 @@
                     const contactInfo = `${contactName}\n${contactNumber}`;
                     navigator.clipboard.writeText(contactInfo);
                     alert('Contact info copied to clipboard!');
+                });
+
+                const deleteButton = contactItem.querySelector('.delete-button');
+                deleteButton.addEventListener('click', () => {
+                    contactItem.remove();
+                });
+            }
+        });
+
+        const addInfoButton = document.getElementById('add-info-button');
+        const infoList = document.getElementById('info-list');
+
+        addInfoButton.addEventListener('click', () => {
+            const infoName = prompt('Enter the name:');
+            const infoLink = prompt('Enter the link:');
+            const infoDetails = prompt('Enter the information (optional):');
+            if (infoName && infoLink) {
+                const infoItem = document.createElement('div');
+                infoItem.classList.add('info-item');
+                infoItem.innerHTML = `
+                    <div>
+                        <h3>${infoName}</h3>
+                        <a href="${infoLink}" target="_blank">${infoLink}</a>
+                        ${infoDetails ? `<p>${infoDetails}</p>` : ''}
+                    </div>
+                    <button class="delete-button">Delete</button>
+                `;
+                infoList.appendChild(infoItem);
+
+                const deleteButton = infoItem.querySelector('.delete-button');
+                deleteButton.addEventListener('click', () => {
+                    infoItem.remove();
                 });
             }
         });
