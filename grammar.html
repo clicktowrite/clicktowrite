@@ -4,8 +4,559 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grammar Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-dark: #12121a;
+            --surface-color-dark: #1e1e28;
+            --text-color-dark: #e0e0e0;
+            --accent-red: #c00000;
+            --points-color: #00ffdd;
+            --success-color: #28a745;
+            --border-radius: 8px;
+            --font-primary: 'Roboto', sans-serif;
+            --font-display: 'Orbitron', sans-serif;
+            --bg-color-light: #f0f2f5;
+            --surface-color-light: #ffffff;
+            --text-color-light: #1c1e21;
+        }
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.light-mode {
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+        }
+        .theme-switcher-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #28a745;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+        body.light-mode .slider {
+            background-color: #ccc;
+        }
+        #quiz-container {
+            background-color: var(--surface-color-dark);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            position: relative;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.light-mode #quiz-container {
+            background-color: var(--surface-color-light);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        #progress {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+        body.light-mode #progress {
+            color: #777;
+        }
+        #sentence {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+        #choices {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .choice-btn {
+            background-color: #555;
+            color: var(--text-color-dark);
+            border: 1px solid #666;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.1em;
+            text-align: left;
+            transition: all 0.2s ease-in-out;
+        }
+        body.light-mode .choice-btn {
+            background-color: #e0e0e0;
+            color: var(--text-color-light);
+            border-color: #ccc;
+        }
+        .choice-btn:hover:not(:disabled) {
+            background-color: #666;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        body.light-mode .choice-btn:hover:not(:disabled) {
+            background-color: #ccc;
+        }
+        .choice-btn.correct {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+        .choice-btn.incorrect {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+            color: white;
+        }
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        #feedback {
+            margin-top: 20px;
+            font-style: italic;
+            color: var(--points-color);
+            min-height: 20px;
+        }
+        body.light-mode #feedback {
+            color: #007bff;
+        }
+        .btn {
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 700;
+            width: 100%;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        #results-container {
+            display: none;
+            text-align: center;
+        }
+        #score {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-family: var(--font-display);
+        }
+        #review-section {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .review-item {
+            background-color: #2a2a3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 5px solid var(--accent-red);
+        }
+        .review-item.correct-review {
+             border-left-color: var(--success-color);
+        }
+        .review-item p {
+            margin: 5px 0;
+        }
+        .review-item .review-sentence {
+            font-weight: bold;
+        }
+        .back-link {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: var(--text-color-dark);
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Grammar Test</h1>
+    <div class="theme-switcher-container">
+        <span>☀️</span>
+        <label class="toggle-switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+        <span>🌙</span>
+    </div>
+    <div id="quiz-container">
+        <a href="index.html" class="back-link">Back to Gamefy</a>
+        <div id="quiz-view">
+            <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz</h2>
+            <div id="progress">Question 1 / 10</div>
+            <p id="sentence">Sentence will load here...</p>
+            <div id="choices"></div>
+            <p id="feedback"></p>
+            <button id="next-btn" class="btn" style="display: none;">Next</button>
+        </div>
+        <div id="results-container">
+            <h2>Quiz Complete!</h2>
+            <p id="score">Your score: 0 / 10</p>
+            <h3>Review Your Answers</h3>
+            <div id="review-section"></div>
+            <button id="restart-btn" class="btn">Try Again</button>
+        </div>
+    </div>
+
+<script>
+    const questionsData = {
+        "questions": [
+    {
+      "id": 1,
+      "sentence": "She ___ to school every day.",
+      "choices": ["go", "goes", "going", "gone"],
+      "correctAnswer": "goes",
+      "explanation": "Third-person singular subjects (like 'She') require the verb to end in -s in the simple present tense."
+    },
+    {
+      "id": 2,
+      "sentence": "They ___ watching a movie right now.",
+      "choices": ["is", "are", "am", "be"],
+      "correctAnswer": "are",
+      "explanation": "The subject 'They' is plural, so it requires the plural form of the verb 'to be', which is 'are' in the present continuous tense."
+    },
+    {
+      "id": 3,
+      "sentence": "I ___ finished my homework.",
+      "choices": ["has", "have", "had", "am"],
+      "correctAnswer": "have",
+      "explanation": "The subject 'I' uses 'have' to form the present perfect tense."
+    },
+    {
+      "id": 4,
+      "sentence": "He is interested ___ learning Spanish.",
+      "choices": ["in", "on", "at", "with"],
+      "correctAnswer": "in",
+      "explanation": "The adjective 'interested' is followed by the preposition 'in'."
+    },
+    {
+      "id": 5,
+      "sentence": "There isn't ___ milk in the fridge.",
+      "choices": ["some", "any", "a", "much"],
+      "correctAnswer": "any",
+      "explanation": "'Any' is used in negative sentences to indicate the absence of something."
+    },
+    {
+      "id": 6,
+      "sentence": "My brother ___ a doctor.",
+      "choices": ["is", "are", "am", "be"],
+      "correctAnswer": "is",
+      "explanation": "The subject 'My brother' is a third-person singular noun, which takes the verb 'is'."
+    },
+    {
+      "id": 7,
+      "sentence": "We went to the store ___ buy some bread.",
+      "choices": ["for", "at", "to", "so"],
+      "correctAnswer": "to",
+      "explanation": "The infinitive of purpose ('to' + verb) is used to explain why an action is done."
+    },
+    {
+      "id": 8,
+      "sentence": "The cat is sleeping ___ the table.",
+      "choices": ["in", "at", "under", "with"],
+      "correctAnswer": "under",
+      "explanation": "The preposition 'under' is used to indicate a position below or beneath something."
+    },
+    {
+      "id": 9,
+      "sentence": "She ___ to London last year.",
+      "choices": ["go", "goes", "went", "gone"],
+      "correctAnswer": "went",
+      "explanation": "The phrase 'last year' indicates a past action, so the simple past tense 'went' is required."
+    },
+    {
+      "id": 10,
+      "sentence": "What ___ you do yesterday?",
+      "choices": ["did", "do", "does", "have"],
+      "correctAnswer": "did",
+      "explanation": "To form a question in the simple past, we use the auxiliary verb 'did'."
+    },
+    {
+      "id": 11,
+      "sentence": "He has been working here ___ 2010.",
+      "choices": ["for", "since", "at", "in"],
+      "correctAnswer": "since",
+      "explanation": "'Since' is used with a specific point in time to indicate the starting point of an action."
+    },
+    {
+      "id": 12,
+      "sentence": "If you heat water, it ___.",
+      "choices": ["boil", "boils", "boiled", "is boiling"],
+      "correctAnswer": "boils",
+      "explanation": "This is a zero conditional sentence, used for general truths. The simple present tense is used in both clauses."
+    },
+    {
+      "id": 13,
+      "sentence": "I would like ___ apple, please.",
+      "choices": ["a", "an", "the", "some"],
+      "correctAnswer": "an",
+      "explanation": "The article 'an' is used before a singular noun that begins with a vowel sound."
+    },
+    {
+      "id": 14,
+      "sentence": "Listen! Someone ___ the piano.",
+      "choices": ["play", "plays", "is playing", "played"],
+      "correctAnswer": "is playing",
+      "explanation": "The word 'Listen!' indicates an action happening now, so the present continuous tense is used."
+    },
+    {
+      "id": 15,
+      "sentence": "There are many ___ on the tree.",
+      "choices": ["leaf", "leafs", "leaves", "leavs"],
+      "correctAnswer": "leaves",
+      "explanation": "The plural form of the noun 'leaf' is 'leaves'."
+    },
+    {
+      "id": 16,
+      "sentence": "My keys ___ on the desk.",
+      "choices": ["is", "are", "was", "be"],
+      "correctAnswer": "are",
+      "explanation": "The subject 'keys' is plural, so it requires the plural verb 'are'."
+    },
+    {
+      "id": 17,
+      "sentence": "The train ___ at 8:00 AM.",
+      "choices": ["leave", "leaves", "left", "is leaving"],
+      "correctAnswer": "leaves",
+      "explanation": "The simple present tense is used for scheduled events or timetables."
+    },
+    {
+      "id": 18,
+      "sentence": "While I was studying, the phone ___.",
+      "choices": ["ring", "rings", "rang", "rung"],
+      "correctAnswer": "rang",
+      "explanation": "When a short action interrupts a longer ongoing action in the past, the short action takes the simple past tense."
+    },
+    {
+      "id": 19,
+      "sentence": "You ___ not be late for the exam.",
+      "choices": ["should", "must", "can", "may"],
+      "correctAnswer": "must",
+      "explanation": "The modal verb 'must' is used to express a strong obligation or necessity."
+    },
+    {
+      "id": 20,
+      "sentence": "This is the ___ movie I have ever seen.",
+      "choices": ["good", "better", "best", "most good"],
+      "correctAnswer": "best",
+      "explanation": "The superlative form 'best' is used to compare three or more things and is often used with the present perfect tense."
+    }
+  ]
+    };
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dom = {
+        progress: document.getElementById('progress'),
+        sentence: document.getElementById('sentence'),
+        choices: document.getElementById('choices'),
+        feedback: document.getElementById('feedback'),
+        nextBtn: document.getElementById('next-btn'),
+        quizView: document.getElementById('quiz-view'),
+        resultsContainer: document.getElementById('results-container'),
+        score: document.getElementById('score'),
+        reviewSection: document.getElementById('review-section'),
+        restartBtn: document.getElementById('restart-btn'),
+    };
+
+    let allQuestions = [];
+    let selectedQuestions = [];
+    let userAnswers = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const startQuiz = () => {
+        try {
+            allQuestions = questionsData.questions;
+
+            // Reset state
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            dom.resultsContainer.style.display = 'none';
+            dom.quizView.style.display = 'block';
+
+            // Select 10 random questions
+            selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+            displayQuestion();
+        } catch (error) {
+            dom.sentence.textContent = "Failed to load questions. Please check the console for errors.";
+            console.error("Error fetching or parsing questions:", error);
+        }
+    };
+
+    const displayQuestion = () => {
+        dom.nextBtn.style.display = 'none';
+        dom.feedback.textContent = '';
+        const question = selectedQuestions[currentQuestionIndex];
+
+        dom.progress.textContent = `Question ${currentQuestionIndex + 1} / ${selectedQuestions.length}`;
+        dom.sentence.textContent = question.sentence;
+
+        dom.choices.innerHTML = '';
+        question.choices.forEach(choice => {
+            const button = document.createElement('button');
+            button.textContent = choice;
+            button.className = 'choice-btn';
+            button.addEventListener('click', () => selectAnswer(choice, button, question));
+            dom.choices.appendChild(button);
+        });
+    };
+
+    const selectAnswer = (selectedChoice, button, question) => {
+        // Disable all buttons after an answer is selected
+        Array.from(dom.choices.children).forEach(btn => btn.disabled = true);
+
+        const isCorrect = selectedChoice === question.correctAnswer;
+
+        userAnswers.push({
+            question,
+            selectedAnswer: selectedChoice,
+            isCorrect
+        });
+
+        if (isCorrect) {
+            score++;
+            button.classList.add('correct');
+            dom.feedback.textContent = "Correct! " + question.explanation;
+        } else {
+            button.classList.add('incorrect');
+            dom.feedback.textContent = "Sorry, that's not right. " + question.explanation;
+            // Highlight the correct answer
+            Array.from(dom.choices.children).forEach(btn => {
+                if (btn.textContent === question.correctAnswer) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        dom.nextBtn.style.display = 'block';
+    };
+
+    const nextQuestion = () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < selectedQuestions.length) {
+            displayQuestion();
+        } else {
+            showResults();
+        }
+    };
+
+    const showResults = () => {
+        dom.quizView.style.display = 'none';
+        dom.resultsContainer.style.display = 'block';
+        dom.score.textContent = `Your score: ${score} / ${selectedQuestions.length}`;
+
+        dom.reviewSection.innerHTML = '';
+        userAnswers.forEach(answer => {
+            const item = document.createElement('div');
+            item.className = `review-item ${answer.isCorrect ? 'correct-review' : 'incorrect-review'}`;
+
+            const filledSentence = answer.question.sentence.replace('___', `<strong>${answer.question.correctAnswer}</strong>`);
+
+            let reviewHTML = `<p class="review-sentence">${filledSentence}</p>`;
+            if (!answer.isCorrect) {
+                 reviewHTML += `<p>Your answer: ${answer.selectedAnswer} ❌</p>`;
+            }
+            reviewHTML += `<p>Correct answer: ${answer.question.correctAnswer} ✔</p>`;
+
+            item.innerHTML = reviewHTML;
+            dom.reviewSection.appendChild(item);
+        });
+    };
+
+    dom.nextBtn.addEventListener('click', nextQuestion);
+    dom.restartBtn.addEventListener('click', startQuiz);
+
+    // Initial load
+    startQuiz();
+
+    // --- THEME SWITCHER ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    const applyTheme = (theme) => {
+        if (theme === 'light') {
+            body.classList.add('light-mode');
+            themeToggle.checked = false;
+        } else {
+            body.classList.remove('light-mode');
+            themeToggle.checked = true;
+        }
+    };
+
+    themeToggle.addEventListener('change', () => {
+        const newTheme = themeToggle.checked ? 'dark' : 'light';
+        localStorage.setItem('grammarQuizTheme', newTheme);
+        applyTheme(newTheme);
+    });
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('grammarQuizTheme') || 'dark';
+    applyTheme(savedTheme);
+});
+</script>
 </body>
 </html>
