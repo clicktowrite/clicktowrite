@@ -88,21 +88,6 @@
         body.light-mode .slider {
             background-color: #ccc;
         }
-        #quiz-container {
-            background-color: var(--surface-color-dark);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 100%;
-            max-width: 600px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-            position: relative;
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        body.light-mode #quiz-container {
-            background-color: var(--surface-color-light);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
         #progress {
             font-size: 0.9em;
             color: #aaa;
@@ -298,52 +283,48 @@
         <span>🌙</span>
     </div>
 
+    <h1 class="main-title">Assessment Review</h1>
+
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="grammar">Grammar</button>
+        <button class="tab-btn" data-tab="logical">Logical test</button>
+        <button class="tab-btn" data-tab="typing">Typing test</button>
+        <button class="tab-btn" data-tab="listening">Listening skill</button>
+    </div>
+
     <div class="assessment-container">
-        <h1 class="main-title">Assessment Review</h1>
-
-        <div class="tab-nav">
-            <button class="tab-btn active" data-tab="grammar">Grammar</button>
-            <button class="tab-btn" data-tab="logical">Logical test</button>
-            <button class="tab-btn" data-tab="typing">Typing test</button>
-            <button class="tab-btn" data-tab="listening">Listening skill</button>
+        <div id="grammar" class="tab-content active">
+            <a href="index.html" class="back-link">Back to Gamefy</a>
+            <div id="quiz-view">
+                <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz</h2>
+                <div id="progress">Question 1 / 10</div>
+                <p id="sentence">Sentence will load here...</p>
+                <div id="choices"></div>
+                <p id="feedback"></p>
+                <button id="next-btn" class="btn" style="display: none;">Next</button>
+            </div>
+            <div id="results-container">
+                <h2>Quiz Complete!</h2>
+                <p id="score">Your score: 0 / 10</p>
+                <h3>Review Your Answers</h3>
+                <div id="review-section"></div>
+                <button id="restart-btn" class="btn">Try Again</button>
+            </div>
         </div>
 
-        <div class="tab-content-container">
-            <div id="grammar" class="tab-content active">
-                <div id="quiz-container">
-                    <a href="index.html" class="back-link">Back to Gamefy</a>
-                    <div id="quiz-view">
-                        <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz</h2>
-                        <div id="progress">Question 1 / 10</div>
-            <p id="sentence">Sentence will load here...</p>
-            <div id="choices"></div>
-            <p id="feedback"></p>
-            <button id="next-btn" class="btn" style="display: none;">Next</button>
+        <div id="logical" class="tab-content">
+            <h2>Logical Test</h2>
+            <p>This section is under construction.</p>
         </div>
-        <div id="results-container">
-            <h2>Quiz Complete!</h2>
-            <p id="score">Your score: 0 / 10</p>
-            <h3>Review Your Answers</h3>
-            <div id="review-section"></div>
-            <button id="restart-btn" class="btn">Try Again</button>
+        <div id="typing" class="tab-content">
+            <h2>Typing Test</h2>
+            <p>This section is under construction.</p>
+        </div>
+        <div id="listening" class="tab-content">
+            <h2>Listening Skill</h2>
+            <p>This section is under construction.</p>
         </div>
     </div>
-</div>
-
-<div id="logical" class="tab-content">
-    <h2>Logical Test</h2>
-    <p>This section is under construction.</p>
-</div>
-<div id="typing" class="tab-content">
-    <h2>Typing Test</h2>
-    <p>This section is under construction.</p>
-</div>
-<div id="listening" class="tab-content">
-    <h2>Listening Skill</h2>
-    <p>This section is under construction.</p>
-</div>
-</div>
-</div>
 
 <script>
     const questionsData = {
