@@ -533,9 +533,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const selectAnswer = (selectedChoice, button, question) => {
-        // Disable all buttons after an answer is selected
-        Array.from(dom.choices.children).forEach(btn => btn.disabled = true);
-
         const isCorrect = selectedChoice === question.correctAnswer;
 
         userAnswers.push({
@@ -546,20 +543,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isCorrect) {
             score++;
-            button.classList.add('correct');
-            dom.feedback.textContent = "Correct! " + question.explanation;
-        } else {
-            button.classList.add('incorrect');
-            dom.feedback.textContent = "Sorry, that's not right. " + question.explanation;
-            // Highlight the correct answer
-            Array.from(dom.choices.children).forEach(btn => {
-                if (btn.textContent === question.correctAnswer) {
-                    btn.classList.add('correct');
-                }
-            });
         }
 
-        dom.nextBtn.style.display = 'block';
+        // Immediately advance to the next question
+        nextQuestion();
     };
 
     const nextQuestion = () => {
