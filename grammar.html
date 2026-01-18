@@ -229,6 +229,63 @@
         .back-link:hover {
             text-decoration: underline;
         }
+        .assessment-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--surface-color-dark);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.light-mode .assessment-container {
+            background-color: var(--surface-color-light);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .main-title {
+            font-family: var(--font-display);
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #444;
+        }
+        body.light-mode .tab-nav {
+            border-bottom-color: #ccc;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-color-dark);
+            padding: 10px 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        body.light-mode .tab-btn {
+            color: var(--text-color-light);
+        }
+        .tab-btn:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        body.light-mode .tab-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .tab-btn.active {
+            color: var(--accent-red);
+            border-bottom-color: var(--accent-red);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -240,11 +297,24 @@
         </label>
         <span>🌙</span>
     </div>
-    <div id="quiz-container">
-        <a href="index.html" class="back-link">Back to Gamefy</a>
-        <div id="quiz-view">
-            <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz</h2>
-            <div id="progress">Question 1 / 10</div>
+
+    <div class="assessment-container">
+        <h1 class="main-title">Assessment Review</h1>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="grammar">Grammar</button>
+            <button class="tab-btn" data-tab="logical">Logical test</button>
+            <button class="tab-btn" data-tab="typing">Typing test</button>
+            <button class="tab-btn" data-tab="listening">Listening skill</button>
+        </div>
+
+        <div class="tab-content-container">
+            <div id="grammar" class="tab-content active">
+                <div id="quiz-container">
+                    <a href="index.html" class="back-link">Back to Gamefy</a>
+                    <div id="quiz-view">
+                        <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz</h2>
+                        <div id="progress">Question 1 / 10</div>
             <p id="sentence">Sentence will load here...</p>
             <div id="choices"></div>
             <p id="feedback"></p>
@@ -258,6 +328,22 @@
             <button id="restart-btn" class="btn">Try Again</button>
         </div>
     </div>
+</div>
+
+<div id="logical" class="tab-content">
+    <h2>Logical Test</h2>
+    <p>This section is under construction.</p>
+</div>
+<div id="typing" class="tab-content">
+    <h2>Typing Test</h2>
+    <p>This section is under construction.</p>
+</div>
+<div id="listening" class="tab-content">
+    <h2>Listening Skill</h2>
+    <p>This section is under construction.</p>
+</div>
+</div>
+</div>
 
 <script>
     const questionsData = {
@@ -556,6 +642,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load saved theme
     const savedTheme = localStorage.getItem('grammarQuizTheme') || 'dark';
     applyTheme(savedTheme);
+
+    // --- TAB NAVIGATION ---
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Deactivate all tabs and content
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Activate the clicked tab and its content
+            button.classList.add('active');
+            document.getElementById(button.dataset.tab).classList.add('active');
+        });
+    });
 });
 </script>
 </body>
