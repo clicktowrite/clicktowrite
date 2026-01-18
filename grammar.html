@@ -18,18 +18,75 @@
             --border-radius: 8px;
             --font-primary: 'Roboto', sans-serif;
             --font-display: 'Orbitron', sans-serif;
+            --bg-color-light: #f0f2f5;
+            --surface-color-light: #ffffff;
+            --text-color-light: #1c1e21;
         }
         body {
             font-family: var(--font-primary);
             background-color: var(--bg-color-dark);
             color: var(--text-color-dark);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.light-mode {
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+        }
+        .theme-switcher-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #28a745;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+        body.light-mode .slider {
+            background-color: #ccc;
         }
         #quiz-container {
             background-color: var(--surface-color-dark);
@@ -40,77 +97,106 @@
             max-width: 600px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
             position: relative;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.light-mode #quiz-container {
+            background-color: var(--surface-color-light);
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
         #progress {
             font-size: 0.9em;
             color: #aaa;
             margin-bottom: 15px;
         }
+        body.light-mode #progress {
+            color: #777;
+        }
         #sentence {
-            font-size: 1.4em;
-            margin-bottom: 20px;
-            line-height: 1.5;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-weight: 300;
         }
         #choices {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 12px;
         }
         .choice-btn {
             background-color: #555;
             color: var(--text-color-dark);
             border: 1px solid #666;
-            padding: 15px;
-            border-radius: 5px;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 1.1em;
             text-align: left;
-            transition: background-color 0.2s, border-color 0.2s;
+            transition: all 0.2s ease-in-out;
+        }
+        body.light-mode .choice-btn {
+            background-color: #e0e0e0;
+            color: var(--text-color-light);
+            border-color: #ccc;
         }
         .choice-btn:hover:not(:disabled) {
             background-color: #666;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        body.light-mode .choice-btn:hover:not(:disabled) {
+            background-color: #ccc;
         }
         .choice-btn.correct {
             background-color: var(--success-color);
             border-color: var(--success-color);
+            color: white;
         }
         .choice-btn.incorrect {
             background-color: var(--accent-red);
             border-color: var(--accent-red);
+            color: white;
         }
         .choice-btn:disabled {
             cursor: not-allowed;
             opacity: 0.8;
         }
         #feedback {
-            margin-top: 15px;
+            margin-top: 20px;
             font-style: italic;
             color: var(--points-color);
             min-height: 20px;
+        }
+        body.light-mode #feedback {
+            color: #007bff;
         }
         .btn {
             background-color: var(--accent-red);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 700;
             width: 100%;
             margin-top: 20px;
             text-decoration: none;
             display: inline-block;
             text-align: center;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
         }
         #results-container {
             display: none;
             text-align: center;
         }
         #score {
-            font-size: 2em;
+            font-size: 2.5em;
             font-weight: bold;
             margin-bottom: 20px;
+            font-family: var(--font-display);
         }
         #review-section {
             text-align: left;
@@ -146,6 +232,14 @@
     </style>
 </head>
 <body>
+    <div class="theme-switcher-container">
+        <span>☀️</span>
+        <label class="toggle-switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+        <span>🌙</span>
+    </div>
     <div id="quiz-container">
         <a href="index.html" class="back-link">Back to Gamefy</a>
         <div id="quiz-view">
@@ -295,6 +389,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial load
     startQuiz();
+
+    // --- THEME SWITCHER ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    const applyTheme = (theme) => {
+        if (theme === 'light') {
+            body.classList.add('light-mode');
+            themeToggle.checked = false;
+        } else {
+            body.classList.remove('light-mode');
+            themeToggle.checked = true;
+        }
+    };
+
+    themeToggle.addEventListener('change', () => {
+        const newTheme = themeToggle.checked ? 'dark' : 'light';
+        localStorage.setItem('grammarQuizTheme', newTheme);
+        applyTheme(newTheme);
+    });
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('grammarQuizTheme') || 'dark';
+    applyTheme(savedTheme);
 });
 </script>
 </body>
