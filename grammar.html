@@ -4,8 +4,298 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grammar Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-dark: #12121a;
+            --surface-color-dark: #1e1e28;
+            --text-color-dark: #e0e0e0;
+            --accent-red: #c00000;
+            --points-color: #00ffdd;
+            --success-color: #28a745;
+            --border-radius: 8px;
+            --font-primary: 'Roboto', sans-serif;
+            --font-display: 'Orbitron', sans-serif;
+        }
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #quiz-container {
+            background-color: var(--surface-color-dark);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            position: relative;
+        }
+        #progress {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+        #sentence {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        #choices {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .choice-btn {
+            background-color: #555;
+            color: var(--text-color-dark);
+            border: 1px solid #666;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            text-align: left;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .choice-btn:hover:not(:disabled) {
+            background-color: #666;
+        }
+        .choice-btn.correct {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        .choice-btn.incorrect {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        #feedback {
+            margin-top: 15px;
+            font-style: italic;
+            color: var(--points-color);
+            min-height: 20px;
+        }
+        .btn {
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            width: 100%;
+            margin-top: 20px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        #results-container {
+            display: none;
+            text-align: center;
+        }
+        #score {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #review-section {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .review-item {
+            background-color: #2a2a3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 5px solid var(--accent-red);
+        }
+        .review-item.correct-review {
+             border-left-color: var(--success-color);
+        }
+        .review-item p {
+            margin: 5px 0;
+        }
+        .review-item .review-sentence {
+            font-weight: bold;
+        }
+        .back-link {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: var(--text-color-dark);
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Grammar Test</h1>
+    <div id="quiz-container">
+        <a href="index.html" class="back-link">Back to Gamefy</a>
+        <div id="quiz-view">
+            <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz</h2>
+            <div id="progress">Question 1 / 10</div>
+            <p id="sentence">Sentence will load here...</p>
+            <div id="choices"></div>
+            <p id="feedback"></p>
+            <button id="next-btn" class="btn" style="display: none;">Next</button>
+        </div>
+        <div id="results-container">
+            <h2>Quiz Complete!</h2>
+            <p id="score">Your score: 0 / 10</p>
+            <h3>Review Your Answers</h3>
+            <div id="review-section"></div>
+            <button id="restart-btn" class="btn">Try Again</button>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dom = {
+        progress: document.getElementById('progress'),
+        sentence: document.getElementById('sentence'),
+        choices: document.getElementById('choices'),
+        feedback: document.getElementById('feedback'),
+        nextBtn: document.getElementById('next-btn'),
+        quizView: document.getElementById('quiz-view'),
+        resultsContainer: document.getElementById('results-container'),
+        score: document.getElementById('score'),
+        reviewSection: document.getElementById('review-section'),
+        restartBtn: document.getElementById('restart-btn'),
+    };
+
+    let allQuestions = [];
+    let selectedQuestions = [];
+    let userAnswers = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const startQuiz = async () => {
+        try {
+            const response = await fetch('questions.json');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            allQuestions = data.questions;
+
+            // Reset state
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            dom.resultsContainer.style.display = 'none';
+            dom.quizView.style.display = 'block';
+
+            // Select 10 random questions
+            selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+            displayQuestion();
+        } catch (error) {
+            dom.sentence.textContent = "Failed to load questions. Please check the console for errors.";
+            console.error("Error fetching or parsing questions:", error);
+        }
+    };
+
+    const displayQuestion = () => {
+        dom.nextBtn.style.display = 'none';
+        dom.feedback.textContent = '';
+        const question = selectedQuestions[currentQuestionIndex];
+
+        dom.progress.textContent = `Question ${currentQuestionIndex + 1} / ${selectedQuestions.length}`;
+        dom.sentence.textContent = question.sentence;
+
+        dom.choices.innerHTML = '';
+        question.choices.forEach(choice => {
+            const button = document.createElement('button');
+            button.textContent = choice;
+            button.className = 'choice-btn';
+            button.addEventListener('click', () => selectAnswer(choice, button, question));
+            dom.choices.appendChild(button);
+        });
+    };
+
+    const selectAnswer = (selectedChoice, button, question) => {
+        // Disable all buttons after an answer is selected
+        Array.from(dom.choices.children).forEach(btn => btn.disabled = true);
+
+        const isCorrect = selectedChoice === question.correctAnswer;
+
+        userAnswers.push({
+            question,
+            selectedAnswer: selectedChoice,
+            isCorrect
+        });
+
+        if (isCorrect) {
+            score++;
+            button.classList.add('correct');
+            dom.feedback.textContent = "Correct! " + question.explanation;
+        } else {
+            button.classList.add('incorrect');
+            dom.feedback.textContent = "Sorry, that's not right. " + question.explanation;
+            // Highlight the correct answer
+            Array.from(dom.choices.children).forEach(btn => {
+                if (btn.textContent === question.correctAnswer) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        dom.nextBtn.style.display = 'block';
+    };
+
+    const nextQuestion = () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < selectedQuestions.length) {
+            displayQuestion();
+        } else {
+            showResults();
+        }
+    };
+
+    const showResults = () => {
+        dom.quizView.style.display = 'none';
+        dom.resultsContainer.style.display = 'block';
+        dom.score.textContent = `Your score: ${score} / ${selectedQuestions.length}`;
+
+        dom.reviewSection.innerHTML = '';
+        userAnswers.forEach(answer => {
+            const item = document.createElement('div');
+            item.className = `review-item ${answer.isCorrect ? 'correct-review' : 'incorrect-review'}`;
+
+            const filledSentence = answer.question.sentence.replace('___', `<strong>${answer.question.correctAnswer}</strong>`);
+
+            let reviewHTML = `<p class="review-sentence">${filledSentence}</p>`;
+            if (!answer.isCorrect) {
+                 reviewHTML += `<p>Your answer: ${answer.selectedAnswer} ❌</p>`;
+            }
+            reviewHTML += `<p>Correct answer: ${answer.question.correctAnswer} ✔</p>`;
+
+            item.innerHTML = reviewHTML;
+            dom.reviewSection.appendChild(item);
+        });
+    };
+
+    dom.nextBtn.addEventListener('click', nextQuestion);
+    dom.restartBtn.addEventListener('click', startQuiz);
+
+    // Initial load
+    startQuiz();
+});
+</script>
 </body>
 </html>
