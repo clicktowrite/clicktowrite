@@ -290,6 +290,7 @@
         <button class="tab-btn" data-tab="logical">Logical test</button>
         <button class="tab-btn" data-tab="typing">Typing test</button>
         <button class="tab-btn" data-tab="listening">Listening skill</button>
+        <button class="tab-btn" data-tab="cognitive">Cognitive Test</button>
     </div>
 
     <div class="assessment-container">
@@ -324,154 +325,32 @@
             <h2>Listening Skill</h2>
             <p>This section is under construction.</p>
         </div>
+
+        <div id="cognitive" class="tab-content">
+            <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Cognitive Test</h2>
+            <div id="cognitive-setup">
+                <label for="timer-input">Set Timer (seconds):</label>
+                <input type="number" id="timer-input" value="60" min="10">
+                <button id="start-cognitive-btn" class="btn">Start</button>
+            </div>
+            <div id="cognitive-quiz-view" style="display: none;">
+                <div id="cognitive-progress">Question 1 / 50</div>
+                <div id="timer">Time Left: 60s</div>
+                <p id="cognitive-question"></p>
+                <div id="cognitive-choices"></div>
+            </div>
+            <div id="cognitive-results-container" style="display: none;">
+                <h2>Cognitive Test Complete!</h2>
+                <p id="cognitive-score">Your score: 0 / 50</p>
+                <h3>Review Your Answers</h3>
+                <div id="cognitive-review-section"></div>
+                <button id="restart-cognitive-btn" class="btn">Try Again</button>
+            </div>
+        </div>
     </div>
 
-<script>
-    const questionsData = {
-        "questions": [
-    {
-      "id": 1,
-      "sentence": "She ___ to school every day.",
-      "choices": ["go", "goes", "going", "gone"],
-      "correctAnswer": "goes",
-      "explanation": "Third-person singular subjects (like 'She') require the verb to end in -s in the simple present tense."
-    },
-    {
-      "id": 2,
-      "sentence": "They ___ watching a movie right now.",
-      "choices": ["is", "are", "am", "be"],
-      "correctAnswer": "are",
-      "explanation": "The subject 'They' is plural, so it requires the plural form of the verb 'to be', which is 'are' in the present continuous tense."
-    },
-    {
-      "id": 3,
-      "sentence": "I ___ finished my homework.",
-      "choices": ["has", "have", "had", "am"],
-      "correctAnswer": "have",
-      "explanation": "The subject 'I' uses 'have' to form the present perfect tense."
-    },
-    {
-      "id": 4,
-      "sentence": "He is interested ___ learning Spanish.",
-      "choices": ["in", "on", "at", "with"],
-      "correctAnswer": "in",
-      "explanation": "The adjective 'interested' is followed by the preposition 'in'."
-    },
-    {
-      "id": 5,
-      "sentence": "There isn't ___ milk in the fridge.",
-      "choices": ["some", "any", "a", "much"],
-      "correctAnswer": "any",
-      "explanation": "'Any' is used in negative sentences to indicate the absence of something."
-    },
-    {
-      "id": 6,
-      "sentence": "My brother ___ a doctor.",
-      "choices": ["is", "are", "am", "be"],
-      "correctAnswer": "is",
-      "explanation": "The subject 'My brother' is a third-person singular noun, which takes the verb 'is'."
-    },
-    {
-      "id": 7,
-      "sentence": "We went to the store ___ buy some bread.",
-      "choices": ["for", "at", "to", "so"],
-      "correctAnswer": "to",
-      "explanation": "The infinitive of purpose ('to' + verb) is used to explain why an action is done."
-    },
-    {
-      "id": 8,
-      "sentence": "The cat is sleeping ___ the table.",
-      "choices": ["in", "at", "under", "with"],
-      "correctAnswer": "under",
-      "explanation": "The preposition 'under' is used to indicate a position below or beneath something."
-    },
-    {
-      "id": 9,
-      "sentence": "She ___ to London last year.",
-      "choices": ["go", "goes", "went", "gone"],
-      "correctAnswer": "went",
-      "explanation": "The phrase 'last year' indicates a past action, so the simple past tense 'went' is required."
-    },
-    {
-      "id": 10,
-      "sentence": "What ___ you do yesterday?",
-      "choices": ["did", "do", "does", "have"],
-      "correctAnswer": "did",
-      "explanation": "To form a question in the simple past, we use the auxiliary verb 'did'."
-    },
-    {
-      "id": 11,
-      "sentence": "He has been working here ___ 2010.",
-      "choices": ["for", "since", "at", "in"],
-      "correctAnswer": "since",
-      "explanation": "'Since' is used with a specific point in time to indicate the starting point of an action."
-    },
-    {
-      "id": 12,
-      "sentence": "If you heat water, it ___.",
-      "choices": ["boil", "boils", "boiled", "is boiling"],
-      "correctAnswer": "boils",
-      "explanation": "This is a zero conditional sentence, used for general truths. The simple present tense is used in both clauses."
-    },
-    {
-      "id": 13,
-      "sentence": "I would like ___ apple, please.",
-      "choices": ["a", "an", "the", "some"],
-      "correctAnswer": "an",
-      "explanation": "The article 'an' is used before a singular noun that begins with a vowel sound."
-    },
-    {
-      "id": 14,
-      "sentence": "Listen! Someone ___ the piano.",
-      "choices": ["play", "plays", "is playing", "played"],
-      "correctAnswer": "is playing",
-      "explanation": "The word 'Listen!' indicates an action happening now, so the present continuous tense is used."
-    },
-    {
-      "id": 15,
-      "sentence": "There are many ___ on the tree.",
-      "choices": ["leaf", "leafs", "leaves", "leavs"],
-      "correctAnswer": "leaves",
-      "explanation": "The plural form of the noun 'leaf' is 'leaves'."
-    },
-    {
-      "id": 16,
-      "sentence": "My keys ___ on the desk.",
-      "choices": ["is", "are", "was", "be"],
-      "correctAnswer": "are",
-      "explanation": "The subject 'keys' is plural, so it requires the plural verb 'are'."
-    },
-    {
-      "id": 17,
-      "sentence": "The train ___ at 8:00 AM.",
-      "choices": ["leave", "leaves", "left", "is leaving"],
-      "correctAnswer": "leaves",
-      "explanation": "The simple present tense is used for scheduled events or timetables."
-    },
-    {
-      "id": 18,
-      "sentence": "While I was studying, the phone ___.",
-      "choices": ["ring", "rings", "rang", "rung"],
-      "correctAnswer": "rang",
-      "explanation": "When a short action interrupts a longer ongoing action in the past, the short action takes the simple past tense."
-    },
-    {
-      "id": 19,
-      "sentence": "You ___ not be late for the exam.",
-      "choices": ["should", "must", "can", "may"],
-      "correctAnswer": "must",
-      "explanation": "The modal verb 'must' is used to express a strong obligation or necessity."
-    },
-    {
-      "id": 20,
-      "sentence": "This is the ___ movie I have ever seen.",
-      "choices": ["good", "better", "best", "most good"],
-      "correctAnswer": "best",
-      "explanation": "The superlative form 'best' is used to compare three or more things and is often used with the present perfect tense."
-    }
-  ]
-    };
-</script>
+<script src="cognitive_questions.js"></script>
+<script src="grammar_questions.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const dom = {
@@ -485,6 +364,20 @@ document.addEventListener('DOMContentLoaded', () => {
         score: document.getElementById('score'),
         reviewSection: document.getElementById('review-section'),
         restartBtn: document.getElementById('restart-btn'),
+
+        // Cognitive Test Elements
+        cognitiveSetup: document.getElementById('cognitive-setup'),
+        startCognitiveBtn: document.getElementById('start-cognitive-btn'),
+        timerInput: document.getElementById('timer-input'),
+        cognitiveQuizView: document.getElementById('cognitive-quiz-view'),
+        cognitiveProgress: document.getElementById('cognitive-progress'),
+        timerDisplay: document.getElementById('timer'),
+        cognitiveQuestion: document.getElementById('cognitive-question'),
+        cognitiveChoices: document.getElementById('cognitive-choices'),
+        cognitiveResultsContainer: document.getElementById('cognitive-results-container'),
+        cognitiveScore: document.getElementById('cognitive-score'),
+        cognitiveReviewSection: document.getElementById('cognitive-review-section'),
+        restartCognitiveBtn: document.getElementById('restart-cognitive-btn'),
     };
 
     let allQuestions = [];
@@ -583,6 +476,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dom.nextBtn.addEventListener('click', nextQuestion);
     dom.restartBtn.addEventListener('click', startQuiz);
+
+    // --- COGNITIVE TEST LOGIC ---
+    let cognitiveQuestions = [];
+    let currentCognitiveQuestionIndex = 0;
+    let cognitiveScoreCount = 0;
+    let cognitiveUserAnswers = [];
+    let timer;
+    let timeLeft;
+
+    const startCognitiveQuiz = () => {
+        cognitiveQuestions = cognitiveQuestionsData.questions;
+        currentCognitiveQuestionIndex = 0;
+        cognitiveScoreCount = 0;
+        cognitiveUserAnswers = [];
+        dom.cognitiveSetup.style.display = 'none';
+        dom.cognitiveResultsContainer.style.display = 'none';
+        dom.cognitiveQuizView.style.display = 'block';
+
+        timeLeft = parseInt(dom.timerInput.value, 10);
+        dom.timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+
+        displayCognitiveQuestion();
+        timer = setInterval(() => {
+            timeLeft--;
+            dom.timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                showCognitiveResults();
+            }
+        }, 1000);
+    };
+
+    const displayCognitiveQuestion = () => {
+        const question = cognitiveQuestions[currentCognitiveQuestionIndex];
+        dom.cognitiveProgress.textContent = `Question ${currentCognitiveQuestionIndex + 1} / ${cognitiveQuestions.length}`;
+        dom.cognitiveQuestion.textContent = question.question;
+        dom.cognitiveChoices.innerHTML = '';
+        question.choices.forEach(choice => {
+            const button = document.createElement('button');
+            button.textContent = choice;
+            button.className = 'choice-btn';
+            button.addEventListener('click', () => selectCognitiveAnswer(choice, button, question));
+            dom.cognitiveChoices.appendChild(button);
+        });
+    };
+
+    const selectCognitiveAnswer = (selectedChoice, button, question) => {
+        const isCorrect = selectedChoice === question.correctAnswer;
+        if (isCorrect) {
+            cognitiveScoreCount++;
+        }
+        cognitiveUserAnswers.push({
+            question,
+            selectedAnswer: selectedChoice,
+            isCorrect
+        });
+        nextCognitiveQuestion();
+    };
+
+    const nextCognitiveQuestion = () => {
+        currentCognitiveQuestionIndex++;
+        if (currentCognitiveQuestionIndex < cognitiveQuestions.length) {
+            displayCognitiveQuestion();
+        } else {
+            clearInterval(timer);
+            showCognitiveResults();
+        }
+    };
+
+    const showCognitiveResults = () => {
+        dom.cognitiveQuizView.style.display = 'none';
+        dom.cognitiveResultsContainer.style.display = 'block';
+        dom.cognitiveScore.textContent = `Your score: ${cognitiveScoreCount} / ${cognitiveUserAnswers.length}`;
+
+        dom.cognitiveReviewSection.innerHTML = '';
+        cognitiveUserAnswers.forEach(answer => {
+            const item = document.createElement('div');
+            item.className = `review-item ${answer.isCorrect ? 'correct-review' : 'incorrect-review'}`;
+            let reviewHTML = `<p class="review-sentence">Question: ${answer.question.question}</p>`;
+            if (!answer.isCorrect) {
+                reviewHTML += `<p>Your answer: ${answer.selectedAnswer} ❌</p>`;
+            }
+            reviewHTML += `<p>Correct answer: ${answer.question.correctAnswer} ✔</p>`;
+            item.innerHTML = reviewHTML;
+            dom.cognitiveReviewSection.appendChild(item);
+        });
+    };
+
+    dom.startCognitiveBtn.addEventListener('click', startCognitiveQuiz);
+    dom.restartCognitiveBtn.addEventListener('click', () => {
+        dom.cognitiveResultsContainer.style.display = 'none';
+        dom.cognitiveSetup.style.display = 'block';
+    });
+
 
     // Initial load
     startQuiz();
