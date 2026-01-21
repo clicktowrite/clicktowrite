@@ -66,6 +66,7 @@
             <div id="quiz-view" style="display: none;">
                 <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz</h2>
                 <div id="grammar-timer-display" style="display: none;">Time Left: 180s</div>
+                <p id="category-display"></p>
                 <div id="progress">Question 1 / 10</div>
                 <p id="sentence">Sentence will load here...</p>
                 <div id="choices"></div>
@@ -113,6 +114,13 @@
                     <label for="show-guide-toggle">Show Typing Guide (colors):</label>
                     <label class="toggle-switch">
                         <input type="checkbox" id="show-guide-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div>
+                    <label for="show-stats-toggle">Show Live Stats (WPM, Acc):</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="show-stats-toggle" checked>
                         <span class="slider"></span>
                     </label>
                 </div>
