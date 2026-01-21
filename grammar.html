@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let timeLeft;
 
     const startCognitiveQuiz = () => {
-        cognitiveQuestions = cognitiveQuestionsData.questions;
+        cognitiveQuestions = [...cognitiveQuestionsData.questions].sort(() => 0.5 - Math.random());
         currentCognitiveQuestionIndex = 0;
         cognitiveScoreCount = 0;
         cognitiveUserAnswers = [];
@@ -513,7 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.cognitiveProgress.textContent = `Question ${currentCognitiveQuestionIndex + 1} / ${cognitiveQuestions.length}`;
         dom.cognitiveQuestion.textContent = question.question;
         dom.cognitiveChoices.innerHTML = '';
-        question.choices.forEach(choice => {
+        const shuffledChoices = [...question.choices].sort(() => 0.5 - Math.random());
+        shuffledChoices.forEach(choice => {
             const button = document.createElement('button');
             button.textContent = choice;
             button.className = 'choice-btn';
@@ -548,17 +549,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const showCognitiveResults = () => {
         dom.cognitiveQuizView.style.display = 'none';
         dom.cognitiveResultsContainer.style.display = 'block';
-        dom.cognitiveScore.textContent = `Your score: ${cognitiveScoreCount} / ${cognitiveUserAnswers.length}`;
+
+        let answeredQuestions = cognitiveUserAnswers.length;
+        dom.cognitiveScore.textContent = `Your score: ${cognitiveScoreCount} / ${answeredQuestions} (${cognitiveQuestions.length} total questions)`;
 
         dom.cognitiveReviewSection.innerHTML = '';
-        cognitiveUserAnswers.forEach(answer => {
+        cognitiveQuestions.forEach(question => {
+            const userAnswer = cognitiveUserAnswers.find(ans => ans.question.id === question.id);
             const item = document.createElement('div');
-            item.className = `review-item ${answer.isCorrect ? 'correct-review' : 'incorrect-review'}`;
-            let reviewHTML = `<p class="review-sentence">Question: ${answer.question.question}</p>`;
-            if (!answer.isCorrect) {
-                reviewHTML += `<p>Your answer: ${answer.selectedAnswer} ❌</p>`;
+            item.className = 'review-item';
+
+            let reviewHTML = `<p class="review-sentence">Question: ${question.question}</p>`;
+            if (userAnswer) {
+                item.classList.add(userAnswer.isCorrect ? 'correct-review' : 'incorrect-review');
+                if (!userAnswer.isCorrect) {
+                    reviewHTML += `<p>Your answer: ${userAnswer.selectedAnswer} ❌</p>`;
+                }
+                reviewHTML += `<p>Correct answer: ${question.correctAnswer} ✔</p>`;
+            } else {
+                item.classList.add('incorrect-review');
+                reviewHTML += `<p>Status: Not Answered</p>`;
+                reviewHTML += `<p>Correct answer: ${question.correctAnswer} ✔</p>`;
             }
-            reviewHTML += `<p>Correct answer: ${answer.question.correctAnswer} ✔</p>`;
             item.innerHTML = reviewHTML;
             dom.cognitiveReviewSection.appendChild(item);
         });
