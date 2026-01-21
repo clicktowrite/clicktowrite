@@ -350,6 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let testStartTime;
     let pangramIndex = 0;
     let currentPangrams = [];
+    let totalKeystrokes = 0;
+    let incorrectKeystrokes = 0;
 
     dom.typingTestType.addEventListener('change', () => {
         if (dom.typingTestType.value === 'pangrams') {
@@ -394,6 +396,8 @@ document.addEventListener('DOMContentLoaded', () => {
         totalCharsTyped = 0;
         correctCharsTyped = 0;
         totalErrors = 0;
+        totalKeystrokes = 0;
+        incorrectKeystrokes = 0;
         testStartTime = new Date();
 
         typingTimer = setInterval(() => {
@@ -407,6 +411,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
 
         dom.typingInput.addEventListener('input', handleTypingInput);
+        dom.typingInput.addEventListener('keydown', handleKeystroke);
+    };
+
+    const handleKeystroke = (e) => {
+        // We only care about character keys and backspace for accuracy
+        if (e.key.length > 1 && e.key !== 'Backspace') return;
+
+        totalKeystrokes++;
+
+        const currentFullText = Array.from(dom.typingTextContainer.querySelectorAll('.letter')).map(l => l.textContent).join('').replace(/\s/g, ' ');
+        const currentInput = dom.typingInput.value;
+        const upcomingChar = currentFullText[currentInput.length];
+
+        if (e.key !== 'Backspace' && e.key !== upcomingChar) {
+            incorrectKeystrokes++;
+        }
     };
 
     const loadTypingText = (text) => {
@@ -502,10 +522,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const elapsedTime = (new Date() - testStartTime) / 1000 / 60; // in minutes
         const finalWpm = elapsedTime > 0 ? Math.round((correctCharsTyped / 5) / elapsedTime) : 0;
         const finalAccuracy = totalCharsTyped > 0 ? Math.round((correctCharsTyped / totalCharsTyped) * 100) : 100;
-        const actualAccuracy = totalCharsTyped + totalErrors > 0 ? Math.round((totalCharsTyped / (totalCharsTyped + totalErrors)) * 100) : 100;
+        const actualAccuracy = totalKeystrokes > 0 ? Math.round(((totalKeystrokes - incorrectKeystrokes) / totalKeystrokes) * 100) : 100;
 
         dom.typingFinalWpm.textContent = `WPM: ${finalWpm}`;
         dom.typingFinalAccuracy.textContent = `Accuracy: ${finalAccuracy}%`;
+        dom.typingActualAccuracy.style.display = 'block'; // Ensure it's visible
         dom.typingActualAccuracy.textContent = `Actual Accuracy: ${actualAccuracy}%`;
     };
 
