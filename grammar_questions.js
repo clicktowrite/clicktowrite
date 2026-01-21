@@ -2,6 +2,7 @@ const questionsData = {
     "questions": [
         {
             "id": 1,
+            "category": "verb",
             "sentence": "She ___ to school every day.",
             "choices": ["go", "goes", "going", "gone"],
             "correctAnswer": "goes",
@@ -9,6 +10,7 @@ const questionsData = {
         },
         {
             "id": 2,
+            "category": "verb",
             "sentence": "They ___ watching a movie right now.",
             "choices": ["is", "are", "am", "be"],
             "correctAnswer": "are",
@@ -16,6 +18,7 @@ const questionsData = {
         },
         {
             "id": 3,
+            "category": "verb",
             "sentence": "I ___ finished my homework.",
             "choices": ["has", "have", "had", "am"],
             "correctAnswer": "have",
@@ -23,6 +26,7 @@ const questionsData = {
         },
         {
             "id": 4,
+            "category": "preposition",
             "sentence": "He is interested ___ learning Spanish.",
             "choices": ["in", "on", "at", "with"],
             "correctAnswer": "in",
@@ -30,6 +34,7 @@ const questionsData = {
         },
         {
             "id": 5,
+            "category": "verb",
             "sentence": "There isn't ___ milk in the fridge.",
             "choices": ["some", "any", "a", "much"],
             "correctAnswer": "any",
@@ -37,6 +42,7 @@ const questionsData = {
         },
         {
             "id": 6,
+            "category": "verb",
             "sentence": "My brother ___ a doctor.",
             "choices": ["is", "are", "am", "be"],
             "correctAnswer": "is",
@@ -44,6 +50,7 @@ const questionsData = {
         },
         {
             "id": 7,
+            "category": "verb",
             "sentence": "We went to the store ___ buy some bread.",
             "choices": ["for", "at", "to", "so"],
             "correctAnswer": "to",
@@ -51,6 +58,7 @@ const questionsData = {
         },
         {
             "id": 8,
+            "category": "preposition",
             "sentence": "The cat is sleeping ___ the table.",
             "choices": ["in", "at", "under", "with"],
             "correctAnswer": "under",
@@ -58,6 +66,7 @@ const questionsData = {
         },
         {
             "id": 9,
+            "category": "verb",
             "sentence": "She ___ to London last year.",
             "choices": ["go", "goes", "went", "gone"],
             "correctAnswer": "went",
@@ -65,6 +74,7 @@ const questionsData = {
         },
         {
             "id": 10,
+            "category": "verb",
             "sentence": "What ___ you do yesterday?",
             "choices": ["did", "do", "does", "have"],
             "correctAnswer": "did",
@@ -72,6 +82,7 @@ const questionsData = {
         },
         {
             "id": 11,
+            "category": "preposition",
             "sentence": "He has been working here ___ 2010.",
             "choices": ["for", "since", "at", "in"],
             "correctAnswer": "since",
@@ -79,6 +90,7 @@ const questionsData = {
         },
         {
             "id": 12,
+            "category": "verb",
             "sentence": "If you heat water, it ___.",
             "choices": ["boil", "boils", "boiled", "is boiling"],
             "correctAnswer": "boils",
@@ -86,6 +98,7 @@ const questionsData = {
         },
         {
             "id": 13,
+            "category": "verb",
             "sentence": "I would like ___ apple, please.",
             "choices": ["a", "an", "the", "some"],
             "correctAnswer": "an",
@@ -93,6 +106,7 @@ const questionsData = {
         },
         {
             "id": 14,
+            "category": "verb",
             "sentence": "Listen! Someone ___ the piano.",
             "choices": ["play", "plays", "is playing", "played"],
             "correctAnswer": "is playing",
@@ -100,6 +114,7 @@ const questionsData = {
         },
         {
             "id": 15,
+            "category": "verb",
             "sentence": "There are many ___ on the tree.",
             "choices": ["leaf", "leafs", "leaves", "leavs"],
             "correctAnswer": "leaves",
@@ -107,6 +122,7 @@ const questionsData = {
         },
         {
             "id": 16,
+            "category": "verb",
             "sentence": "My keys ___ on the desk.",
             "choices": ["is", "are", "was", "be"],
             "correctAnswer": "are",
@@ -114,6 +130,7 @@ const questionsData = {
         },
         {
             "id": 17,
+            "category": "verb",
             "sentence": "The train ___ at 8:00 AM.",
             "choices": ["leave", "leaves", "left", "is leaving"],
             "correctAnswer": "leaves",
@@ -121,6 +138,7 @@ const questionsData = {
         },
         {
             "id": 18,
+            "category": "verb",
             "sentence": "While I was studying, the phone ___.",
             "choices": ["ring", "rings", "rang", "rung"],
             "correctAnswer": "rang",
@@ -128,6 +146,7 @@ const questionsData = {
         },
         {
             "id": 19,
+            "category": "verb",
             "sentence": "You ___ not be late for the exam.",
             "choices": ["should", "must", "can", "may"],
             "correctAnswer": "must",
@@ -135,10 +154,59 @@ const questionsData = {
         },
         {
             "id": 20,
+            "category": "verb",
             "sentence": "This is the ___ movie I have ever seen.",
             "choices": ["good", "better", "best", "most good"],
             "correctAnswer": "best",
             "explanation": "The superlative form 'best' is used to compare three or more things and is often used with the present perfect tense."
+        },
+        {
+            "id": 21,
+            "category": "wrong word",
+            "sentence": "Here’s a key, so you can let yourself into.",
+            "choices": ["Here’s", "into", "let", "yourself"],
+            "correctAnswer": "into",
+            "explanation": "The preposition 'into' is unnecessary here. The sentence should be '...let yourself in'."
+        },
+        {
+            "id": 22,
+            "category": "wrong word",
+            "sentence": "He is very good in playing the guitar.",
+            "choices": ["is", "very", "in", "the"],
+            "correctAnswer": "in",
+            "explanation": "The correct preposition to use with 'good' in this context is 'at'. 'He is good at playing...'"
+        },
+        {
+            "id": 23,
+            "category": "wrong word",
+            "sentence": "I have been waiting for you since two hours.",
+            "choices": ["have been", "for", "since", "hours"],
+            "correctAnswer": "since",
+            "explanation": "'Since' is used for a point in time. 'For' should be used to denote a duration of time."
+        },
+        {
+            "id": 24,
+            "category": "wrong word",
+            "sentence": "Despite of the rain, we went to the park.",
+            "choices": ["Despite of", "the", "went", "to"],
+            "correctAnswer": "Despite of",
+            "explanation": "'Despite' does not take the preposition 'of'. The correct phrase is 'Despite the rain...' or 'In spite of the rain...'"
+        },
+        {
+            "id": 25,
+            "category": "preposition",
+            "sentence": "The book is ___ the table.",
+            "choices": ["on", "in", "at", "with"],
+            "correctAnswer": "on",
+            "explanation": "Use 'on' to indicate that something is in a position on a surface."
+        },
+        {
+            "id": 26,
+            "category": "preposition",
+            "sentence": "I'll meet you ___ the bus stop.",
+            "choices": ["on", "in", "at", "by"],
+            "correctAnswer": "at",
+            "explanation": "Use 'at' to refer to a specific point or location."
         }
     ]
 };

@@ -32,8 +32,40 @@
     <div class="assessment-container">
         <div id="grammar" class="tab-content active">
             <a href="index.html" class="back-link">Back to Gamefy</a>
-            <div id="quiz-view">
+            <div id="grammar-setup">
+                <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz Setup</h2>
+                <div>
+                    <label>Categories:</label>
+                    <div>
+                        <input type="checkbox" id="category-verb" value="verb" checked> <label for="category-verb">Verbs</label>
+                        <input type="number" id="count-verb" min="1" value="10">
+                    </div>
+                    <div>
+                        <input type="checkbox" id="category-preposition" value="preposition" checked> <label for="category-preposition">Prepositions</label>
+                        <input type="number" id="count-preposition" min="1" value="5">
+                    </div>
+                    <div>
+                        <input type="checkbox" id="category-wrong-word" value="wrong word" checked> <label for="category-wrong-word">Find the Wrong Word</label>
+                        <input type="number" id="count-wrong-word" min="1" value="5">
+                    </div>
+                </div>
+                <div>
+                    <label for="grammar-timer-toggle">Enable Timer:</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="grammar-timer-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="grammar-timer-container" style="display: none;">
+                    <label for="grammar-timer-input">Set Timer (seconds):</label>
+                    <input type="number" id="grammar-timer-input" value="180" min="10">
+                </div>
+                <button id="start-grammar-btn" class="btn">Start Custom Test</button>
+                <button id="start-quick-test-btn" class="btn btn-secondary">Quick Test (25 questions, 5 min)</button>
+            </div>
+            <div id="quiz-view" style="display: none;">
                 <h2 style="font-family: var(--font-display); text-align: center; margin-top: 0;">Grammar Quiz</h2>
+                <div id="grammar-timer-display" style="display: none;">Time Left: 180s</div>
                 <div id="progress">Question 1 / 10</div>
                 <p id="sentence">Sentence will load here...</p>
                 <div id="choices"></div>
