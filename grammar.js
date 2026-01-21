@@ -11,6 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
         restartBtn: document.getElementById('restart-btn'),
         retryGrammarBtn: document.getElementById('retry-grammar-btn'),
         endGrammarBtn: document.getElementById('end-grammar-btn'),
+        grammarSetup: document.getElementById('grammar-setup'),
+        startGrammarBtn: document.getElementById('start-grammar-btn'),
+        startQuickTestBtn: document.getElementById('start-quick-test-btn'),
+        grammarTimerToggle: document.getElementById('grammar-timer-toggle'),
+        grammarTimerContainer: document.getElementById('grammar-timer-container'),
+        grammarTimerInput: document.getElementById('grammar-timer-input'),
+        grammarTimerDisplay: document.getElementById('grammar-timer-display'),
 
         // Cognitive Test Elements
         cognitiveSetup: document.getElementById('cognitive-setup'),
@@ -58,26 +65,82 @@ document.addEventListener('DOMContentLoaded', () => {
     let userAnswers = [];
     let currentQuestionIndex = 0;
     let score = 0;
+    let grammarTimer;
+    let grammarTimeLeft;
 
-    const startQuiz = () => {
+    const startGrammarTest = (isQuickTest = false) => {
         try {
             allQuestions = questionsData.questions;
-
-            // Reset state
-            currentQuestionIndex = 0;
-            score = 0;
-            userAnswers = [];
-            dom.resultsContainer.style.display = 'none';
-            dom.quizView.style.display = 'block';
-
-            // Select 10 random questions
-            selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 10);
-
-            displayQuestion();
         } catch (error) {
-            dom.sentence.textContent = "Failed to load questions. Please check the console for errors.";
-            console.error("Error fetching or parsing questions:", error);
+            alert("Failed to load questions. Please check the console.");
+            console.error("Error loading questions data:", error);
+            return;
         }
+
+        let questionPool = [];
+        selectedQuestions = [];
+
+        if (isQuickTest) {
+            // Quick test settings: 25 mixed questions
+            const categories = ['verb', 'preposition', 'wrong word'];
+            categories.forEach(category => {
+                const categoryQuestions = allQuestions.filter(q => q.category === category);
+                questionPool.push(...categoryQuestions);
+            });
+            selectedQuestions = questionPool.sort(() => 0.5 - Math.random()).slice(0, 25);
+        } else {
+            // Custom test settings
+            const categories = [
+                { id: 'verb', checked: document.getElementById('category-verb').checked },
+                { id: 'preposition', checked: document.getElementById('category-preposition').checked },
+                { id: 'wrong word', checked: document.getElementById('category-wrong-word').checked }
+            ];
+
+            categories.forEach(category => {
+                if (category.checked) {
+                    const countInput = document.getElementById(`count-${category.id.replace(' ', '-')}`);
+                    const count = countInput ? (parseInt(countInput.value, 10) || 0) : 0; // Ensure count is a number
+                    if (count > 0) {
+                        const categoryQuestions = allQuestions.filter(q => q.category === category.id);
+                        questionPool.push(...categoryQuestions.sort(() => 0.5 - Math.random()).slice(0, count));
+                    }
+                }
+            });
+            selectedQuestions = questionPool;
+        }
+
+        if (selectedQuestions.length === 0) {
+            alert("Please select at least one category and specify a number of questions greater than zero.");
+            return;
+        }
+
+        // Reset state and start the quiz
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = [];
+        dom.grammarSetup.style.display = 'none';
+        dom.resultsContainer.style.display = 'none';
+        dom.quizView.style.display = 'block';
+
+        clearInterval(grammarTimer);
+        if (isQuickTest || dom.grammarTimerToggle.checked) { // Quick test has a 5 min timer
+            grammarTimeLeft = isQuickTest ? 300 : parseInt(dom.grammarTimerInput.value, 10);
+            dom.grammarTimerDisplay.textContent = `Time Left: ${grammarTimeLeft}s`;
+            dom.grammarTimerDisplay.style.display = 'block';
+
+            grammarTimer = setInterval(() => {
+                grammarTimeLeft--;
+                dom.grammarTimerDisplay.textContent = `Time Left: ${grammarTimeLeft}s`;
+                if (grammarTimeLeft <= 0) {
+                    clearInterval(grammarTimer);
+                    showResults();
+                }
+            }, 1000);
+        } else {
+            dom.grammarTimerDisplay.style.display = 'none';
+        }
+
+        displayQuestion();
     };
 
     const displayQuestion = () => {
@@ -150,9 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
         showResults();
     };
 
-    dom.retryGrammarBtn.addEventListener('click', startQuiz);
+    dom.retryGrammarBtn.addEventListener('click', () => startGrammarTest(false)); // This will restart the same custom test
     dom.endGrammarBtn.addEventListener('click', endGrammarQuiz);
-    dom.restartBtn.addEventListener('click', startQuiz);
+    dom.restartBtn.addEventListener('click', () => {
+        dom.resultsContainer.style.display = 'none';
+        dom.grammarSetup.style.display = 'block';
+    });
 
     // --- COGNITIVE TEST LOGIC ---
     let cognitiveQuestions = [];
@@ -361,31 +427,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const inputChars = dom.typingInput.value.split('');
         totalCharsTyped = inputChars.length;
         correctCharsTyped = 0;
+        totalErrors = 0; // Reset errors on each input to ensure accurate counting
         let charIndex = 0;
+        let activeWordFound = false;
 
         words.forEach((wordSpan, wordIndex) => {
+            // Determine and set the active word. It's the first word that hasn't been fully typed.
+            if (!activeWordFound && charIndex >= inputChars.length) {
+                if (dom.showGuideToggle.checked) {
+                    wordSpan.classList.add('active');
+                }
+                activeWordFound = true;
+            } else {
+                wordSpan.classList.remove('active');
+            }
+
             const letters = wordSpan.querySelectorAll('.letter');
-            let allCorrect = true;
             letters.forEach((letterSpan, letterIndex) => {
                 const char = inputChars[charIndex];
                 if (char == null) {
                     letterSpan.className = 'letter';
-                    allCorrect = false;
                 } else if (char === letterSpan.textContent || (letterSpan.innerHTML === '&nbsp;' && char === ' ')) {
                     if (dom.showGuideToggle.checked) letterSpan.className = 'letter correct';
                     correctCharsTyped++;
                 } else {
                     if (dom.showGuideToggle.checked) letterSpan.className = 'letter incorrect';
                     totalErrors++;
-                    allCorrect = false;
                 }
                 charIndex++;
             });
 
-            if (charIndex > inputChars.length) {
+            // If the guide is turned off, ensure no word has the active class.
+            if (!dom.showGuideToggle.checked) {
                 wordSpan.classList.remove('active');
-            } else {
-                wordSpan.classList.add('active');
             }
         });
 
@@ -458,7 +532,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Initial load
-    startQuiz();
+    // startQuiz(); // We no longer start the quiz automatically
+
+    dom.grammarTimerToggle.addEventListener('change', () => {
+        dom.grammarTimerContainer.style.display = dom.grammarTimerToggle.checked ? 'flex' : 'none';
+    });
+
+    dom.startGrammarBtn.addEventListener('click', () => startGrammarTest(false));
+
+    dom.startQuickTestBtn.addEventListener('click', () => startGrammarTest(true));
 
     // --- THEME SWITCHER ---
     const themeToggle = document.getElementById('theme-toggle');
