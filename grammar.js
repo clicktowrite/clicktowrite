@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Remove all coloring if the guide is turned off during a test
             dom.typingTextContainer.querySelectorAll('.letter').forEach(l => l.className = 'letter');
         }
-        handleTypingInput(); // Re-evaluate colors based on new setting
+        handleTypingInput(true); // Re-evaluate colors based on new setting
     });
 
     const startTypingTest = () => {
@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const handleTypingInput = () => {
+    const handleTypingInput = (isToggleOnly = false) => {
         const words = dom.typingTextContainer.querySelectorAll('.word');
         const inputChars = dom.typingInput.value.split('');
         totalCharsTyped = inputChars.length;
@@ -479,28 +479,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateTypingStats();
 
-        // Check for completion
-        const originalText = Array.from(words).map(word => word.textContent).join('').replace(/\s/g, ' ');
-        const typedText = dom.typingInput.value;
+        // Check for completion, but only if it's a real input event
+        if (!isToggleOnly) {
+            const originalText = Array.from(words).map(word => word.textContent).join('').replace(/\s/g, ' ');
+            const typedText = dom.typingInput.value;
 
-        if (typedText === originalText.trim()) {
-            if (dom.typingTestType.value === 'pangrams' && dom.continuousTypingToggle.checked) {
-                pangramIndex++;
-                if (pangramIndex < currentPangrams.length) {
-                    const spaceSpan = document.createElement('span');
-                    spaceSpan.className = 'word';
-                    const innerSpace = document.createElement('span');
-                    innerSpace.className = 'letter';
-                    innerSpace.innerHTML = '&nbsp;';
-                    spaceSpan.appendChild(innerSpace);
-                    dom.typingTextContainer.appendChild(spaceSpan);
-                    loadTypingText(currentPangrams[pangramIndex]);
+            if (typedText === originalText.trim()) {
+                if (dom.typingTestType.value === 'pangrams' && dom.continuousTypingToggle.checked) {
+                    pangramIndex++;
+                    if (pangramIndex < currentPangrams.length) {
+                        const spaceSpan = document.createElement('span');
+                        spaceSpan.className = 'word';
+                        const innerSpace = document.createElement('span');
+                        innerSpace.className = 'letter';
+                        innerSpace.innerHTML = '&nbsp;';
+                        spaceSpan.appendChild(innerSpace);
+                        dom.typingTextContainer.appendChild(spaceSpan);
+                        loadTypingText(currentPangrams[pangramIndex]);
+                    } else {
+                        // All pangrams completed
+                        endTypingTest();
+                    }
                 } else {
-                    // All pangrams completed
                     endTypingTest();
                 }
-            } else {
-                endTypingTest();
             }
         }
     };

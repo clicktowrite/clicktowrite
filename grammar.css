@@ -163,9 +163,10 @@
         .btn:hover {
             transform: translateY(-2px);
         }
-        #results-container {
+        #results-container, #typing-results-container, #cognitive-results-container {
             display: none;
-            text-align: center;
+            flex-direction: column;
+            align-items: center;
         }
         #score {
             font-size: 2.5em;
@@ -272,6 +273,13 @@
             justify-content: space-between;
             margin-bottom: 15px;
             font-size: 1.2em;
+        }
+        .typing-options {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
         }
         #typing-text-container {
             font-size: 1.5em;
