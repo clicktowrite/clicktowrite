@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sentence: document.getElementById('sentence'),
         choices: document.getElementById('choices'),
         feedback: document.getElementById('feedback'),
+        categoryDisplay: document.getElementById('category-display'),
         quizView: document.getElementById('quiz-view'),
         resultsContainer: document.getElementById('results-container'),
         score: document.getElementById('score'),
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         continuousTypingContainer: document.getElementById('continuous-typing-container'),
         continuousTypingToggle: document.getElementById('continuous-typing-toggle'),
         showGuideToggle: document.getElementById('show-guide-toggle'),
+        showStatsToggle: document.getElementById('show-stats-toggle'),
         startTypingBtn: document.getElementById('start-typing-btn'),
         typingTestView: document.getElementById('typing-test-view'),
         typingStats: document.getElementById('typing-stats'),
@@ -77,19 +79,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let questionPool = [];
         selectedQuestions = [];
 
         if (isQuickTest) {
-            // Quick test settings: 25 mixed questions
+            // Quick test settings: 25 mixed questions, but still presented sequentially by category
             const categories = ['verb', 'preposition', 'wrong word'];
             categories.forEach(category => {
                 const categoryQuestions = allQuestions.filter(q => q.category === category);
-                questionPool.push(...categoryQuestions);
+                selectedQuestions.push(...categoryQuestions.sort(() => 0.5 - Math.random()));
             });
-            selectedQuestions = questionPool.sort(() => 0.5 - Math.random()).slice(0, 25);
+            selectedQuestions = selectedQuestions.slice(0, 25); // Take the first 25 from the shuffled pool
         } else {
-            // Custom test settings
+            // Custom test settings: Questions are grouped by category
             const categories = [
                 { id: 'verb', checked: document.getElementById('category-verb').checked },
                 { id: 'preposition', checked: document.getElementById('category-preposition').checked },
@@ -99,14 +100,13 @@ document.addEventListener('DOMContentLoaded', () => {
             categories.forEach(category => {
                 if (category.checked) {
                     const countInput = document.getElementById(`count-${category.id.replace(' ', '-')}`);
-                    const count = countInput ? (parseInt(countInput.value, 10) || 0) : 0; // Ensure count is a number
+                    const count = countInput ? (parseInt(countInput.value, 10) || 0) : 0;
                     if (count > 0) {
                         const categoryQuestions = allQuestions.filter(q => q.category === category.id);
-                        questionPool.push(...categoryQuestions.sort(() => 0.5 - Math.random()).slice(0, count));
+                        selectedQuestions.push(...categoryQuestions.sort(() => 0.5 - Math.random()).slice(0, count));
                     }
                 }
             });
-            selectedQuestions = questionPool;
         }
 
         if (selectedQuestions.length === 0) {
@@ -146,6 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayQuestion = () => {
         dom.feedback.textContent = '';
         const question = selectedQuestions[currentQuestionIndex];
+
+        // Update category display
+        const category = question.category.charAt(0).toUpperCase() + question.category.slice(1);
+        dom.categoryDisplay.textContent = `Category: ${category}`;
 
         dom.progress.textContent = `Question ${currentQuestionIndex + 1} / ${selectedQuestions.length}`;
         dom.sentence.textContent = question.sentence;
@@ -370,6 +374,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.typingInput.value = '';
         dom.typingInput.focus();
 
+        // Show/hide stats based on the toggle
+        dom.typingStats.style.display = dom.showStatsToggle.checked ? 'flex' : 'none';
+
         const testType = dom.typingTestType.value;
 
         pangramIndex = 0;
@@ -429,18 +436,10 @@ document.addEventListener('DOMContentLoaded', () => {
         correctCharsTyped = 0;
         totalErrors = 0; // Reset errors on each input to ensure accurate counting
         let charIndex = 0;
-        let activeWordFound = false;
 
         words.forEach((wordSpan, wordIndex) => {
-            // Determine and set the active word. It's the first word that hasn't been fully typed.
-            if (!activeWordFound && charIndex >= inputChars.length) {
-                if (dom.showGuideToggle.checked) {
-                    wordSpan.classList.add('active');
-                }
-                activeWordFound = true;
-            } else {
-                wordSpan.classList.remove('active');
-            }
+            // Always remove the active class to prevent highlighting
+            wordSpan.classList.remove('active');
 
             const letters = wordSpan.querySelectorAll('.letter');
             letters.forEach((letterSpan, letterIndex) => {
@@ -456,11 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 charIndex++;
             });
-
-            // If the guide is turned off, ensure no word has the active class.
-            if (!dom.showGuideToggle.checked) {
-                wordSpan.classList.remove('active');
-            }
         });
 
         updateTypingStats();
@@ -493,7 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateTypingStats = () => {
         const elapsedTime = (new Date() - testStartTime) / 1000 / 60; // in minutes
-        const wpm = elapsedTime > 0 ? Math.round((correctCharsTyped / 5) / elapsedTime) : 0;
+        // Calculate Gross WPM based on total characters typed, which provides feedback even with errors.
+        const wpm = elapsedTime > 0 ? Math.round((totalCharsTyped / 5) / elapsedTime) : 0;
         const accuracy = totalCharsTyped > 0 ? Math.round((correctCharsTyped / totalCharsTyped) * 100) : 100;
 
         dom.typingWpm.textContent = `WPM: ${wpm}`;
