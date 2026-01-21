@@ -429,18 +429,10 @@ document.addEventListener('DOMContentLoaded', () => {
         correctCharsTyped = 0;
         totalErrors = 0; // Reset errors on each input to ensure accurate counting
         let charIndex = 0;
-        let activeWordFound = false;
 
         words.forEach((wordSpan, wordIndex) => {
-            // Determine and set the active word. It's the first word that hasn't been fully typed.
-            if (!activeWordFound && charIndex >= inputChars.length) {
-                if (dom.showGuideToggle.checked) {
-                    wordSpan.classList.add('active');
-                }
-                activeWordFound = true;
-            } else {
-                wordSpan.classList.remove('active');
-            }
+            // Always remove the active class to prevent highlighting
+            wordSpan.classList.remove('active');
 
             const letters = wordSpan.querySelectorAll('.letter');
             letters.forEach((letterSpan, letterIndex) => {
@@ -456,11 +448,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 charIndex++;
             });
-
-            // If the guide is turned off, ensure no word has the active class.
-            if (!dom.showGuideToggle.checked) {
-                wordSpan.classList.remove('active');
-            }
         });
 
         updateTypingStats();

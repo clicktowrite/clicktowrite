@@ -294,9 +294,6 @@
             display: inline-block;
             margin-right: 10px;
         }
-        .word.active {
-            background-color: #444;
-        }
         .letter.correct {
             color: var(--success-color);
         }
