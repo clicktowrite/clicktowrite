@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cognitive Test Elements
         cognitiveSetup: document.getElementById('cognitive-setup'),
         startCognitiveBtn: document.getElementById('start-cognitive-btn'),
-        timerInput: document.getElementById('timer-input'),
+        cognitiveTimerMinutes: document.getElementById('cognitive-timer-minutes'),
+        cognitiveTimerSeconds: document.getElementById('cognitive-timer-seconds'),
         questionCountInput: document.getElementById('question-count-input'),
         cognitiveQuizView: document.getElementById('cognitive-quiz-view'),
         cognitiveProgress: document.getElementById('cognitive-progress'),
@@ -258,23 +259,38 @@ document.addEventListener('DOMContentLoaded', () => {
     let timer;
     let timeLeft;
 
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
     const startCognitiveQuiz = () => {
         const questionCount = parseInt(dom.questionCountInput.value, 10);
         cognitiveQuestions = [...cognitiveQuestionsData.questions].sort(() => 0.5 - Math.random()).slice(0, questionCount);
         currentCognitiveQuestionIndex = 0;
         cognitiveScoreCount = 0;
         cognitiveUserAnswers = [];
+
+        const minutes = parseInt(dom.cognitiveTimerMinutes.value, 10) || 0;
+        const seconds = parseInt(dom.cognitiveTimerSeconds.value, 10) || 0;
+        timeLeft = (minutes * 60) + seconds;
+
+        if (timeLeft < 10) {
+            alert("The minimum test duration is 10 seconds.");
+            return;
+        }
+
         dom.cognitiveSetup.style.display = 'none';
         dom.cognitiveResultsContainer.style.display = 'none';
         dom.cognitiveQuizView.style.display = 'block';
 
-        timeLeft = parseInt(dom.timerInput.value, 10);
-        dom.timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+        dom.timerDisplay.textContent = `Time Left: ${formatTime(timeLeft)}`;
 
         displayCognitiveQuestion();
         timer = setInterval(() => {
             timeLeft--;
-            dom.timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+            dom.timerDisplay.textContent = `Time Left: ${formatTime(timeLeft)}`;
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 showCognitiveResults();

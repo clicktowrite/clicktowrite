@@ -174,9 +174,14 @@
                     <label for="question-count-input">Number of Questions:</label>
                     <input type="number" id="question-count-input" value="50" min="10" max="50">
                 </div>
-                <div>
-                    <label for="timer-input">Set Timer (seconds):</label>
-                    <input type="number" id="timer-input" value="60" min="10">
+                    <div class="timer-setup-container">
+                        <label>Set Timer:</label>
+                        <div class="timer-inputs">
+                            <input type="number" id="cognitive-timer-minutes" value="1" min="0" max="59">
+                            <span>m</span>
+                            <input type="number" id="cognitive-timer-seconds" value="0" min="0" max="59">
+                            <span>s</span>
+                        </div>
                 </div>
                 <button id="start-cognitive-btn" class="btn">Start</button>
             </div>
