@@ -71,19 +71,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let grammarTimeLeft;
 
     const startGrammarTest = (isQuickTest = false) => {
+        let grammarQuestions = [];
+        let vocabularyQuestions = [];
+
         try {
-            allQuestions = questionsData.questions;
+            grammarQuestions = questionsData.questions;
         } catch (error) {
-            alert("Failed to load questions. Please check the console.");
-            console.error("Error loading questions data:", error);
-            return;
+            console.error("Error loading grammar questions data:", error);
         }
 
+        try {
+            vocabularyQuestions = vocabularyData.questions;
+        } catch (error) {
+            console.error("Error loading vocabulary questions data:", error);
+        }
+
+        allQuestions = [...grammarQuestions, ...vocabularyQuestions];
         selectedQuestions = [];
 
         if (isQuickTest) {
             // Quick test settings: 25 mixed questions, but still presented sequentially by category
-            const categories = ['verb', 'preposition', 'wrong word'];
+            const categories = ['verb', 'preposition', 'wrong word', 'vocabulary matching'];
             categories.forEach(category => {
                 const categoryQuestions = allQuestions.filter(q => q.category === category);
                 selectedQuestions.push(...categoryQuestions.sort(() => 0.5 - Math.random()));
@@ -94,12 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const categories = [
                 { id: 'verb', checked: document.getElementById('category-verb').checked },
                 { id: 'preposition', checked: document.getElementById('category-preposition').checked },
-                { id: 'wrong word', checked: document.getElementById('category-wrong-word').checked }
+                { id: 'wrong word', checked: document.getElementById('category-wrong-word').checked },
+                { id: 'vocabulary matching', checked: document.getElementById('category-vocabulary-matching').checked }
             ];
 
             categories.forEach(category => {
                 if (category.checked) {
-                    const countInput = document.getElementById(`count-${category.id.replace(' ', '-')}`);
+                    const countInput = document.getElementById(`count-${category.id.replace(/\s/g, '-')}`);
                     const count = countInput ? (parseInt(countInput.value, 10) || 0) : 0;
                     if (count > 0) {
                         const categoryQuestions = allQuestions.filter(q => q.category === category.id);
@@ -152,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.categoryDisplay.textContent = `Category: ${category}`;
 
         dom.progress.textContent = `Question ${currentQuestionIndex + 1} / ${selectedQuestions.length}`;
-        dom.sentence.textContent = question.sentence;
+        dom.sentence.textContent = question.phrase || question.sentence; // Use phrase for vocab, sentence for grammar
 
         dom.choices.innerHTML = '';
         question.choices.forEach(choice => {
@@ -200,13 +209,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('div');
             item.className = `review-item ${answer.isCorrect ? 'correct-review' : 'incorrect-review'}`;
 
-            const filledSentence = answer.question.sentence.replace('___', `<strong>${answer.question.correctAnswer}</strong>`);
+            const questionText = answer.question.phrase || answer.question.sentence.replace('___', `<strong>${answer.question.correctAnswer}</strong>`);
 
-            let reviewHTML = `<p class="review-sentence">${filledSentence}</p>`;
+            let reviewHTML = `<p class="review-sentence">${questionText}</p>`;
             if (!answer.isCorrect) {
                  reviewHTML += `<p>Your answer: ${answer.selectedAnswer} ❌</p>`;
             }
             reviewHTML += `<p>Correct answer: ${answer.question.correctAnswer} ✔</p>`;
+
+            if (!answer.isCorrect && answer.question.explanation) {
+                reviewHTML += `<p class="explanation"><em>Explanation:</em> ${answer.question.explanation}</p>`;
+            }
 
             item.innerHTML = reviewHTML;
             dom.reviewSection.appendChild(item);

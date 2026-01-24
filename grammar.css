@@ -194,6 +194,10 @@
         .review-item .review-sentence {
             font-weight: bold;
         }
+        .explanation {
+            margin-top: 10px;
+            color: #ccc;
+        }
         .back-link {
             position: absolute;
             top: 15px;
