@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cognitive Test Elements
         cognitiveSetup: document.getElementById('cognitive-setup'),
         startCognitiveBtn: document.getElementById('start-cognitive-btn'),
-        timerInput: document.getElementById('timer-input'),
+        timerInputMinutes: document.getElementById('timer-input-minutes'),
+        timerInputSeconds: document.getElementById('timer-input-seconds'),
         questionCountInput: document.getElementById('question-count-input'),
         cognitiveQuizView: document.getElementById('cognitive-quiz-view'),
         cognitiveProgress: document.getElementById('cognitive-progress'),
@@ -263,7 +264,17 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.cognitiveResultsContainer.style.display = 'none';
         dom.cognitiveQuizView.style.display = 'block';
 
-        timeLeft = parseInt(dom.timerInput.value, 10);
+        const minutes = parseInt(dom.timerInputMinutes.value, 10) || 0;
+        const seconds = parseInt(dom.timerInputSeconds.value, 10) || 0;
+        timeLeft = (minutes * 60) + seconds;
+
+        if (timeLeft < 10) { // Enforce a minimum of 10 seconds
+            alert("The minimum time for the test is 10 seconds.");
+            dom.cognitiveSetup.style.display = 'block';
+            dom.cognitiveQuizView.style.display = 'none';
+            return;
+        }
+
         dom.timerDisplay.textContent = `Time Left: ${formatTime(timeLeft)}`;
 
         displayCognitiveQuestion();
