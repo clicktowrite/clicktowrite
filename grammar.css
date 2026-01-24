@@ -328,26 +328,3 @@
             background-color: #e0e0e0;
             color: var(--text-color-light);
         }
-        #cognitive-question {
-            font-size: 1.5em;
-            margin-bottom: 25px;
-            line-height: 1.6;
-            font-weight: 300;
-            text-align: center;
-        }
-        #cognitive-choices {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .timer-input-container {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        #timer-input-minutes, #timer-input-seconds {
-            width: 60px;
-        }

@@ -23,8 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cognitive Test Elements
         cognitiveSetup: document.getElementById('cognitive-setup'),
         startCognitiveBtn: document.getElementById('start-cognitive-btn'),
-        timerInputMinutes: document.getElementById('timer-input-minutes'),
-        timerInputSeconds: document.getElementById('timer-input-seconds'),
+        timerInput: document.getElementById('timer-input'),
         questionCountInput: document.getElementById('question-count-input'),
         cognitiveQuizView: document.getElementById('cognitive-quiz-view'),
         cognitiveProgress: document.getElementById('cognitive-progress'),
@@ -246,14 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let timer;
     let timeLeft;
 
-    const formatTime = (seconds) => {
-        if (seconds < 0) seconds = 0;
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        const formattedSeconds = remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds;
-        return `${minutes}:${formattedSeconds}`;
-    };
-
     const startCognitiveQuiz = () => {
         const questionCount = parseInt(dom.questionCountInput.value, 10);
         cognitiveQuestions = [...cognitiveQuestionsData.questions].sort(() => 0.5 - Math.random()).slice(0, questionCount);
@@ -264,23 +255,13 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.cognitiveResultsContainer.style.display = 'none';
         dom.cognitiveQuizView.style.display = 'block';
 
-        const minutes = parseInt(dom.timerInputMinutes.value, 10) || 0;
-        const seconds = parseInt(dom.timerInputSeconds.value, 10) || 0;
-        timeLeft = (minutes * 60) + seconds;
-
-        if (timeLeft < 10) { // Enforce a minimum of 10 seconds
-            alert("The minimum time for the test is 10 seconds.");
-            dom.cognitiveSetup.style.display = 'block';
-            dom.cognitiveQuizView.style.display = 'none';
-            return;
-        }
-
-        dom.timerDisplay.textContent = `Time Left: ${formatTime(timeLeft)}`;
+        timeLeft = parseInt(dom.timerInput.value, 10);
+        dom.timerDisplay.textContent = `Time Left: ${timeLeft}s`;
 
         displayCognitiveQuestion();
         timer = setInterval(() => {
             timeLeft--;
-            dom.timerDisplay.textContent = `Time Left: ${formatTime(timeLeft)}`;
+            dom.timerDisplay.textContent = `Time Left: ${timeLeft}s`;
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 showCognitiveResults();
@@ -631,4 +612,41 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(button.dataset.tab).classList.add('active');
         });
     });
+
+    const setMaxQuestionCounts = () => {
+        let grammarQuestions = [];
+        let vocabularyQuestions = [];
+        try {
+            grammarQuestions = questionsData.questions;
+        } catch (error) {
+            console.error("Error loading grammar questions data:", error);
+        }
+        try {
+            vocabularyQuestions = vocabularyData.questions;
+        } catch (error) {
+            console.error("Error loading vocabulary questions data:", error);
+        }
+        const allQuestions = [...grammarQuestions, ...vocabularyQuestions];
+
+        const categories = [
+            'verb',
+            'preposition',
+            'wrong word',
+            'vocabulary matching'
+        ];
+
+        categories.forEach(category => {
+            const count = allQuestions.filter(q => q.category === category).length;
+            const inputId = `count-${category.replace(/\s/g, '-')}`;
+            const inputElement = document.getElementById(inputId);
+            if (inputElement) {
+                inputElement.max = count;
+                if (parseInt(inputElement.value, 10) > count) {
+                    inputElement.value = count;
+                }
+            }
+        });
+    };
+
+    setMaxQuestionCounts();
 });
