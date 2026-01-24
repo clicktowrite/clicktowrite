@@ -55,6 +55,9 @@
                     <div>
                         <input type="checkbox" id="category-story" value="story"> <label for="category-story">Fill in the blank story</label>
                     </div>
+                    <div>
+                        <input type="checkbox" id="category-reading-comprehension" value="reading comprehension"> <label for="category-reading-comprehension">Reading Comprehension</label>
+                    </div>
                 </div>
                 <div>
                     <label for="grammar-timer-toggle">Enable Timer:</label>
@@ -96,6 +99,21 @@
                 <p id="story-passage">Passage will load here...</p>
                 <div id="story-navigation">
                     <button id="next-passage-btn" class="btn">Next Passage</button>
+                </div>
+            </div>
+
+            <div id="reading-comprehension-view" style="display: none;">
+                <h2 id="reading-passage-title"></h2>
+                <div class="reading-container">
+                    <div id="reading-passage-text" class="passage-box"></div>
+                    <div id="reading-question-area" class="question-box">
+                        <p id="reading-question"></p>
+                        <div id="reading-choices"></div>
+                        <p id="reading-progress"></p>
+                    </div>
+                </div>
+                 <div class="test-controls">
+                    <button id="next-reading-question-btn" class="btn">Next Question</button>
                 </div>
             </div>
         </div>
@@ -209,6 +227,7 @@
 <script src="grammar_questions.js"></script>
 <script src="vocabulary_questions.js"></script>
 <script src="story_questions.js"></script>
+<script src="reading_comprehension_questions.js"></script>
 <script src="typing_test_data.js"></script>
 <script src="grammar.js"></script>
 

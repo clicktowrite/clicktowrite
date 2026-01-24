@@ -69,6 +69,15 @@ document.addEventListener('DOMContentLoaded', () => {
         nextPassageBtn: document.getElementById('next-passage-btn'),
         choicePopup: document.getElementById('choice-popup'),
         popupChoices: document.getElementById('popup-choices'),
+
+        // Reading Comprehension Elements
+        readingComprehensionView: document.getElementById('reading-comprehension-view'),
+        readingPassageTitle: document.getElementById('reading-passage-title'),
+        readingPassageText: document.getElementById('reading-passage-text'),
+        readingQuestion: document.getElementById('reading-question'),
+        readingChoices: document.getElementById('reading-choices'),
+        readingProgress: document.getElementById('reading-progress'),
+        nextReadingQuestionBtn: document.getElementById('next-reading-question-btn'),
     };
 
     let allQuestions = [];
@@ -110,6 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const isStoryQuiz = document.getElementById('category-story').checked;
             if (isStoryQuiz) {
                 startStoryQuiz();
+                return;
+            }
+
+            const isReadingQuiz = document.getElementById('category-reading-comprehension').checked;
+            if (isReadingQuiz) {
+                startReadingComprehensionQuiz();
                 return;
             }
             // Custom test settings: Questions are grouped by category
@@ -184,6 +199,112 @@ document.addEventListener('DOMContentLoaded', () => {
             button.className = 'choice-btn';
             button.addEventListener('click', () => selectAnswer(choice, button, question));
             dom.choices.appendChild(button);
+        });
+    };
+
+
+    // --- READING COMPREHENSION LOGIC ---
+    let readingPassages = [];
+    let currentPassageIndex = 0;
+    let currentQuestionInPassageIndex = 0;
+    let readingUserAnswers = [];
+
+    const startReadingComprehensionQuiz = () => {
+        readingPassages = [...readingComprehensionData.passages].sort(() => 0.5 - Math.random());
+        currentPassageIndex = 0;
+        currentQuestionInPassageIndex = 0;
+        readingUserAnswers = [];
+        dom.grammarSetup.style.display = 'none';
+        dom.readingComprehensionView.style.display = 'block';
+        displayReadingPassageAndQuestion();
+    };
+
+    const displayReadingPassageAndQuestion = () => {
+        const passage = readingPassages[currentPassageIndex];
+        const question = passage.questions[currentQuestionInPassageIndex];
+
+        dom.readingPassageTitle.textContent = passage.title;
+        dom.readingPassageText.textContent = passage.passage;
+        dom.readingQuestion.textContent = question.question;
+
+        dom.readingChoices.innerHTML = '';
+        question.choices.forEach(choice => {
+            const button = document.createElement('button');
+            button.textContent = choice;
+            button.className = 'choice-btn';
+            button.addEventListener('click', () => selectReadingAnswer(choice, button, question, passage.id));
+            dom.readingChoices.appendChild(button);
+        });
+
+        dom.readingProgress.textContent = `Question ${currentQuestionInPassageIndex + 1} of ${passage.questions.length}`;
+    };
+
+    const selectReadingAnswer = (selectedChoice, button, question, passageId) => {
+        const isCorrect = selectedChoice === question.correctAnswer;
+        readingUserAnswers.push({
+            passageId,
+            question,
+            selectedAnswer: selectedChoice,
+            isCorrect
+        });
+
+        Array.from(dom.readingChoices.children).forEach(btn => {
+            btn.disabled = true; // Disable all choices
+            if (btn.textContent === question.correctAnswer) {
+                btn.classList.add('correct');
+            } else if (btn.textContent === selectedChoice) {
+                btn.classList.add('incorrect');
+            }
+        });
+    };
+
+    dom.nextReadingQuestionBtn.addEventListener('click', () => {
+        const passage = readingPassages[currentPassageIndex];
+        if (currentQuestionInPassageIndex < passage.questions.length - 1) {
+            currentQuestionInPassageIndex++;
+            displayReadingPassageAndQuestion();
+        } else {
+            if (currentPassageIndex < readingPassages.length - 1) {
+                currentPassageIndex++;
+                currentQuestionInPassageIndex = 0;
+                displayReadingPassageAndQuestion();
+            } else {
+                showReadingComprehensionResults();
+            }
+        }
+    });
+
+    const showReadingComprehensionResults = () => {
+        let readingScore = readingUserAnswers.filter(a => a.isCorrect).length;
+        let totalQuestions = 0;
+        readingPassages.forEach(p => totalQuestions += p.questions.length);
+
+        dom.readingComprehensionView.style.display = 'none';
+        dom.resultsContainer.style.display = 'block';
+        dom.score.textContent = `Your score: ${readingScore} / ${totalQuestions}`;
+
+        dom.reviewSection.innerHTML = '<h3>Reading Comprehension Review</h3>';
+        readingPassages.forEach(passage => {
+            const passageResultContainer = document.createElement('div');
+            passageResultContainer.innerHTML = `<h4>${passage.title}</h4>`;
+
+            passage.questions.forEach(question => {
+                const userAnswer = readingUserAnswers.find(a => a.question.id === question.id && a.passageId === passage.id);
+                const resultItem = document.createElement('div');
+                resultItem.className = `review-item ${userAnswer.isCorrect ? 'correct-review' : 'incorrect-review'}`;
+
+                let resultHTML = `<p class="review-sentence">${question.question}</p>`;
+                if (!userAnswer.isCorrect) {
+                    resultHTML += `<p>Your answer: ${userAnswer.selectedAnswer} <span class="incorrect-icon">✖</span></p>`;
+                }
+                resultHTML += `<p>Correct answer: ${question.correctAnswer} <span class="correct-icon">✔</span></p>`;
+                if (!userAnswer.isCorrect && question.explanation) {
+                    resultHTML += `<p class="explanation"><em>Explanation:</em> ${question.explanation}</p>`;
+                }
+                resultItem.innerHTML = resultHTML;
+                passageResultContainer.appendChild(resultItem);
+            });
+            dom.reviewSection.appendChild(passageResultContainer);
         });
     };
 
@@ -743,8 +864,9 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(savedTheme);
 
     // --- MUTUALLY EXCLUSIVE GRAMMAR CATEGORIES ---
-    const storyCategoryCheckbox = document.getElementById('category-story');
-    const otherCategoryCheckboxes = [
+    const storyCheckbox = document.getElementById('category-story');
+    const readingCheckbox = document.getElementById('category-reading-comprehension');
+    const regularCheckboxes = [
         document.getElementById('category-verb'),
         document.getElementById('category-preposition'),
         document.getElementById('category-wrong-word'),
@@ -757,17 +879,25 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('count-vocabulary-matching')
     ];
 
-    storyCategoryCheckbox.addEventListener('change', () => {
-        const isChecked = storyCategoryCheckbox.checked;
-        otherCategoryCheckboxes.forEach(checkbox => checkbox.disabled = isChecked);
-        numberInputs.forEach(input => input.disabled = isChecked);
-    });
+    function updateDisabledState() {
+        const isStoryChecked = storyCheckbox.checked;
+        const isReadingChecked = readingCheckbox.checked;
+        const anyRegularChecked = regularCheckboxes.some(cb => cb.checked);
 
-    otherCategoryCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-            const anyChecked = otherCategoryCheckboxes.some(cb => cb.checked);
-            storyCategoryCheckbox.disabled = anyChecked;
-        });
+        // Disable regular checkboxes and inputs if a special quiz is selected
+        const disableRegular = isStoryChecked || isReadingChecked;
+        regularCheckboxes.forEach(cb => cb.disabled = disableRegular);
+        numberInputs.forEach(input => input.disabled = disableRegular);
+
+        // Disable story checkbox if another type is selected
+        storyCheckbox.disabled = isReadingChecked || anyRegularChecked;
+
+        // Disable reading checkbox if another type is selected
+        readingCheckbox.disabled = isStoryChecked || anyRegularChecked;
+    }
+
+    [...regularCheckboxes, storyCheckbox, readingCheckbox].forEach(cb => {
+        cb.addEventListener('change', updateDisabledState);
     });
 
     // --- TAB NAVIGATION ---

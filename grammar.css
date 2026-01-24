@@ -413,3 +413,23 @@
             width: 50px;
             text-align: center;
         }
+
+        /* Reading Comprehension Specific Styles */
+        .reading-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .passage-box {
+            flex: 1;
+            background-color: #2a2a3a;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .question-box {
+            flex: 1;
+        }
