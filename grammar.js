@@ -245,6 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let timer;
     let timeLeft;
 
+    const formatTime = (seconds) => {
+        if (seconds < 0) seconds = 0;
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        const formattedSeconds = remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds;
+        return `${minutes}:${formattedSeconds}`;
+    };
+
     const startCognitiveQuiz = () => {
         const questionCount = parseInt(dom.questionCountInput.value, 10);
         cognitiveQuestions = [...cognitiveQuestionsData.questions].sort(() => 0.5 - Math.random()).slice(0, questionCount);
@@ -256,12 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.cognitiveQuizView.style.display = 'block';
 
         timeLeft = parseInt(dom.timerInput.value, 10);
-        dom.timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+        dom.timerDisplay.textContent = `Time Left: ${formatTime(timeLeft)}`;
 
         displayCognitiveQuestion();
         timer = setInterval(() => {
             timeLeft--;
-            dom.timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+            dom.timerDisplay.textContent = `Time Left: ${formatTime(timeLeft)}`;
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 showCognitiveResults();

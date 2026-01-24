@@ -333,9 +333,11 @@
             margin-bottom: 25px;
             line-height: 1.6;
             font-weight: 300;
+            text-align: center;
         }
         #cognitive-choices {
-            display: grid;
-            grid-template-columns: 1fr;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
             gap: 12px;
         }
