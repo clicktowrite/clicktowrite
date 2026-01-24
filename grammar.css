@@ -341,3 +341,13 @@
             justify-content: center;
             gap: 12px;
         }
+
+        .timer-input-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #timer-input-minutes, #timer-input-seconds {
+            width: 60px;
+        }
