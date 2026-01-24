@@ -60,6 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
         restartTypingBtn: document.getElementById('restart-typing-btn'),
         retryTypingBtn: document.getElementById('retry-typing-btn'),
         endTypingBtn: document.getElementById('end-typing-btn'),
+
+        // Story Quiz Elements
+        storyQuizView: document.getElementById('story-quiz-view'),
+        storyTitle: document.getElementById('story-title'),
+        storyPassage: document.getElementById('story-passage'),
+        nextPassageBtn: document.getElementById('next-passage-btn'),
+        choicePopup: document.getElementById('choice-popup'),
+        popupChoices: document.getElementById('popup-choices'),
     };
 
     let allQuestions = [];
@@ -98,6 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             selectedQuestions = selectedQuestions.slice(0, 25); // Take the first 25 from the shuffled pool
         } else {
+            const isStoryQuiz = document.getElementById('category-story').checked;
+            if (isStoryQuiz) {
+                startStoryQuiz();
+                return;
+            }
             // Custom test settings: Questions are grouped by category
             const categories = [
                 { id: 'verb', checked: document.getElementById('category-verb').checked },
@@ -562,6 +575,122 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.endTypingBtn.addEventListener('click', endTypingTest);
 
 
+    // --- STORY QUIZ LOGIC ---
+    let stories = [];
+    let currentStoryIndex = 0;
+    let storyUserAnswers = {};
+
+    const startStoryQuiz = () => {
+        stories = [...storyData.stories].sort(() => 0.5 - Math.random());
+        currentStoryIndex = 0;
+        storyUserAnswers = {};
+        dom.grammarSetup.style.display = 'none';
+        dom.storyQuizView.style.display = 'block';
+        renderStory();
+    };
+
+    const renderStory = () => {
+        const story = stories[currentStoryIndex];
+        dom.storyTitle.textContent = story.title;
+        let passageHtml = story.passage;
+        story.blanks.forEach(blank => {
+            const blankHtml = `<span class="blank-space" data-blank-id="${blank.id}">(${blank.id})</span>`;
+            passageHtml = passageHtml.replace(`__${blank.id}__`, blankHtml);
+        });
+        dom.storyPassage.innerHTML = passageHtml;
+        addBlankClickListeners();
+    };
+
+    const addBlankClickListeners = () => {
+        const blanks = dom.storyPassage.querySelectorAll('.blank-space');
+        blanks.forEach(blank => {
+            blank.addEventListener('click', () => openChoicePopup(blank));
+        });
+    };
+
+    const openChoicePopup = (blankElement) => {
+        const blankId = blankElement.dataset.blankId;
+        const story = stories[currentStoryIndex];
+        const blankData = story.blanks.find(b => b.id === blankId);
+
+        dom.popupChoices.innerHTML = '';
+        blankData.choices.forEach(choice => {
+            const button = document.createElement('button');
+            button.textContent = choice;
+            button.className = 'popup-choice-btn';
+            button.addEventListener('click', () => selectStoryAnswer(blankElement, choice));
+            dom.popupChoices.appendChild(button);
+        });
+
+        dom.choicePopup.style.display = 'block';
+    };
+
+    const selectStoryAnswer = (blankElement, choice) => {
+        blankElement.textContent = choice;
+        blankElement.classList.add('filled');
+        const blankId = blankElement.dataset.blankId;
+        storyUserAnswers[blankId] = choice;
+        dom.choicePopup.style.display = 'none';
+    };
+
+    dom.nextPassageBtn.addEventListener('click', () => {
+        const story = stories[currentStoryIndex];
+        const allBlanksFilled = story.blanks.every(blank => storyUserAnswers[blank.id]);
+
+        if (!allBlanksFilled) {
+            alert('Please fill in all the blanks before proceeding.');
+            return;
+        }
+
+        currentStoryIndex++;
+        if (currentStoryIndex < stories.length) {
+            renderStory();
+        } else {
+            showStoryResults();
+        }
+    });
+
+    const showStoryResults = () => {
+        let storyScore = 0;
+        const totalBlanks = stories.reduce((acc, story) => acc + story.blanks.length, 0);
+
+        stories.forEach(story => {
+            story.blanks.forEach(blank => {
+                if (storyUserAnswers[blank.id] === blank.correctAnswer) {
+                    storyScore++;
+                }
+            });
+        });
+
+        dom.storyQuizView.style.display = 'none';
+        dom.resultsContainer.style.display = 'block';
+        dom.score.textContent = `Your score: ${storyScore} / ${totalBlanks}`;
+
+        dom.reviewSection.innerHTML = '<h3>Story Quiz Review</h3>';
+        stories.forEach(story => {
+            const storyResultContainer = document.createElement('div');
+            storyResultContainer.innerHTML = `<h4>${story.title}</h4>`;
+
+            story.blanks.forEach((blank, index) => {
+                const userAnswer = storyUserAnswers[blank.id] || 'Not answered';
+                const isCorrect = userAnswer === blank.correctAnswer;
+                const resultClass = isCorrect ? 'correct-review' : 'incorrect-review';
+                const resultItem = document.createElement('div');
+                resultItem.className = `review-item ${resultClass}`;
+
+                let resultHTML = `<p><strong>Blank ${index + 1}</strong></p>`;
+                resultHTML += `<p>Your answer: ${userAnswer} ${isCorrect ? '<span class="correct-icon">✔</span>' : '<span class="incorrect-icon">✖</span>'}</p>`;
+                if (!isCorrect) {
+                    resultHTML += `<p>Correct answer: ${blank.correctAnswer}</p>`;
+                }
+                resultItem.innerHTML = resultHTML;
+                storyResultContainer.appendChild(resultItem);
+            });
+            dom.reviewSection.appendChild(storyResultContainer);
+        });
+    };
+
+
     // Initial load
     // startQuiz(); // We no longer start the quiz automatically
 
@@ -596,6 +725,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load saved theme
     const savedTheme = localStorage.getItem('grammarQuizTheme') || 'dark';
     applyTheme(savedTheme);
+
+    // --- MUTUALLY EXCLUSIVE GRAMMAR CATEGORIES ---
+    const storyCategoryCheckbox = document.getElementById('category-story');
+    const otherCategoryCheckboxes = [
+        document.getElementById('category-verb'),
+        document.getElementById('category-preposition'),
+        document.getElementById('category-wrong-word'),
+        document.getElementById('category-vocabulary-matching')
+    ];
+    const numberInputs = [
+        document.getElementById('count-verb'),
+        document.getElementById('count-preposition'),
+        document.getElementById('count-wrong-word'),
+        document.getElementById('count-vocabulary-matching')
+    ];
+
+    storyCategoryCheckbox.addEventListener('change', () => {
+        const isChecked = storyCategoryCheckbox.checked;
+        otherCategoryCheckboxes.forEach(checkbox => checkbox.disabled = isChecked);
+        numberInputs.forEach(input => input.disabled = isChecked);
+    });
+
+    otherCategoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const anyChecked = otherCategoryCheckboxes.some(cb => cb.checked);
+            storyCategoryCheckbox.disabled = anyChecked;
+        });
+    });
 
     // --- TAB NAVIGATION ---
     const tabButtons = document.querySelectorAll('.tab-btn');
