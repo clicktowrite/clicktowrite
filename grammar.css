@@ -328,3 +328,14 @@
             background-color: #e0e0e0;
             color: var(--text-color-light);
         }
+        #cognitive-question {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+        #cognitive-choices {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
