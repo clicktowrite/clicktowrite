@@ -52,6 +52,9 @@
                         <input type="checkbox" id="category-vocabulary-matching" value="vocabulary matching" checked> <label for="category-vocabulary-matching">Vocabulary Matching</label>
                         <input type="number" id="count-vocabulary-matching" min="1" value="10">
                     </div>
+                    <div>
+                        <input type="checkbox" id="category-story" value="story"> <label for="category-story">Fill in the blank story</label>
+                    </div>
                 </div>
                 <div>
                     <label for="grammar-timer-toggle">Enable Timer:</label>
@@ -86,6 +89,14 @@
                 <h3>Review Your Answers</h3>
                 <div id="review-section"></div>
                 <button id="restart-btn" class="btn">Try Again</button>
+            </div>
+
+            <div id="story-quiz-view" style="display: none;">
+                <h2 id="story-title">Story Title</h2>
+                <p id="story-passage">Passage will load here...</p>
+                <div id="story-navigation">
+                    <button id="next-passage-btn" class="btn">Next Passage</button>
+                </div>
             </div>
         </div>
 
@@ -192,7 +203,13 @@
 <script src="cognitive_questions.js"></script>
 <script src="grammar_questions.js"></script>
 <script src="vocabulary_questions.js"></script>
+<script src="story_questions.js"></script>
 <script src="typing_test_data.js"></script>
 <script src="grammar.js"></script>
+
+<div id="choice-popup">
+    <h3>Choose an answer:</h3>
+    <div id="popup-choices"></div>
+</div>
 </body>
 </html>
