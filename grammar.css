@@ -381,3 +381,35 @@
         .popup-choice-btn:hover {
             background-color: #666;
         }
+
+        /* Cognitive Test Specific Styles */
+        #cognitive-question {
+            font-size: 1.8em;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #cognitive-choices {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        #cognitive-setup .timer-setup-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        #cognitive-setup .timer-inputs {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #cognitive-setup .timer-inputs input {
+            width: 50px;
+            text-align: center;
+        }
