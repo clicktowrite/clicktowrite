@@ -612,4 +612,41 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(button.dataset.tab).classList.add('active');
         });
     });
+
+    const setMaxQuestionCounts = () => {
+        let grammarQuestions = [];
+        let vocabularyQuestions = [];
+        try {
+            grammarQuestions = questionsData.questions;
+        } catch (error) {
+            console.error("Error loading grammar questions data:", error);
+        }
+        try {
+            vocabularyQuestions = vocabularyData.questions;
+        } catch (error) {
+            console.error("Error loading vocabulary questions data:", error);
+        }
+        const allQuestions = [...grammarQuestions, ...vocabularyQuestions];
+
+        const categories = [
+            'verb',
+            'preposition',
+            'wrong word',
+            'vocabulary matching'
+        ];
+
+        categories.forEach(category => {
+            const count = allQuestions.filter(q => q.category === category).length;
+            const inputId = `count-${category.replace(/\s/g, '-')}`;
+            const inputElement = document.getElementById(inputId);
+            if (inputElement) {
+                inputElement.max = count;
+                if (parseInt(inputElement.value, 10) > count) {
+                    inputElement.value = count;
+                }
+            }
+        });
+    };
+
+    setMaxQuestionCounts();
 });
